@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sportstunden-planer"
+version = "1.0.0"
+description = "Automatische Planung von Sportstunden fuer verschiedene Kurse und Altersklassen"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+sportstunden = "sportstunden.cli:main"
+
+[tool.setuptools]
+packages = ["sportstunden"]
+
+[tool.setuptools.package-data]
+sportstunden = ["data/*.json"]
