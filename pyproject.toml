@@ -10,9 +10,6 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []
 
-[project.scripts]
-sportstunden = "sportstunden.cli:main"
-
 [project.gui-scripts]
 sportstunden-gui = "sportstunden.gui:starte"
 

@@ -6,16 +6,15 @@ als PDF**: Anfang, massstaeblicher Hallenplan mit nummerierten Stationen an
 ihren tatsaechlichen Positionen, Stationsliste mit Material, Ende. Detailseiten
 gibt es auf Wunsch.
 
-Drei Wege zur Bedienung, alle mit demselben Katalog und derselben Logik:
+Zwei Wege zur Bedienung, beide mit demselben Katalog und derselben Logik:
 
 | Weg | Wofuer | Voraussetzung |
 | --- | --- | --- |
 | **`web/kinderturnen.html`** | Handy, Tablet, Rechner - Plan mit dem Finger verschieben | ein Browser, sonst nichts |
-| `python3 -m sportstunden gui` | Fenster-Oberflaeche am Rechner | Python mit tkinter |
-| `python3 -m sportstunden ...` | Kommandozeile, Skripte, Stil-Lernen | Python 3.9+ |
+| `python3 -m sportstunden` | Fenster-Oberflaeche am Rechner | Python 3.9+ mit tkinter |
 
-Reines Python beziehungsweise reines JavaScript - keine Fremdbibliotheken,
-auch nicht fuer den PDF-Export.
+Eine Kommandozeilenfassung gibt es nicht (mehr). Reines Python beziehungsweise
+reines JavaScript - keine Fremdbibliotheken, auch nicht fuer den PDF-Export.
 
 ## Was das Programm macht
 
@@ -47,10 +46,9 @@ auch nicht fuer den PDF-Export.
   zaehlt voll mit und wird automatisch ergaenzt (z. B. Niedersprungmatte je
   Minitrampolin, 2 Matten unter Reck, Barren und Tau).
 * **Stundenbild als PDF - ohne Zeitangaben.** Seite 1 im Stil einer
-  handgeschriebenen Stundenskizze mit frei waehlbarer Ueberschrift,
-  Folgeseiten mit Ablauf, Beschreibungen, Aufbau und Sicherheitshinweisen.
-  Minutenangaben stehen bewusst nirgends im PDF. Mit `--nur-stundenbild`
-  bleibt es bei einer Seite.
+  handgeschriebenen Stundenskizze mit frei waehlbarer Ueberschrift. Der Haken
+  "PDF mit Detailseiten" haengt Ablauf, Beschreibungen, Aufbau und
+  Sicherheitshinweise an. Minutenangaben stehen bewusst nirgends im PDF.
 * **Motto der Stunde.** Optional bekommt die Stunde ein Thema (Sommer, Wasser,
   Dschungel, Zirkus, Ritter, Baustelle, Bauernhof, Weltraum, Winter) - passende
   Spiele und Stationen werden dann bevorzugt.
@@ -75,54 +73,44 @@ gedreht. Stationen werden mit dem Finger oder der Maus verschoben (Fangraster
 25 cm), Ort und Geraetezahlen bleiben auf dem Geraet gespeichert.
 
 ```bash
-python3 -m sportstunden web --oeffnen   # zeigt bzw. oeffnet die Datei
-python3 werkzeuge/baue_web.py           # baut sie neu aus den Katalogdaten
+python3 werkzeuge/baue_web.py           # baut die Datei neu aus den Quellen
 ```
 
-## Installation
+## Veroeffentlichen: der Quelltext bleibt zu
+
+Die ausgelieferte Datei enthaelt **keinen lesbaren Quelltext**. Aufbau
+(HTML), Gestaltung (CSS), Katalog und Programm liegen in einem einzigen,
+verwuerfelten Base64-Block; sichtbar ist nur ein kurzer Lader, der den Block
+zur Laufzeit zusammensetzt und ausfuehrt. "Seitenquelltext anzeigen" zeigt
+damit nichts Verwertbares mehr - weder Uebungen und Sicherheitsregeln noch die
+Planungslogik. Zusaetzlich:
+
+* Die Innereien (`window.KiTu`) reicht die Seite nur mit `?pruefung=1` in der
+  Adresse heraus - im Normalbetrieb gibt es keinen Einstiegspunkt.
+* Kommentare und Einrueckung sind vor dem Packen entfernt.
+* `<meta name="robots" content="noarchive">` haelt Suchmaschinen-Archive fern.
+* Die lesbaren Quellen liegen unter `web/quelle/` und werden **nicht**
+  mit veroeffentlicht - weitergegeben wird allein `web/kinderturnen.html`.
+
+**Grenze, die ehrlich benannt sein will:** Was der Browser ausfuehrt, muss der
+Browser entpacken koennen - der Lader steht in der Datei. Wer sich hinsetzt,
+kann den Block darueber zurueckrechnen; und die fertig aufgebaute Seite ist in
+den Entwicklerwerkzeugen als Elementbaum sichtbar, weil sie dort ja dargestellt
+wird. Das hier ist eine wirksame Huerde gegen Mitlesen und Abkupfern, keine
+Verschluesselung. Wirklich geheim bleibt nur, was auf einem Server liegt und nie
+ausgeliefert wird - das widerspricht aber dem Ziel, ohne Installation und ohne
+Netz zu laufen.
+
+Wird die Datei auf einen Webserver gelegt, darf dessen `Content-Security-Policy`
+`script-src` nicht ohne `'unsafe-eval'` gesetzt sein: der Lader startet das
+entpackte Programm ueber `new Function`.
+
+## Fenster-Oberflaeche am Rechner
 
 ```bash
 git clone <repo>
 cd Sportapp_Claude
-python3 -m sportstunden --help          # ohne Installation
-pip install -e .                        # optional: Befehl 'sportstunden'
-```
-
-Getestet mit Python 3.9+, keine Fremdbibliotheken. Alle Daten liegen in
-`~/.sportstunden` (aenderbar ueber `SPORTSTUNDEN_HOME` oder `--daten`).
-
-## Schnellstart
-
-```bash
-python3 -m sportstunden init            # Beispielorte anlegen
-python3 -m sportstunden gui             # grafische Oberflaeche
-python3 -m sportstunden planen          # interaktiv auf der Kommandozeile
-```
-
-Der interaktive Ablauf fragt der Reihe nach:
-
-1. Halle, im Freien oder Sportplatz?
-2. Welcher Ort?
-3. Welche Ausstattung steht heute zur Verfuegung? (alles / einzelne Geraete
-   ausschliessen / Anzahlen anpassen / nur bestimmte Geraete)
-4. Welche Gruppe, wie lang, Schwerpunkt, Ueberschrift, Motto
-
-Danach steht die Stunde auf dem Bildschirm und kann gespeichert, als PDF
-abgelegt, neu gewuerfelt oder als eigene Stunde uebernommen werden.
-
-Nicht interaktiv (z. B. fuer Skripte):
-
-```bash
-python3 -m sportstunden planen \
-    --ort halle-grundschule --altersgruppe vorschule \
-    --dauer 60 --thema sommer --stationen --ueberschrift "Ki Tu" \
-    --ohne minitrampolin --speichern --pdf ~/Stunden/
-```
-
-## Grafische Oberflaeche
-
-```bash
-python3 -m sportstunden gui     # oder nach 'pip install -e .': sportstunden-gui
+python3 -m sportstunden            # oder nach 'pip install -e .': sportstunden-gui
 ```
 
 Links werden Ort, Gruppe, Dauer, Motto, Schwerpunkt und Ueberschrift
@@ -134,7 +122,8 @@ gelernten Stil oder schreiben das PDF.
 
 Tkinter gehoert zur Standardbibliothek. Windows und macOS bringen es mit der
 Python-Installation mit; unter Linux gegebenenfalls
-`sudo apt install python3-tk` nachinstallieren.
+`sudo apt install python3-tk` nachinstallieren. Die Daten liegen in
+`~/.sportstunden` (aenderbar ueber `SPORTSTUNDEN_HOME`).
 
 ## Gruppen und Koordinationsteil
 
@@ -146,62 +135,21 @@ Python-Installation mit; unter Linux gegebenenfalls
 | `grundschule_1` | 7-8 | ja | Reaktion, Rhythmus, Gleichgewicht, Orientierung |
 | `grundschule_2` | 9-10 | ja | Rhythmus, Differenzierung, Kopplung, Orientierung, Reaktion |
 
-Die Altersgrenze fuer den Koordinationsteil laesst sich verschieben:
-
-```bash
-python3 -m sportstunden einstellungen --setzen koordination_ab_alter=7
-```
-
-Je Stunde geht auch `--mit-koordination` / `--ohne-koordination`.
-
-## Befehlsuebersicht
-
-| Befehl | Zweck |
-| --- | --- |
-| `init` | Beispielorte und Datenverzeichnis anlegen |
-| `orte`, `ort <id>` | Orte und ihre Ausstattung anzeigen |
-| `ort-neu`, `ort-bearbeiten`, `ort-loeschen` | Orte und Geraetebestand pflegen |
-| `geraete [--suche]` | Geraetekatalog inkl. Pflicht-Absicherung |
-| `altersgruppen` | Gruppen, Koordinationsschwerpunkte, Hinweise |
-| `planen` | Stunde planen (interaktiv oder per Flags) |
-| `stunden`, `zeigen <id>`, `loeschen <id>` | Gespeicherte Stunden verwalten |
-| `pdf <id> [--datei] [--ueberschrift] [--mit-details]` | Stundenbild als PDF speichern |
-| `gui` | Grafische Oberflaeche starten |
-| `web [--oeffnen]` | Browser-Fassung anzeigen oder oeffnen |
-| `erfassen` | Eigene Stunde erfassen (Stil-Vorlage) |
-| `markieren <id>` | Stunde als eigene Stunde werten |
-| `importieren <datei>` / `exportieren <id> <datei>` | JSON-Austausch |
-| `stil [--altersgruppe]` | Gelernten Planungsstil anzeigen |
-| `einstellungen [--setzen k=v]` | Standardwerte, Name, Verein, Kopftitel |
-
-Wichtige Flags von `planen`:
-
-| Flag | Wirkung |
-| --- | --- |
-| `--ort`, `--art` | Ort bzw. Ortsart waehlen |
-| `--altersgruppe`, `--alter` | Gruppe direkt oder ueber das Alter waehlen |
-| `--dauer` | Stundenlaenge in Minuten |
-| `--ueberschrift "Ki Tu"` | Ueberschrift auf dem Stundenbild |
-| `--thema sommer` / `--thema auto` | Motto der Stunde |
-| `--stationen [ANZAHL]` / `--spiel` | Bewegungslandschaft (mit Zahl: feste Stationszahl, ohne: nach Platz) oder grosses Spiel |
-| `--geraete`, `--ohne` | Ausstattung fuer heute einschraenken |
-| `--gemeinsames-material` | Kein Umbau zwischen den Teilen |
-| `--seed` | Reproduzierbare Planung |
-| `--pdf [pfad]`, `--mit-details` | PDF schreiben (Standard: nur das Stundenbild) |
-| `--speichern`, `--eigene` | Stunde ablegen (und als eigenen Stil werten) |
+Je Stunde laesst sich der Koordinationsteil auf "ja", "nein" oder
+"automatisch" stellen. Die Altersgrenze fuer "automatisch" steht in
+`sportstunden/data/altersgruppen.json` unter `koordination_ab_alter`; nach einer
+Aenderung `python3 werkzeuge/baue_web.py` ausfuehren, damit die Browser-Fassung
+sie uebernimmt.
 
 ## Ausstattung pflegen
 
-```bash
-python3 -m sportstunden ort-neu --name "Halle Nord" --art halle \
-    --geraete "matte=12,kastenteil=6,langbank=6,reifen=16,schwungtuch=1"
+In beiden Oberflaechen fuehrt die Schaltflaeche **"Geraete des Ortes"** zu den
+Stueckzahlen: anpassen oder auf 0 setzen, wenn heute etwas fehlt. Der Browser
+merkt sich das auf dem Geraet, die Fenster-Oberflaeche in `~/.sportstunden`.
 
-python3 -m sportstunden ort-bearbeiten halle-nord --geraete "matte=14,tau=0"
-python3 -m sportstunden ort halle-nord
-```
-
-`ort-bearbeiten` ohne `--geraete` startet am Terminal die gefuehrte Eingabe
-(`liste` zeigt alle Geraete-IDs, `fertig` beendet).
+Neue Orte und ihre festen Geraeteplaetze kommen in
+`sportstunden/data/orte.json` (siehe unten) und stehen nach
+`python3 werkzeuge/baue_web.py` auch im Browser zur Verfuegung.
 
 ## Absicherung und Geraetegrenzen
 
@@ -220,9 +168,7 @@ Bestand des Ortes gebucht. Zusaetzlich gelten Sicherheitsregeln:
 Der Planer bucht Geraete **inklusive** dieser Absicherung. Passt eine Station
 nicht in den Bestand, wird sie nicht eingeplant und im Ergebnis als Hinweis
 ausgewiesen. Innerhalb eines Stundenteils stehen alle Aufbauten gleichzeitig,
-deshalb wird dort summiert. Zwischen den Teilen wird umgebaut; wer ohne Umbau
-arbeiten will, plant mit `--gemeinsames-material`.
-
+deshalb wird dort summiert. Zwischen den Teilen wird umgebaut.
 
 ## Hallenmasse und Geraeteplaetze
 
@@ -247,26 +193,18 @@ Koordinaten sind Meter, Ursprung ist die linke untere Ecke der Flaeche; `laenge`
 liegt in x-Richtung. Orte ohne Angaben rechnen mit 27 x 15 m. Stationen mit
 Sprossenwand, Reck, Barren, Ringen, Tau, Klettergeruest oder Balken werden an
 diesen Plaetzen verankert, alle anderen im Uhrzeigersinn auf der freien Flaeche
-verteilt - mit Wandabstand, Sicherheitsrand und ohne Ueberlappung. In der
-grafischen Oberflaeche laesst sich jede Station danach noch mit der Maus
-verschieben; die Position landet im PDF.
+verteilt - mit Wandabstand, Sicherheitsrand und ohne Ueberlappung. Danach laesst
+sich jede Station noch von Hand verschieben; die Position landet im PDF.
 
 ## Stil lernen
 
-Es zaehlen ausschliesslich Stunden mit der Quelle `eigene`:
-
-```bash
-python3 -m sportstunden erfassen                 # Stunde selbst zusammenstellen
-python3 -m sportstunden markieren stunde-1a2b3c  # geplante Stunde uebernehmen
-python3 -m sportstunden importieren meine.json   # aus JSON einlesen
-python3 -m sportstunden stil                     # gelernten Stil ansehen
-```
-
-Gelernt werden Zeitaufteilung, Zahl der Stationen bzw. Spiele je Teil,
-bevorzugte Inhalte, Organisationsformen, Geraete, Lieblingsstationen, die
-typische Intensitaet und wie oft mit Stationsbetrieb gearbeitet wird. Die
-Gewichte werden gegen die Haeufigkeit im Katalog normiert, damit nicht einfach
-das Uebliche gewinnt. Das Profil wird in drei Stufen gemischt:
+Es zaehlen ausschliesslich Stunden, die als **"Eigene Stunde"** uebernommen
+wurden - die Schaltflaeche gibt es in beiden Oberflaechen. Gelernt werden
+Zeitaufteilung, Zahl der Stationen bzw. Spiele je Teil, bevorzugte Inhalte,
+Organisationsformen, Geraete, Lieblingsstationen, die typische Intensitaet und
+wie oft mit Stationsbetrieb gearbeitet wird. Die Gewichte werden gegen die
+Haeufigkeit im Katalog normiert, damit nicht einfach das Uebliche gewinnt. Das
+Profil wird in drei Stufen gemischt:
 
 ```
 neutrales Profil  ->  Gesamtstil des Nutzers  ->  Stil dieser Altersgruppe
@@ -279,14 +217,8 @@ anfaengt.
 
 ## Das PDF
 
-```bash
-python3 -m sportstunden planen --ort halle-grundschule --altersgruppe vorschule --pdf
-python3 -m sportstunden pdf stunde-1a2b3c --datei ~/Stunden/ --nur-stundenbild
-```
-
-Standardmaessig besteht das PDF nur aus dem Stundenbild; `--mit-details`
-(Kommandozeile) beziehungsweise das Haekchen "PDF mit Detailseiten" haengt
-Ablauf, Beschreibungen, Aufbau und Sicherheitshinweise an.
+Standardmaessig besteht das PDF nur aus dem Stundenbild; der Haken "PDF mit
+Detailseiten" haengt Ablauf, Beschreibungen, Aufbau und Sicherheitshinweise an.
 
 **Seite 1 - Stundenbild:** Kopfzeile (frei waehlbare Ueberschrift und Datum),
 Zeile `Anfang:` mit Spiel und Material, optional `Koordination:`, der
@@ -294,19 +226,8 @@ massstaebliche Hallenplan mit nummerierten Stationen an ihren Positionen,
 darunter die nummerierte Stationsliste mit Material in Kurzform (`LB`, `WB`,
 `kl. Kasten`), zum Schluss `Ende:`. Zeitangaben stehen nicht im PDF.
 
-**Folgeseiten:** Ablauf mit Zeiten, Beschreibung jeder Station, Materialliste
-mit Bedarf und Bestand, Aufbau je Stundenteil und die Sicherheitshinweise.
-
-Kopfzeile, Name und Verein kommen aus den Einstellungen:
-
-```bash
-python3 -m sportstunden einstellungen \
-    --setzen "trainer=B. Goetz" --setzen "verein=TSV Beispiel" --setzen "kopftitel=Ki Tu"
-```
-
-`kopftitel` ist die Vorgabe fuer die Ueberschrift, `standard_stationen` eine
-feste Stationszahl (0 = nach Platz in der Halle), `standard_dauer` die
-uebliche Stundenlaenge.
+**Folgeseiten:** Ablauf, Beschreibung jeder Station, Materialliste mit Bedarf
+und Bestand, Aufbau je Stundenteil und die Sicherheitshinweise.
 
 ## Projektstruktur
 
@@ -321,17 +242,19 @@ sportstunden/
   hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen (PDF und Bildschirm)
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-  ansicht.py      Textausgabe fuer das Terminal
-  cli.py          Kommandozeile
-  gui.py          Grafische Oberflaeche (Tkinter)
+  gui.py          Fenster-Oberflaeche (Tkinter)
   data/           Geraete, Sicherheitsregeln, Gruppen, Uebungen, Beispielorte
 web/
-  kinderturnen.html   fertige Browser-Fassung (eine Datei, keine Installation)
-  quelle/             deren Quelltexte (vorlage.html, stil.css, app.js)
+  kinderturnen.html   fertige Browser-Fassung (eine Datei, gepackt)
+  quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css, app.js)
 werkzeuge/
-  baue_web.py     baut web/kinderturnen.html aus Quelle und Katalogdaten
-tests/            121 Tests (unittest)
+  baue_web.py     baut web/kinderturnen.html aus Quellen und Katalogdaten
+  packen.py       entfernt Kommentare und verpackt Aufbau, Stil, Daten, Programm
+tests/            104 Tests (unittest)
 ```
+
+Die Browser-Fassung traegt dieselbe Logik wie das Python-Paket in JavaScript;
+die Stammdaten kommen in beiden Faellen aus `sportstunden/data/`.
 
 ## Tests
 
@@ -346,14 +269,16 @@ die Stationszahl richtet sich nach der Hallenflaeche, alle Stationen liegen
 ohne Ueberlappung in der Halle und Stationen mit ortsfesten Geraeten stehen an
 deren Platz, das PDF enthaelt weder Minuten noch eine Kinderzahl, die
 Ueberschrift ist frei waehlbar, der gelernte Stil veraendert die Auswahl - und
-die Oberflaeche laesst sich bedienen und verschiebt Stationen im Raster (diese
-Tests werden ohne tkinter uebersprungen).
+die Fenster-Oberflaeche laesst sich bedienen und verschiebt Stationen im Raster
+(diese Tests werden ohne tkinter uebersprungen).
 
-Die Browser-Fassung wird zusaetzlich im echten Chromium geprueft: sie plant ohne
-Fehler, alle Stationen liegen in der Halle, Ziehen funktioniert auch im
-gedrehten Plan, der Plan nimmt auf Handy, Tablet und Rechner den groessten Teil
-des Fensters ein, und das erzeugte PDF hat genau eine Seite (mit Details mehr)
-und keine Zeitangaben. Diese Tests brauchen Playwright und werden sonst
+Die Browser-Fassung wird zusaetzlich im echten Chromium geprueft: sie baut sich
+aus dem gepackten Block selbst auf, plant ohne Fehler, alle Stationen liegen in
+der Halle, Ziehen funktioniert auch im gedrehten Plan, der Plan nimmt auf Handy,
+Tablet und Rechner den groessten Teil des Fensters ein, und das erzeugte PDF hat
+genau eine Seite (mit Details mehr) und keine Zeitangaben. Geprueft wird auch,
+dass im Seitenquelltext nichts Lesbares steht und ohne `?pruefung=1` keine
+Innereien zugaenglich sind. Diese Tests brauchen Playwright und werden sonst
 uebersprungen. Nach Aenderungen an `web/quelle/` bitte
 `python3 werkzeuge/baue_web.py` ausfuehren - ein Test prueft, dass die abgelegte
 Datei dazu passt.
@@ -390,4 +315,5 @@ aufgebaut. Spiele fuer die ganze Gruppe haben
 `data/geraete.json` (dort stehen auch Kurzform und Sicherheitsregeln); ein
 neues Symbol fuer den Hallenplan wird in `hallenplan.py` unter `SYMBOLE`
 eingetragen. Der Katalog wird beim Laden geprueft - unbekannte Geraete-IDs
-fuehren sofort zu einer Fehlermeldung.
+fuehren sofort zu einer Fehlermeldung. Nach jeder Aenderung an den Daten
+`python3 werkzeuge/baue_web.py` ausfuehren.

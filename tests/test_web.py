@@ -16,6 +16,21 @@ from pathlib import Path
 WURZEL = Path(__file__).resolve().parent.parent
 SEITE = WURZEL / "web" / "kinderturnen.html"
 
+sys.path.insert(0, str(WURZEL))
+from werkzeuge.packen import entpacke, ohne_kommentare  # noqa: E402
+
+
+def gepackter_block(inhalt: str):
+    """(Block, Schluessel) aus dem Lader der gebauten Seite."""
+    treffer = re.search(r'var q="([A-Za-z0-9+/=]+)".*?s=(\d+)>>>0', inhalt)
+    return (treffer.group(1), int(treffer.group(2))) if treffer else (None, None)
+
+
+def programmtext(inhalt: str) -> str:
+    """Der entpackte Inhalt der Seite."""
+    block, schluessel = gepackter_block(inhalt)
+    return entpacke(block, schluessel)
+
 try:  # pragma: no cover - haengt von der Installation ab
     from playwright.sync_api import sync_playwright
 
@@ -55,11 +70,44 @@ class WebDateiTest(unittest.TestCase):
         )
         self.assertEqual(ergebnis.returncode, 0, ergebnis.stdout + ergebnis.stderr)
 
-    def test_katalog_steckt_in_der_datei(self):
+    def test_quelltext_ist_nicht_lesbar(self):
+        """Im Seitenquelltext steht nur der Lader - kein Markup, kein Programm."""
         inhalt = SEITE.read_text(encoding="utf-8")
-        treffer = re.search(
-            r"^<script>const DATEN = (\{.*\});</script>$", inhalt, re.MULTILINE
-        )
+        block, schluessel = gepackter_block(inhalt)
+        self.assertIsNotNone(block, "gepackter Block nicht gefunden")
+        self.assertGreater(schluessel, 0)
+
+        # Alles ausserhalb des Blocks ist die Huelle und bleibt winzig.
+        huelle = inhalt.replace(block, "")
+        self.assertLess(len(huelle), 1200, "zu viel offener Text in der Seite")
+
+        verraeter = [
+            "Bewegungslandschaft",
+            "Sprossenwand",
+            "stundenPdf",
+            "zeichneAlles",
+            "planflaeche",
+            "stationsliste",
+            "<canvas",
+            "<button",
+            "function ",
+            "altersgruppe",
+        ]
+        for wort in verraeter:
+            self.assertNotIn(wort, huelle, f"lesbarer Quelltext gefunden: {wort}")
+
+    def test_programm_steckt_im_block(self):
+        """Entpackt enthaelt der Block Aufbau, Stil, Katalog und Programm."""
+        text = programmtext(SEITE.read_text(encoding="utf-8"))
+        for stueck in ('id=\\"plan\\"', "--akzent", "stundenPdf", "zeichnePlan"):
+            self.assertIn(stueck, text)
+        # Die Kommentare der Quellen sind draussen geblieben.
+        self.assertNotIn("// ====", text)
+        self.assertNotIn("Fuer Tests und Erweiterungen", text)
+
+    def test_katalog_steckt_in_der_datei(self):
+        text = programmtext(SEITE.read_text(encoding="utf-8"))
+        treffer = re.search(r"^const DATEN=(\{.*\});$", text, re.MULTILINE)
         self.assertIsNotNone(treffer, "eingebettete Daten nicht gefunden")
         daten = json.loads(treffer.group(1))
         self.assertGreater(len(daten["uebungen"]), 60)
@@ -70,6 +118,45 @@ class WebDateiTest(unittest.TestCase):
         for ort in daten["orte"]:
             self.assertGreater(ort["laenge"], 5)
             self.assertGreater(ort["breite"], 5)
+
+
+class PackerTest(unittest.TestCase):
+    """Der Kommentar-Entferner darf nur Kommentare treffen."""
+
+    def test_kommentare_verschwinden(self):
+        quelle = "// weg\nconst a = 1; /* auch weg */\n  const b = 2;\n"
+        self.assertEqual(ohne_kommentare(quelle), "const a = 1;\nconst b = 2;")
+
+    def test_zeichenketten_bleiben_heil(self):
+        for text in (
+            'const a = "// kein Kommentar";',
+            "const b = '/* auch nicht */';",
+            "const c = `Zeile ${x} /* nein */`;",
+            'const d = "Umlaute: aeoeue - \\" im Text";',
+        ):
+            self.assertEqual(ohne_kommentare(text), text)
+
+    def test_regulaere_ausdruecke_bleiben_heil(self):
+        for text in (
+            'x.replace(/[aA]/g, "b");',
+            "const r = /\\/\\//;",
+            "const t = a / b / c;",
+            'if (/[?&]pruefung=1\\b/.test(s)) f();',
+        ):
+            self.assertEqual(ohne_kommentare(text), text)
+
+    def test_vorlage_ueber_mehrere_zeilen(self):
+        quelle = "const s = `<< /Type ${liste\n  .join(' ')}] >>`;"
+        self.assertEqual(ohne_kommentare(quelle), "const s = `<< /Type ${liste\n.join(' ')}] >>`;")
+
+    def test_packen_und_entpacken(self):
+        from werkzeuge.packen import lader, verpacke
+
+        text = 'const x = "Groesse: 27 x 15 m";'
+        block, schluessel = verpacke(text)
+        self.assertNotIn("Groesse", block)
+        self.assertEqual(entpacke(block, schluessel), text)
+        self.assertIn(str(schluessel), lader(block, schluessel))
 
 
 @unittest.skipUnless(PLAYWRIGHT_DA and CHROMIUM, "Playwright oder Chromium fehlt")
@@ -86,7 +173,7 @@ class WebOberflaecheTest(unittest.TestCase):
         cls.browser.close()
         cls._pw.stop()
 
-    def oeffne(self, breite=1280, hoehe=860):
+    def oeffne(self, breite=1280, hoehe=860, pruefung=True):
         seite = self.browser.new_page(viewport={"width": breite, "height": hoehe})
         self.fehler = []
         seite.on("pageerror", lambda e: self.fehler.append(str(e)))
@@ -94,9 +181,28 @@ class WebOberflaecheTest(unittest.TestCase):
             "console",
             lambda m: self.fehler.append(m.text) if m.type == "error" else None,
         )
-        seite.goto(SEITE.resolve().as_uri())
+        # Die Innereien reicht die Seite nur mit "?pruefung=1" heraus.
+        seite.goto(SEITE.resolve().as_uri() + ("?pruefung=1" if pruefung else ""))
         seite.wait_for_timeout(350)
         return seite
+
+    def test_seite_baut_sich_selbst_auf(self):
+        """Der Aufbau steckt im gepackten Block, nicht im Quelltext."""
+        seite = self.oeffne(pruefung=False)
+        werte = seite.evaluate(
+            """() => ({
+                knoepfe: document.querySelectorAll('button').length,
+                plan: !!document.getElementById('plan'),
+                stil: getComputedStyle(document.body).backgroundColor,
+                innereien: typeof window.KiTu,
+            })"""
+        )
+        self.assertGreaterEqual(werte["knoepfe"], 5)
+        self.assertTrue(werte["plan"])
+        self.assertNotEqual(werte["stil"], "rgba(0, 0, 0, 0)")
+        self.assertEqual(werte["innereien"], "undefined", "Innereien offen zugaenglich")
+        self.assertEqual(self.fehler, [])
+        seite.close()
 
     def test_seite_plant_ohne_fehler(self):
         seite = self.oeffne()

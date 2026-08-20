@@ -5,6 +5,11 @@ Die Datei ist danach vollstaendig eigenstaendig: Katalog, Oberflaeche und
 PDF-Erzeugung stecken darin. Sie laesst sich per Doppelklick oeffnen - auf dem
 Rechner wie auf dem Handy, ohne Installation.
 
+Aufbau, Gestaltung, Daten und Programm liegen in einem gepackten Block
+(siehe ``werkzeuge/packen.py``); im Seitenquelltext steht nur der kurze
+Lader. Die lesbaren Quellen bleiben hier im Projekt und werden nicht
+veroeffentlicht.
+
 Aufruf:  python3 werkzeuge/baue_web.py [--pruefen]
 
 ``--pruefen`` baut nur im Speicher und meldet, ob die abgelegte Datei aktuell
@@ -24,6 +29,13 @@ sys.path.insert(0, str(WURZEL))
 from sportstunden.katalog import Katalog  # noqa: E402
 from sportstunden.pdf import _HELVETICA, _HELVETICA_BOLD  # noqa: E402
 from sportstunden.platzierung import GERAETEMASSE, ORTSFESTE_GERAETE  # noqa: E402
+from werkzeuge.packen import (  # noqa: E402
+    lader,
+    ohne_css_kommentare,
+    ohne_html_kommentare,
+    ohne_kommentare,
+    verpacke,
+)
 
 QUELLE = WURZEL / "web" / "quelle"
 ZIEL = WURZEL / "web" / "kinderturnen.html"
@@ -59,16 +71,34 @@ def sammle_daten() -> dict:
     }
 
 
-def baue() -> str:
-    vorlage = (QUELLE / "vorlage.html").read_text(encoding="utf-8")
-    stil = (QUELLE / "stil.css").read_text(encoding="utf-8")
-    anwendung = (QUELLE / "app.js").read_text(encoding="utf-8")
+def nutzlast() -> str:
+    """Das komplette Programm als ein Stueck JavaScript.
+
+    Es baut zuerst Gestaltung und Aufbau der Seite, legt dann die Daten ab
+    und startet zuletzt die Anwendung.
+    """
+    stil = ohne_css_kommentare((QUELLE / "stil.css").read_text(encoding="utf-8"))
+    inhalt = ohne_html_kommentare((QUELLE / "inhalt.html").read_text(encoding="utf-8"))
+    anwendung = ohne_kommentare((QUELLE / "app.js").read_text(encoding="utf-8"))
     daten = json.dumps(sammle_daten(), ensure_ascii=False, separators=(",", ":"))
 
-    seite = vorlage.replace("__STIL__", stil)
-    seite = seite.replace("__DATEN__", daten)
-    seite = seite.replace("__ANWENDUNG__", anwendung)
-    return seite
+    return "\n".join(
+        [
+            '"use strict";',
+            "var _s=document.createElement('style');",
+            "_s.textContent=" + json.dumps(stil) + ";",
+            "document.head.appendChild(_s);",
+            "document.body.innerHTML=" + json.dumps(inhalt) + ";",
+            "const DATEN=" + daten + ";",
+            anwendung,
+        ]
+    )
+
+
+def baue() -> str:
+    vorlage = (QUELLE / "vorlage.html").read_text(encoding="utf-8")
+    block, schluessel = verpacke(nutzlast())
+    return vorlage.replace("__LADER__", lader(block, schluessel))
 
 
 def main() -> int:

@@ -474,7 +474,7 @@ class Planerfenster(tk.Tk):
 
 
 def starte(speicher: Optional[Speicher] = None) -> int:
-    """Startet die Oberflaeche - Rueckgabewert wie bei den CLI-Befehlen."""
+    """Startet die Oberflaeche - 0, wenn alles glatt ging."""
     fenster = Planerfenster(speicher or Speicher())
     fenster.mainloop()
     return 0

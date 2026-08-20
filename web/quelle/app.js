@@ -2038,21 +2038,24 @@
     planen(false);
   }
 
-  // Fuer Tests und Erweiterungen zugaenglich machen.
-  window.KiTu = {
-    plane,
-    platziere,
-    stellflaeche,
-    konflikte,
-    kollisionen,
-    bedarf,
-    stundenPdf,
-    stationenVon,
-    zustand,
-    planen,
-    GRUPPEN,
-    THEMEN,
-  };
+  // Innereien nur fuer die Tests herausreichen: mit "?pruefung=1" in der
+  // Adresse. Im normalen Betrieb bleibt nichts davon zugaenglich.
+  if (/[?&]pruefung=1\b/.test(location.search)) {
+    window.KiTu = {
+      plane,
+      platziere,
+      stellflaeche,
+      konflikte,
+      kollisionen,
+      bedarf,
+      stundenPdf,
+      stationenVon,
+      zustand,
+      planen,
+      GRUPPEN,
+      THEMEN,
+    };
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", starte);

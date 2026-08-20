@@ -1,0 +1,66 @@
+<header class="kopf">
+  <div class="kopf-titel">
+    <input id="ueberschrift" class="ueberschrift" value="Ki Tu" aria-label="Ueberschrift">
+    <input id="datum" type="date" class="datum" aria-label="Datum">
+  </div>
+  <button id="knopf-einstellungen" class="knopf klein" type="button" aria-expanded="false">
+    Einstellungen
+  </button>
+</header>
+
+<section id="einstellungen" class="einstellungen" hidden>
+  <label>Ort<select id="ort"></select></label>
+  <label>Gruppe<select id="gruppe"></select></label>
+  <label>Dauer (min)<input id="dauer" type="number" min="20" max="180" step="5" value="60"></label>
+  <label>Motto<select id="thema"></select></label>
+  <label>Schwerpunkt<input id="schwerpunkt" type="text" placeholder="z. B. turnen"></label>
+  <label>Hauptteil<select id="form">
+    <option value="stationen">Bewegungslandschaft</option>
+    <option value="spiel">Grosses Spiel</option>
+    <option value="auto">automatisch</option>
+  </select></label>
+  <label>Stationen<input id="stationszahl" type="number" min="1" max="8" placeholder="nach Platz"></label>
+  <label>Koordinationsteil<select id="koordination">
+    <option value="auto">automatisch</option>
+    <option value="ja">ja</option>
+    <option value="nein">nein</option>
+  </select></label>
+  <label class="haken"><input id="details" type="checkbox"> PDF mit Detailseiten</label>
+  <div class="einstellungen-fuss">
+    <button id="knopf-geraete" class="knopf klein" type="button">Geraete des Ortes</button>
+    <button id="knopf-schliessen" class="knopf klein" type="button">Fertig</button>
+  </div>
+</section>
+
+<main class="haupt">
+  <div class="planflaeche" id="planflaeche">
+    <div class="planrahmen"><canvas id="plan"></canvas></div>
+    <p id="planhinweis" class="planhinweis">Stationen lassen sich mit dem Finger oder der Maus verschieben.</p>
+  </div>
+  <aside class="seite" id="seite">
+    <div class="zeile"><span class="marke">Anfang</span><span id="anfang">-</span></div>
+    <div class="zeile" id="koordination-zeile" hidden><span class="marke">Koordination</span><span id="koordination-text">-</span></div>
+    <ol id="stationsliste" class="stationsliste"></ol>
+    <div class="zeile"><span class="marke">Ende</span><span id="ende">-</span></div>
+    <p id="warnungen" class="warnungen"></p>
+  </aside>
+</main>
+
+<nav class="leiste">
+  <button id="knopf-planen" class="knopf haupt-knopf" type="button">Stunde planen</button>
+  <button id="knopf-wuerfeln" class="knopf" type="button">Neu wuerfeln</button>
+  <button id="knopf-pdf" class="knopf" type="button">PDF</button>
+  <button id="knopf-speichern" class="knopf" type="button">Merken</button>
+  <button id="knopf-eigene" class="knopf" type="button" title="Zaehlt fuer den gelernten Stil">Eigene Stunde</button>
+</nav>
+
+<dialog id="geraete-dialog" class="dialog">
+  <h2>Geraete am Ort</h2>
+  <p class="hinweis">Anzahl anpassen oder auf 0 setzen, wenn heute etwas fehlt. Wird auf diesem Geraet gespeichert.</p>
+  <div id="geraete-liste" class="geraete-liste"></div>
+  <div class="dialog-fuss">
+    <button id="geraete-zuruecksetzen" class="knopf klein" type="button">Zuruecksetzen</button>
+    <button id="geraete-fertig" class="knopf klein" type="button">Fertig</button>
+  </div>
+</dialog>
+
