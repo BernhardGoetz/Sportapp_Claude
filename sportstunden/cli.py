@@ -23,6 +23,7 @@ from .models import (
     neue_id,
 )
 from .planer import Planer, Planungsauftrag, Planungsergebnis, Planungsfehler, pruefe_bestand
+from .platzierung import platziere
 from .speicher import Speicher
 from .stil import Stillernen
 
@@ -412,6 +413,7 @@ def _pdf_schreiben(
         verein=einstellungen.get("verein", ""),
         titel=einstellungen.get("kopftitel", "Ki Tu"),
         nur_stundenbild=nur_stundenbild,
+        ort=app.speicher.ort(stunde.ort_id),
     )
 
 
@@ -525,11 +527,11 @@ def befehl_planen(app: Anwendung, args) -> int:
 
     einstellungen = app.speicher.einstellungen()
     dauer = args.dauer or int(einstellungen.get("standard_dauer", 60))
-    teilnehmer = args.teilnehmer or int(einstellungen.get("standard_teilnehmer", 12))
+    ueberschrift = args.ueberschrift or str(einstellungen.get("kopftitel", "Ki Tu"))
     if interaktiv and interaktiv_moeglich():
         dauer = frage_zahl("Dauer in Minuten", dauer, 20, 240)
-        teilnehmer = frage_zahl("Anzahl Kinder", teilnehmer, 1, 60)
         schwerpunkt = args.schwerpunkt or frage("Schwerpunkt (optional, z. B. turnen)")
+        ueberschrift = frage("Ueberschrift auf dem Stundenbild", ueberschrift)
     else:
         schwerpunkt = args.schwerpunkt or ""
 
@@ -540,10 +542,17 @@ def befehl_planen(app: Anwendung, args) -> int:
         koordination = False
 
     stationsbetrieb: Optional[bool] = None
-    if args.stationen:
+    if args.stationen is not None:
         stationsbetrieb = True
     elif args.spiel:
         stationsbetrieb = False
+
+    stationszahl: Optional[int] = None
+    if isinstance(args.stationen, int) and not isinstance(args.stationen, bool):
+        # '--stationen 6' gibt die Zahl vor, '--stationen' allein nicht.
+        stationszahl = args.stationen
+    elif int(einstellungen.get("standard_stationen", 0)):
+        stationszahl = int(einstellungen["standard_stationen"])
 
     thema = args.thema or ""
     if interaktiv and interaktiv_moeglich() and not thema:
@@ -568,15 +577,16 @@ def befehl_planen(app: Anwendung, args) -> int:
         ort=ort,
         altersgruppe=gruppe,
         dauer=dauer,
-        teilnehmer=teilnehmer,
         schwerpunkt=schwerpunkt,
         titel=args.titel or "",
+        ueberschrift=ueberschrift,
         datum=args.datum or date.today().isoformat(),
         ausstattung=ausstattung,
         umbau_zwischen_teilen=not args.gemeinsames_material,
         koordinationsteil=koordination,
         thema=thema,
         stationsbetrieb=stationsbetrieb,
+        stationszahl=stationszahl,
         seed=args.seed,
     )
 
@@ -654,6 +664,9 @@ def befehl_pdf(app: Anwendung, args) -> int:
     if not stunde:
         print(f"Stunde '{args.stunde}' nicht gefunden.")
         return 1
+    if args.ueberschrift:
+        stunde.ueberschrift = args.ueberschrift
+        app.speicher.speichere_stunde(stunde)
     ort = app.speicher.ort(stunde.ort_id)
     bestand = dict(ort.ausstattung) if ort else {}
     pfad = _pdf_schreiben(
@@ -661,6 +674,21 @@ def befehl_pdf(app: Anwendung, args) -> int:
     )
     print(f"PDF geschrieben: {pfad}")
     return 0
+
+
+def befehl_gui(app: Anwendung, args) -> int:
+    """Startet die grafische Oberflaeche."""
+    try:
+        from .gui import starte
+    except ImportError as fehler:  # tkinter fehlt
+        print(
+            "Die grafische Oberflaeche braucht tkinter, das hier nicht verfuegbar "
+            f"ist ({fehler}).\n"
+            "Unter Linux nachinstallieren mit: sudo apt install python3-tk\n"
+            "Windows und macOS bringen tkinter mit der Python-Installation mit."
+        )
+        return 2
+    return starte(app.speicher)
 
 
 def befehl_markieren(app: Anwendung, args) -> int:
@@ -743,8 +771,11 @@ def befehl_erfassen(app: Anwendung, args) -> int:
         "Gruppe", [g.name for g in app.katalog.altersgruppen], standard=3
     )
     gruppe = app.katalog.altersgruppen[index]
-    teilnehmer = frage_zahl("Anzahl Kinder", 12, 1, 60)
     titel = frage("Titel der Stunde", f"Eigene Stunde {gruppe.name.split(' (')[0]}")
+    ueberschrift = frage(
+        "Ueberschrift auf dem Stundenbild",
+        str(app.speicher.einstellungen().get("kopftitel", "Ki Tu")),
+    )
     datum = frage("Datum", date.today().isoformat())
 
     teile: List[Stundenteil] = []
@@ -803,7 +834,9 @@ def befehl_erfassen(app: Anwendung, args) -> int:
                 f"Dauer fuer '{uebung.name}'", uebung.dauer_vorschlag(),
                 1, 120,
             )
-            geraete, absicherung, gruppen = app.katalog.bedarf(uebung, teilnehmer)
+            geraete, absicherung, pro_kind, gruppen = app.katalog.bedarf(
+                uebung, bestand=ort.ausstattung
+            )
             uebungen.append(
                 StundenUebung(
                     uebung_id=uebung.id,
@@ -819,6 +852,7 @@ def befehl_erfassen(app: Anwendung, args) -> int:
                     intensitaet=uebung.intensitaet,
                     geraete=geraete,
                     absicherung=absicherung,
+                    pro_kind=pro_kind,
                 )
             )
             print(f"  + {uebung.name} ({dauer} min)")
@@ -840,11 +874,12 @@ def befehl_erfassen(app: Anwendung, args) -> int:
         altersgruppe_id=gruppe.id,
         altersgruppe_name=gruppe.name,
         dauer=sum(t.dauer for t in teile),
-        teilnehmer=teilnehmer,
         teile=teile,
+        ueberschrift=ueberschrift,
         datum=datum,
         quelle="eigene",
     )
+    platziere(stunde, ort, app.katalog)
     verstoesse = pruefe_bestand(stunde, ort.ausstattung)
     if verstoesse:
         print("\nWarnung - der Bestand des Ortes reicht rechnerisch nicht:")
@@ -978,12 +1013,15 @@ def parser_bauen() -> argparse.ArgumentParser:
     p = unter.add_parser("planen", help="Kinderturnstunde planen")
     p.add_argument("--ort", help="Orts-ID oder Namensteil")
     p.add_argument("--art", choices=sorted(ORTSARTEN), help="Halle, Freien, Sportplatz")
-    p.add_argument("--altersgruppe", help="ID der Altersgruppe, z. B. 'd'")
+    p.add_argument("--altersgruppe", help="ID der Gruppe, z. B. 'vorschule'")
     p.add_argument("--alter", type=int, help="Alter der Kinder (waehlt die Gruppe)")
     p.add_argument("--dauer", type=int)
-    p.add_argument("--teilnehmer", type=int, help="Anzahl Kinder")
     p.add_argument("--schwerpunkt", help="z. B. turnen, ballschule, klettern")
     p.add_argument("--titel")
+    p.add_argument(
+        "--ueberschrift",
+        help="Ueberschrift auf dem Stundenbild (Standard: Einstellung 'kopftitel')",
+    )
     p.add_argument("--datum")
     p.add_argument("--geraete", help="Nur diese Ausstattung verwenden ('matte=8,...')")
     p.add_argument("--ohne", help="Diese Geraete heute ausschliessen")
@@ -991,8 +1029,15 @@ def parser_bauen() -> argparse.ArgumentParser:
     p.add_argument("--thema", help="Motto der Stunde (z. B. sommer, dschungel, 'auto')")
     p.add_argument(
         "--stationen",
-        action="store_true",
-        help="Hauptteil als Bewegungslandschaft mit Stationen planen",
+        nargs="?",
+        type=int,
+        const=True,
+        default=None,
+        metavar="ANZAHL",
+        help=(
+            "Hauptteil als Bewegungslandschaft planen; mit Zahl die Stationszahl "
+            "vorgeben, ohne Zahl entscheidet der Platz in der Halle"
+        ),
     )
     p.add_argument(
         "--spiel",
@@ -1034,6 +1079,7 @@ def parser_bauen() -> argparse.ArgumentParser:
     p = unter.add_parser("pdf", help="Stunde als PDF-Stundenbild speichern")
     p.add_argument("stunde")
     p.add_argument("--datei", help="Zieldatei oder Zielordner")
+    p.add_argument("--ueberschrift", help="Ueberschrift auf dem Stundenbild")
     p.add_argument(
         "--nur-stundenbild",
         action="store_true",
@@ -1067,6 +1113,9 @@ def parser_bauen() -> argparse.ArgumentParser:
     p = unter.add_parser("stil", help="Gelernten Planungsstil anzeigen")
     p.add_argument("--altersgruppe")
     p.set_defaults(funktion=befehl_stil)
+
+    p = unter.add_parser("gui", help="Grafische Oberflaeche starten")
+    p.set_defaults(funktion=befehl_gui)
 
     p = unter.add_parser("einstellungen", help="Einstellungen anzeigen oder setzen")
     p.add_argument("--setzen", action="append", help="schluessel=wert")

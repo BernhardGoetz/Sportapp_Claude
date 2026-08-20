@@ -78,21 +78,15 @@ class PlanerTest(unittest.TestCase):
     # -- Geraetebestand ----------------------------------------------------
     def test_bestand_wird_nie_ueberschritten(self):
         for ort_id, ort in self.orte.items():
-            for gruppen_id in ("eltern_kind", "kleinkind", "vorschule", "grundschule_1", "grundschule_2"):
-                for teilnehmer in (6, 14, 24, 40):
-                    for seed in (1, 2, 3):
-                        ergebnis = self._plane(
-                            ort_id,
-                            gruppen_id,
-                            teilnehmer=teilnehmer,
-                            seed=seed,
-                        )
-                        verstoesse = pruefe_bestand(ergebnis.stunde, ort.ausstattung)
-                        self.assertEqual(
-                            verstoesse,
-                            [],
-                            f"{ort_id}/{gruppen_id}/{teilnehmer}/{seed}: {verstoesse}",
-                        )
+            for gruppen_id in (
+                "eltern_kind", "kleinkind", "vorschule", "grundschule_1", "grundschule_2"
+            ):
+                for seed in (1, 2, 3, 4, 5):
+                    ergebnis = self._plane(ort_id, gruppen_id, seed=seed)
+                    verstoesse = pruefe_bestand(ergebnis.stunde, ort.ausstattung)
+                    self.assertEqual(
+                        verstoesse, [], f"{ort_id}/{gruppen_id}/{seed}: {verstoesse}"
+                    )
 
     def test_absicherung_zaehlt_zum_bestand(self):
         """Matten reichen nur fuer wenige Geraete - das muss die Planung merken."""
@@ -112,7 +106,7 @@ class PlanerTest(unittest.TestCase):
             },
         )
         p = planer(self.katalog, gruppen_id="grundschule_1")
-        ergebnis = p.plane(auftrag(ort, self.katalog, gruppen_id="grundschule_1", teilnehmer=24, seed=7))
+        ergebnis = p.plane(auftrag(ort, self.katalog, gruppen_id="grundschule_1", seed=7))
         self.assertEqual(pruefe_bestand(ergebnis.stunde, ort.ausstattung), [])
         for uebung in ergebnis.stunde.alle_uebungen():
             trampoline = uebung.geraete.get("minitrampolin", 0)
@@ -132,7 +126,6 @@ class PlanerTest(unittest.TestCase):
                 ort,
                 self.katalog,
                 gruppen_id="grundschule_2",
-                teilnehmer=20,
                 seed=9,
                 umbau_zwischen_teilen=False,
             )
@@ -155,7 +148,6 @@ class PlanerTest(unittest.TestCase):
                 ort,
                 self.katalog,
                 gruppen_id="grundschule_1",
-                teilnehmer=18,
                 seed=11,
                 ausstattung=beschraenkt,
             )
@@ -176,11 +168,15 @@ class PlanerTest(unittest.TestCase):
                 treffer += 1
         self.assertGreaterEqual(treffer, 4)
 
-    def test_teilnehmerzahl_erhoeht_bedarf(self):
-        klein = self._plane("halle-grundschule", "grundschule_1", teilnehmer=8, seed=21)
-        gross = self._plane("halle-grundschule", "grundschule_1", teilnehmer=32, seed=21)
-        summe = lambda stunde: sum(stunde.materialliste().values())
-        self.assertGreater(summe(gross.stunde), summe(klein.stunde))
+    def test_planung_kennt_keine_teilnehmerzahl(self):
+        """Die Kinderzahl ist kein Planungsparameter mehr."""
+        import inspect
+
+        from sportstunden.planer import Planungsauftrag
+
+        self.assertNotIn("teilnehmer", inspect.signature(Planungsauftrag).parameters)
+        ergebnis = self._plane("halle-grundschule", "grundschule_1", seed=21)
+        self.assertEqual(ergebnis.stunde.teilnehmer, 0)
 
     def test_planung_ohne_ausstattung_scheitert(self):
         ort = Ort(id="leer", name="Leere Halle", art="halle", ausstattung={})
@@ -198,7 +194,7 @@ class PlanerTest(unittest.TestCase):
         )
         p = planer(self.katalog, gruppen_id="grundschule_1")
         ergebnis = p.plane(
-            auftrag(ort, self.katalog, gruppen_id="grundschule_1", dauer=60, teilnehmer=12, seed=13)
+            auftrag(ort, self.katalog, gruppen_id="grundschule_1", dauer=60, seed=13)
         )
         self.assertEqual(ergebnis.stunde.gesamtdauer, 60)
         self.assertEqual(pruefe_bestand(ergebnis.stunde, ort.ausstattung), [])
@@ -228,7 +224,7 @@ class PlanerTest(unittest.TestCase):
     # -- Kinderturnen: Bewegungslandschaft ---------------------------------
     def test_stationsbetrieb_erzeugt_bewegungslandschaft(self):
         ergebnis = self._plane(
-            "halle-grundschule", "vorschule", teilnehmer=18, seed=8, stationsbetrieb=True
+            "halle-grundschule", "vorschule", seed=8, stationsbetrieb=True
         )
         teil = ergebnis.stunde.teil("hauptteil")
         self.assertTrue(teil.parallel)
@@ -241,22 +237,34 @@ class PlanerTest(unittest.TestCase):
         self.assertLessEqual(max(dauern) - min(dauern), 1)
         self.assertIn("Stationen", teil.notiz)
 
-    def test_stationszahl_waechst_mit_der_kinderzahl(self):
-        klein = self._plane(
-            "halle-grundschule", "grundschule_1", teilnehmer=8, seed=3, stationsbetrieb=True
-        )
+    def test_stationszahl_richtet_sich_nach_der_halle(self):
+        """Grosse Halle - mehr Stationen; kleiner Raum - weniger."""
         gross = self._plane(
-            "halle-grundschule", "grundschule_1", teilnehmer=28, seed=3, stationsbetrieb=True
+            "halle-grundschule", "grundschule_1", seed=3, stationsbetrieb=True
+        )
+        klein = self._plane(
+            "halle-vereinsheim", "grundschule_1", seed=3, stationsbetrieb=True
         )
         self.assertLess(
             len(klein.stunde.teil("hauptteil").uebungen),
             len(gross.stunde.teil("hauptteil").uebungen),
         )
         self.assertLessEqual(len(gross.stunde.teil("hauptteil").uebungen), 8)
+        self.assertGreaterEqual(len(klein.stunde.teil("hauptteil").uebungen), 1)
+
+    def test_stationszahl_laesst_sich_vorgeben(self):
+        ergebnis = self._plane(
+            "halle-grundschule",
+            "grundschule_1",
+            seed=3,
+            stationsbetrieb=True,
+            stationszahl=4,
+        )
+        self.assertEqual(len(ergebnis.stunde.teil("hauptteil").uebungen), 4)
 
     def test_spielmodus_plant_grosses_spiel(self):
         ergebnis = self._plane(
-            "halle-grundschule", "grundschule_1", teilnehmer=16, seed=6, stationsbetrieb=False
+            "halle-grundschule", "grundschule_1", seed=6, stationsbetrieb=False
         )
         teil = ergebnis.stunde.teil("hauptteil")
         self.assertTrue(teil.uebungen)
@@ -265,7 +273,7 @@ class PlanerTest(unittest.TestCase):
 
     def test_stationen_summieren_material(self):
         ergebnis = self._plane(
-            "halle-grundschule", "vorschule", teilnehmer=20, seed=12, stationsbetrieb=True
+            "halle-grundschule", "vorschule", seed=12, stationsbetrieb=True
         )
         teil = ergebnis.stunde.teil("hauptteil")
         summe = {}

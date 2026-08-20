@@ -12,11 +12,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .hallenplan import zeichne_hallenplan
+from .hallenplan import PDFZeichner, zeichne_hallenplan
 from .katalog import Katalog
-from .models import ORTSARTEN, Stunde
+from .models import ORTSARTEN, Ort, Stunde, StundenUebung
 from .pdf import AKZENT, AKZENT_HELL, GRAU, HELLGRAU, PDF, SCHWARZ, Farbe, WARNROT
 from .planer import aufbauplan, pruefe_bestand
+from .platzierung import masse_der_stunde, stelle_sicher
 
 ORGANISATION_TEXT = {
     "ganze_gruppe": "Gesamte Gruppe",
@@ -38,8 +39,13 @@ def _datum_deutsch(iso: str) -> str:
         return iso
 
 
-def _material_kurz(katalog: Katalog, bedarf: Dict[str, int]) -> str:
-    """Materialliste in der Kurzschreibweise des Stundenbilds."""
+def _material_kurz(katalog: Katalog, uebung: StundenUebung) -> str:
+    """Materialliste in der Kurzschreibweise des Stundenbilds.
+
+    Geraete, von denen jedes Kind eines braucht, stehen ohne Stueckzahl da:
+    'Seilchen fuer alle'.
+    """
+    bedarf = uebung.gesamtbedarf
     if not bedarf:
         return "kein Material"
     teile = []
@@ -47,19 +53,35 @@ def _material_kurz(katalog: Katalog, bedarf: Dict[str, int]) -> str:
         bedarf.items(), key=lambda x: katalog.geraet_kurz(x[0])
     ):
         name = katalog.geraet_kurz(geraet)
-        teile.append(f"{anzahl}x {name}" if anzahl > 1 else name)
+        if geraet in uebung.pro_kind:
+            teile.append(f"{name} fuer alle")
+        elif anzahl > 1:
+            teile.append(f"{anzahl}x {name}")
+        else:
+            teile.append(name)
     return ", ".join(teile)
 
 
-def _material_lang(katalog: Katalog, bedarf: Dict[str, int]) -> str:
+def _material_lang(katalog: Katalog, uebung: StundenUebung) -> str:
+    bedarf = uebung.gesamtbedarf
     if not bedarf:
         return "kein Material"
-    return ", ".join(
-        f"{anzahl} x {katalog.geraet_name(geraet)}"
-        for geraet, anzahl in sorted(
-            bedarf.items(), key=lambda x: katalog.geraet_name(x[0])
-        )
-    )
+    teile = []
+    for geraet, anzahl in sorted(
+        bedarf.items(), key=lambda x: katalog.geraet_name(x[0])
+    ):
+        name = katalog.geraet_name(geraet)
+        if geraet in uebung.pro_kind:
+            teile.append(f"{name} fuer alle")
+        else:
+            teile.append(f"{anzahl} x {name}")
+    return ", ".join(teile)
+
+
+def _pro_kind_geraete(stunde: Stunde) -> set:
+    return {
+        geraet for uebung in stunde.alle_uebungen() for geraet in uebung.pro_kind
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -82,8 +104,6 @@ def _kopf(pdf: PDF, stunde: Stunde, titel: str, gruppe_zusatz: str) -> None:
     zeile = [
         stunde.altersgruppe_name,
         stunde.ort_name,
-        f"{stunde.gesamtdauer} min",
-        f"{stunde.teilnehmer} Kinder",
     ]
     if stunde.thema:
         zeile.append(f"Motto: {stunde.thema.capitalize()}")
@@ -110,8 +130,8 @@ def _eckzeile(
     for nummer, uebung in enumerate(teil.uebungen):
         if nummer:
             pdf.abstand(12)
-        pdf._text(f"{uebung.name}  ({uebung.dauer} min)", versatz, pdf.y, 10.5, fett=True)
-        material = _material_kurz(katalog, uebung.gesamtbedarf)
+        pdf._text(uebung.name, versatz, pdf.y, 10.5, fett=True)
+        material = _material_kurz(katalog, uebung)
         if material != "kein Material":
             for zeile in umbrechen(material, pdf.breite - pdf.rand - versatz, 8.5):
                 pdf.abstand(11)
@@ -119,7 +139,7 @@ def _eckzeile(
     pdf.abstand(4)
 
 
-def _stationsliste(pdf: PDF, stationen, katalog: Katalog, parallel: bool) -> None:
+def _stationsliste(pdf: PDF, stationen, katalog: Katalog) -> None:
     """Nummerierte Stationsliste unter dem Plan - Name und Material."""
     from .pdf import textbreite, umbrechen
 
@@ -134,28 +154,11 @@ def _stationsliste(pdf: PDF, stationen, katalog: Katalog, parallel: bool) -> Non
         pdf._text(name, pdf.rand + 19, pdf.y, 10, fett=True)
         text_x = pdf.rand + 19 + textbreite(name, 10, True) + 5
         breite = pdf.breite - pdf.rand - text_x
-        material = _material_kurz(katalog, station.gesamtbedarf)
-        if not parallel and station.dauer:
-            breite -= 34
-        zeilen = umbrechen(material, breite, 9)
-        for stelle, zeile in enumerate(zeilen):
+        material = _material_kurz(katalog, station)
+        for stelle, zeile in enumerate(umbrechen(material, breite, 9)):
             if stelle:
                 pdf.abstand(11)
             pdf._text(zeile, text_x if stelle == 0 else pdf.rand + 19, pdf.y, 9)
-        if not parallel and station.dauer:
-            pdf._text(
-                f"{station.dauer} min",
-                pdf.breite - pdf.rand - 30,
-                pdf.y,
-                8.5,
-                farbe=GRAU,
-            )
-
-
-def _textbreite(text: str, groesse: float, fett: bool = False) -> float:
-    from .pdf import textbreite
-
-    return textbreite(text, groesse, fett)
 
 
 def stundenbild_seite(
@@ -164,6 +167,7 @@ def stundenbild_seite(
     katalog: Katalog,
     titel: str = "Ki Tu",
     gruppe_zusatz: str = "",
+    ort: Optional[Ort] = None,
 ) -> None:
     _kopf(pdf, stunde, titel, gruppe_zusatz)
     _eckzeile(pdf, "Anfang:", stunde, "aufwaermen", katalog)
@@ -173,28 +177,36 @@ def stundenbild_seite(
     stationen = list(hauptteil.uebungen) if hauptteil else []
     if hauptteil and hauptteil.parallel and stationen:
         pdf.abstand(13)
-        wechsel = stationen[0].dauer
         pdf._text(
-            f"Hauptteil: {len(stationen)} Stationen, je {wechsel} min, "
-            "Wechsel im Uhrzeigersinn",
+            f"Hauptteil: {len(stationen)} Stationen, Wechsel im Uhrzeigersinn",
             pdf.rand,
             pdf.y,
             9,
             farbe=GRAU,
         )
 
-    # Hallenplan - nimmt den Platz ein, der nach Liste und Abschluss bleibt.
+    # Hallenplan - so hoch, wie es die Hallenform verlangt, hoechstens so hoch,
+    # wie nach Stationsliste und Abschlusszeile Platz bleibt.
     listen_hoehe = 15.0 * max(1, len(stationen)) + 24
     abschluss_hoehe = 46.0
     verfuegbar = pdf.y - pdf.rand - listen_hoehe - abschluss_hoehe
-    plan_hoehe = max(150.0, min(430.0, verfuegbar))
+    halle_laenge, halle_breite = masse_der_stunde(stunde)
+    aus_form = pdf.satzbreite * halle_breite / max(1.0, halle_laenge)
+    plan_hoehe = max(140.0, min(aus_form, verfuegbar))
     pdf.abstand(plan_hoehe + 12)
     zeichne_hallenplan(
-        pdf, stunde, katalog, pdf.rand, pdf.y, pdf.satzbreite, plan_hoehe
+        PDFZeichner(pdf),
+        stunde,
+        katalog,
+        pdf.rand,
+        pdf.y,
+        pdf.satzbreite,
+        plan_hoehe,
+        ort=ort,
     )
     pdf.abstand(4)
 
-    _stationsliste(pdf, stationen, katalog, bool(hauptteil and hauptteil.parallel))
+    _stationsliste(pdf, stationen, katalog)
     pdf.abstand(6)
     _eckzeile(pdf, "Ende:", stunde, "abschluss", katalog)
 
@@ -218,7 +230,6 @@ def _detailseiten(
         f"Datum: {_datum_deutsch(stunde.datum)}",
         f"Gruppe: {stunde.altersgruppe_name}",
         f"Ort: {stunde.ort_name} ({ORTSARTEN.get(stunde.ortsart, stunde.ortsart)})",
-        f"Dauer: {stunde.gesamtdauer} min, {stunde.teilnehmer} Kinder",
     ]
     if stunde.thema:
         kopfdaten.append(f"Motto: {stunde.thema.capitalize()}")
@@ -228,12 +239,8 @@ def _detailseiten(
         kopfdaten.append(f"Uebungsleitung: {trainer}")
     pdf.hinweiskasten("Stunde auf einen Blick", kopfdaten, farbe=AKZENT_HELL)
 
-    laufzeit = 0
     for teil in stunde.teile:
-        von = f"{laufzeit:02d}"
-        bis = f"{laufzeit + teil.dauer:02d}"
-        laufzeit += teil.dauer
-        pdf.zwischentitel(f"{teil.titel}  ({teil.dauer} min, Minute {von}-{bis})")
+        pdf.zwischentitel(teil.titel)
         if teil.notiz:
             pdf.absatz(teil.notiz, groesse=8.5, farbe=GRAU, kursiv=True)
             pdf.abstand(4)
@@ -249,19 +256,18 @@ def _detailseiten(
                 organisation += f" ({uebung.gruppen}x)"
             zeilen.append(
                 [
-                    f"{uebung.dauer} min",
                     uebung.name,
                     organisation,
-                    _material_lang(katalog, uebung.gesamtbedarf),
+                    _material_lang(katalog, uebung),
                 ]
             )
         pdf.tabelle(
-            ["Zeit", "Inhalt", "Form", "Material inkl. Absicherung"],
+            ["Inhalt", "Form", "Material inkl. Absicherung"],
             zeilen,
-            [0.09, 0.27, 0.16, 0.48],
+            [0.32, 0.18, 0.50],
         )
         for uebung in teil.uebungen:
-            pdf.zwischentitel(f"{uebung.name} ({uebung.dauer} min)", groesse=9.5)
+            pdf.zwischentitel(uebung.name, groesse=9.5)
             pdf.absatz(uebung.beschreibung, groesse=9.0, einzug=6)
             if uebung.aufbau:
                 pdf.absatz(f"Aufbau: {uebung.aufbau}", groesse=8.5, einzug=6, farbe=GRAU)
@@ -274,14 +280,16 @@ def _detailseiten(
     # Material und Aufbau
     pdf.ueberschrift("Material und Aufbau")
     material = stunde.materialliste()
+    fuer_alle = _pro_kind_geraete(stunde)
     if material:
         zeilen = []
         for geraet, anzahl in sorted(
             material.items(), key=lambda x: katalog.geraet_name(x[0])
         ):
+            menge = "fuer alle" if geraet in fuer_alle else str(anzahl)
             zeile = [
                 katalog.geraet_name(geraet),
-                str(anzahl),
+                menge,
                 "Absicherung" if katalog.ist_absicherung(geraet) else "Geraet",
             ]
             if bestand is not None:
@@ -351,17 +359,28 @@ def stunden_pdf(
     bestand: Optional[Dict[str, int]] = None,
     trainer: str = "",
     verein: str = "",
-    titel: str = "Ki Tu",
+    titel: str = "",
     nur_stundenbild: bool = False,
+    ort: Optional[Ort] = None,
 ) -> Path:
-    """Schreibt die Stunde als PDF und gibt den Pfad zurueck."""
+    """Schreibt die Stunde als PDF und gibt den Pfad zurueck.
+
+    Die Ueberschrift kommt aus der Stunde, ersatzweise aus ``titel``.
+    Zeitangaben stehen bewusst nirgends im PDF.
+    """
+    ueberschrift = stunde.ueberschrift or titel or "Ki Tu"
     erstellt = datetime.now().strftime("%d.%m.%Y")
     fusstext = f"Kinderturnen - Stundenbild vom {erstellt}"
     if verein:
         fusstext += f" - {verein}"
-    pdf = PDF(titel=f"{titel} {_datum_deutsch(stunde.datum)}", fusstext=fusstext)
+    pdf = PDF(titel=f"{ueberschrift} {_datum_deutsch(stunde.datum)}", fusstext=fusstext)
 
-    stundenbild_seite(pdf, stunde, katalog, titel=titel, gruppe_zusatz=trainer)
+    # Aeltere Stunden haben noch keine Stationspositionen.
+    stelle_sicher(stunde, ort, katalog)
+
+    stundenbild_seite(
+        pdf, stunde, katalog, titel=ueberschrift, gruppe_zusatz=trainer, ort=ort
+    )
     if not nur_stundenbild:
         _detailseiten(pdf, stunde, katalog, bestand, trainer)
     return pdf.speichern(pfad)

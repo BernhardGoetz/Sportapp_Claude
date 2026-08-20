@@ -120,29 +120,44 @@ class Katalog:
         return bedarf
 
     def bedarf(
-        self, uebung: Uebung, teilnehmer: int
-    ) -> Tuple[Dict[str, int], Dict[str, int], int]:
-        """Geraete-, Absicherungsbedarf und Gruppenzahl einer Uebung.
+        self,
+        uebung: Uebung,
+        riegen: int = 1,
+        bestand: Optional[Dict[str, int]] = None,
+    ) -> Tuple[Dict[str, int], Dict[str, int], List[str], int]:
+        """Geraete-, Absicherungsbedarf, 'fuer alle'-Material und Riegenzahl.
+
+        Die Teilnehmerzahl spielt keine Rolle: Material fuer die ganze Gruppe
+        wird einmal gerechnet, Riegenmaterial je Riege. Geraete, von denen jedes
+        Kind eines braucht (Ball, Seilchen, Reifen), werden ohne Stueckzahl als
+        'fuer alle' gefuehrt und mit dem vorhandenen Bestand gebucht.
 
         Die Absicherung ist immer mindestens so gross, wie es die
         Sicherheitsregeln fuer die eingesetzten Geraete vorschreiben.
         """
-        gruppen = uebung.gruppen(teilnehmer)
+        gruppen = uebung.gruppen(riegen)
 
         geraete: Dict[str, int] = dict(uebung.geraete_fix)
+        pro_kind: List[str] = []
         for geraet_id, anzahl in uebung.geraete_pro_gruppe.items():
-            geraete[geraet_id] = geraete.get(geraet_id, 0) + anzahl * gruppen
+            if uebung.pro_kind:
+                pro_kind.append(geraet_id)
+                vorhanden = int((bestand or {}).get(geraet_id, 0))
+                geraete[geraet_id] = geraete.get(geraet_id, 0) + max(anzahl, vorhanden)
+            else:
+                geraete[geraet_id] = geraete.get(geraet_id, 0) + anzahl * gruppen
 
         absicherung: Dict[str, int] = dict(uebung.absicherung_fix)
         for geraet_id, anzahl in uebung.absicherung_pro_gruppe.items():
-            absicherung[geraet_id] = absicherung.get(geraet_id, 0) + anzahl * gruppen
+            faktor = 1 if uebung.pro_kind else gruppen
+            absicherung[geraet_id] = absicherung.get(geraet_id, 0) + anzahl * faktor
 
         for geraet_id, anzahl in self.sicherheitsbedarf(geraete).items():
             absicherung[geraet_id] = max(absicherung.get(geraet_id, 0), anzahl)
 
         geraete = {k: v for k, v in geraete.items() if v > 0}
         absicherung = {k: v for k, v in absicherung.items() if v > 0}
-        return geraete, absicherung, gruppen
+        return geraete, absicherung, sorted(set(pro_kind)), gruppen
 
     def sicherheitshinweise_fuer(self, geraete: Dict[str, int]) -> List[str]:
         hinweise: List[str] = []

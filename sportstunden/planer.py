@@ -7,7 +7,6 @@ Weichboden, Niedersprungmatten) zaehlt dabei voll mit.
 
 from __future__ import annotations
 
-import math
 import random
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -23,9 +22,18 @@ from .models import (
     Uebung,
     neue_id,
 )
+from .platzierung import konflikte, platziere, stellflaeche
 from .stil import Stilprofil
 
 MINDESTDAUER_TEIL = 4
+
+# Stationszahl und Flaechenbudget der Bewegungslandschaft
+MIN_STATIONEN = 3
+MAX_STATIONEN = 8
+WANDSTREIFEN = 1.0          # Streifen an der Wand, der frei bleibt
+BELEGUNGSFAKTOR = 0.6       # Rest der Flaeche bleibt Laufweg
+MITTLERE_STATIONSFLAECHE = 22.0  # Richtwert je Station in Quadratmetern
+STANDARD_RIEGEN = 3         # Riegen, wenn keine Stationen geplant werden
 
 
 @dataclass
@@ -33,15 +41,16 @@ class Planungsauftrag:
     ort: Ort
     altersgruppe: Altersgruppe
     dauer: int = 60
-    teilnehmer: int = 12
     schwerpunkt: str = ""
     titel: str = ""
+    ueberschrift: str = ""
     datum: str = ""
     ausstattung: Optional[Dict[str, int]] = None
     umbau_zwischen_teilen: bool = True
     koordinationsteil: Optional[bool] = None
     thema: str = ""
     stationsbetrieb: Optional[bool] = None
+    stationszahl: Optional[int] = None
     seed: Optional[int] = None
 
     def verfuegbare_ausstattung(self) -> Dict[str, int]:
@@ -257,10 +266,10 @@ class Planer:
             altersgruppe_id=auftrag.altersgruppe.id,
             altersgruppe_name=auftrag.altersgruppe.name,
             dauer=auftrag.dauer,
-            teilnehmer=auftrag.teilnehmer,
             teile=teile,
             schwerpunkt=auftrag.schwerpunkt,
             thema=auftrag.thema,
+            ueberschrift=auftrag.ueberschrift,
             datum=auftrag.datum or "",
             quelle="geplant",
         )
@@ -268,6 +277,8 @@ class Planer:
             from datetime import date
 
             stunde.datum = date.today().isoformat()
+
+        warnungen.extend(self._platziere_stationen(stunde, auftrag))
 
         verstoesse = pruefe_bestand(stunde, bestand)
         if verstoesse:
@@ -287,6 +298,63 @@ class Planer:
             sicherheitshinweise=hinweise,
             bestand=bestand,
         )
+
+    def _platziere_stationen(
+        self, stunde: Stunde, auftrag: Planungsauftrag
+    ) -> List[str]:
+        """Stellt die Stationen in die Halle - notfalls eine Station weniger."""
+        teil = stunde.teil("hauptteil")
+        if not teil or not teil.uebungen:
+            stunde.ort_laenge = auftrag.ort.laenge
+            stunde.ort_breite = auftrag.ort.breite
+            return []
+
+        ziel_dauer = teil.dauer  # bleibt erhalten, auch wenn Stationen wegfallen
+        hinweise: List[str] = []
+        for _ in range(4):
+            hinweise = platziere(stunde, auftrag.ort, self.katalog)
+            streit = konflikte(teil.uebungen, auftrag.ort)
+            if not streit or len(teil.uebungen) <= 1:
+                break
+            # Eine Station zu viel fuer die Halle - die spaetere der beiden
+            # sich ueberlappenden Stationen faellt weg.
+            namen = [u.name for u in teil.uebungen]
+            erste, zweite = streit[0]
+            if erste in namen and namen.index(erste) > namen.index(zweite):
+                weg = erste
+            else:
+                weg = zweite
+            entfernt = teil.uebungen.pop(namen.index(weg))
+            hinweise.append(
+                f"'{entfernt.name}' hat in {auftrag.ort.name} keinen Platz mehr "
+                "und wurde aus der Bewegungslandschaft genommen."
+            )
+            neue_dauern = self._verteile_dauern_fest(
+                [u.dauer for u in teil.uebungen], max(0, ziel_dauer - teil.puffer)
+            )
+            for uebung, dauer in zip(teil.uebungen, neue_dauern):
+                uebung.dauer = dauer
+            if teil.uebungen:
+                teil.notiz = (
+                    f"Bewegungslandschaft mit {len(teil.uebungen)} Stationen - "
+                    "Wechsel im Uhrzeigersinn. Alle Stationen stehen gleichzeitig."
+                )
+        return hinweise
+
+    @staticmethod
+    def _verteile_dauern_fest(dauern: List[int], ziel: int) -> List[int]:
+        """Verteilt ein festes Zeitfenster gleichmaessig auf die Uebungen."""
+        if not dauern:
+            return []
+        grund = max(3, ziel // len(dauern))
+        neu = [grund] * len(dauern)
+        rest = ziel - sum(neu)
+        index = 0
+        while rest > 0:
+            neu[index % len(neu)] += 1
+            rest -= 1
+            index += 1
+        return neu
 
     def _plane_alle(
         self,
@@ -319,13 +387,26 @@ class Planer:
 
     # -- Hauptteil: Bewegungslandschaft oder grosses Spiel ------------------
     def stationszahl(self, auftrag: Planungsauftrag) -> int:
-        """Wie viele Stationen die Bewegungslandschaft haben soll."""
-        pro_station = max(2, auftrag.altersgruppe.kinder_pro_station)
-        aus_gruppe = math.ceil(auftrag.teilnehmer / pro_station)
-        if self.stil.stichprobe:
-            gelernt = self.stil.uebungszahl("hauptteil")
-            aus_gruppe = round((aus_gruppe + gelernt) / 2)
-        return max(3, min(8, int(aus_gruppe)))
+        """Obergrenze fuer die Stationszahl - abgeleitet aus der Hallenflaeche.
+
+        Wie viele Stationen wirklich stehen, entscheidet beim Auswaehlen das
+        Flaechenbudget: jede Station zieht ihre Stellflaeche ab. Diese Zahl ist
+        die Obergrenze und beruecksichtigt, dass ein Teil der Flaeche als
+        Laufweg frei bleiben muss.
+        """
+        if auftrag.stationszahl:
+            return max(1, min(MAX_STATIONEN, int(auftrag.stationszahl)))
+        budget = self._flaechenbudget(auftrag)
+        geschaetzt = int(budget // MITTLERE_STATIONSFLAECHE)
+        return max(MIN_STATIONEN, min(MAX_STATIONEN, geschaetzt))
+
+    @staticmethod
+    def _flaechenbudget(auftrag: Planungsauftrag) -> float:
+        """Nutzbare Flaeche fuer Stationen in Quadratmetern."""
+        ort = auftrag.ort
+        nutz_laenge = max(2.0, ort.laenge - 2 * WANDSTREIFEN)
+        nutz_breite = max(2.0, ort.breite - 2 * WANDSTREIFEN)
+        return nutz_laenge * nutz_breite * BELEGUNGSFAKTOR
 
     def _stationsbetrieb_gewaehlt(
         self, auftrag: Planungsauftrag, zufall: random.Random
@@ -359,8 +440,7 @@ class Planer:
                 if versuch:
                     teil.notiz = (
                         f"Bewegungslandschaft mit {len(teil.uebungen)} Stationen - "
-                        f"je {teil.uebungen[0].dauer} min, dann Wechsel im "
-                        "Uhrzeigersinn. Alle Stationen stehen gleichzeitig."
+                        "Wechsel im Uhrzeigersinn. Alle Stationen stehen gleichzeitig."
                     )
                     teil.parallel = True
                 return teil, warnungen
@@ -407,9 +487,16 @@ class Planer:
 
         if ziel_anzahl is None:
             ziel_anzahl = max(1, int(round(self.stil.uebungszahl(phase))))
+        riegen = ziel_anzahl if nur_stationen else STANDARD_RIEGEN
         gewaehlt: List[Uebung] = []
-        bedarfe: List[Tuple[Dict[str, int], Dict[str, int], int]] = []
+        bedarfe: List[Tuple[Dict[str, int], Dict[str, int], List[str], int]] = []
         uebersprungen_wegen_material = 0
+        # Nur die Bewegungslandschaft steht komplett gleichzeitig - dort
+        # entscheidet die Hallenflaeche mit, wie viele Stationen aufgebaut werden.
+        flaechenbudget = (
+            self._flaechenbudget(auftrag) if nur_stationen else float("inf")
+        )
+        flaeche_knapp = False
 
         def zeit_gedeckt() -> bool:
             """Reicht die Maximaldauer der gewaehlten Uebungen fuer den Teil?
@@ -426,8 +513,8 @@ class Planer:
                 break
             if len(gewaehlt) >= ziel_anzahl + 3:
                 break
-            geraete, absicherung, gruppen = self.katalog.bedarf(
-                uebung, auftrag.teilnehmer
+            geraete, absicherung, pro_kind, gruppen = self.katalog.bedarf(
+                uebung, riegen, rest
             )
             gesamt = dict(geraete)
             for geraet, anzahl in absicherung.items():
@@ -437,9 +524,33 @@ class Planer:
                 uebersprungen_wegen_material += 1
                 continue
 
+            platzbedarf = 0.0
+            if nur_stationen:
+                probe = StundenUebung(
+                    uebung_id=uebung.id,
+                    name=uebung.name,
+                    dauer=uebung.dauer_min,
+                    beschreibung="",
+                    geraete=geraete,
+                    absicherung=absicherung,
+                )
+                laenge, breite = stellflaeche(probe, self.katalog)
+                # Zuschlag, weil sich Stationen nie luecken los packen lassen.
+                platzbedarf = laenge * breite * 1.15
+                if gewaehlt and platzbedarf > flaechenbudget:
+                    flaeche_knapp = True
+                    continue
+
             self._buche(gesamt, rest)
+            flaechenbudget -= platzbedarf
             gewaehlt.append(uebung)
-            bedarfe.append((geraete, absicherung, gruppen))
+            bedarfe.append((geraete, absicherung, pro_kind, gruppen))
+
+        if flaeche_knapp and gewaehlt:
+            warnungen.append(
+                f"{PHASEN_TITEL.get(phase, phase)}: weitere Stationen haetten in "
+                f"{auftrag.ort.name} keinen Platz mehr - die Flaeche ist ausgereizt."
+            )
 
         if not gewaehlt:
             warnungen.append(
@@ -462,7 +573,7 @@ class Planer:
 
         dauern = self._verteile_dauern(gewaehlt, ziel_dauer)
         stunden_uebungen: List[StundenUebung] = []
-        for uebung, dauer, (geraete, absicherung, gruppen) in zip(
+        for uebung, dauer, (geraete, absicherung, pro_kind, gruppen) in zip(
             gewaehlt, dauern, bedarfe
         ):
             stunden_uebungen.append(
@@ -480,6 +591,7 @@ class Planer:
                     intensitaet=uebung.intensitaet,
                     geraete=geraete,
                     absicherung=absicherung,
+                    pro_kind=pro_kind,
                 )
             )
 
@@ -494,8 +606,7 @@ class Planer:
         puffer = max(0, ziel_dauer - sum(u.dauer for u in stunden_uebungen))
         if puffer:
             hinweise.append(
-                f"{puffer} min Puffer fuer Aufbau, Erklaerung, Pausen oder "
-                "Wiederholungen."
+                "Zeitpuffer fuer Aufbau, Erklaerung, Pausen und Wiederholungen."
             )
         return (
             Stundenteil(

@@ -20,15 +20,19 @@ def titelzeile(text: str) -> str:
     return f"\n{text}\n{linie('=')}"
 
 
-def _material(katalog: Katalog, bedarf: Dict[str, int]) -> str:
+def _material(
+    katalog: Katalog, bedarf: Dict[str, int], pro_kind: Optional[List[str]] = None
+) -> str:
     if not bedarf:
         return "-"
-    return ", ".join(
-        f"{anzahl}x {katalog.geraet_name(geraet)}"
-        for geraet, anzahl in sorted(
-            bedarf.items(), key=lambda x: katalog.geraet_name(x[0])
-        )
-    )
+    fuer_alle = set(pro_kind or [])
+    teile = []
+    for geraet, anzahl in sorted(
+        bedarf.items(), key=lambda x: katalog.geraet_name(x[0])
+    ):
+        name = katalog.geraet_name(geraet)
+        teile.append(f"{name} fuer alle" if geraet in fuer_alle else f"{anzahl}x {name}")
+    return ", ".join(teile)
 
 
 def ort_zeile(ort: Ort, katalog: Katalog) -> str:
@@ -88,7 +92,7 @@ def stunde_text(
     )
     zeilen.append(f"Gruppe:       {stunde.altersgruppe_name}")
     zeilen.append(
-        f"Dauer:        {stunde.gesamtdauer} min   Kinder: {stunde.teilnehmer}"
+        f"Dauer:        {stunde.gesamtdauer} min"
         + (f"   Schwerpunkt: {stunde.schwerpunkt}" if stunde.schwerpunkt else "")
         + (f"   Motto: {stunde.thema.capitalize()}" if stunde.thema else "")
     )
@@ -110,7 +114,8 @@ def stunde_text(
         for uebung in teil.uebungen:
             zeilen.append(f"  {uebung.dauer:>3} min  {uebung.name}")
             zeilen.append(
-                f"          Material gesamt: {_material(katalog, uebung.gesamtbedarf)}"
+                "          Material gesamt: "
+                + _material(katalog, uebung.gesamtbedarf, uebung.pro_kind)
             )
             if uebung.absicherung:
                 zeilen.append(
@@ -130,7 +135,8 @@ def stunde_text(
     zeilen.append("")
     zeilen.append("Gesamtmaterial (hoechster gleichzeitiger Bedarf, inkl. Absicherung)")
     zeilen.append(linie())
-    zeilen.append("  " + _material(katalog, stunde.materialliste()))
+    fuer_alle = [g for u in stunde.alle_uebungen() for g in u.pro_kind]
+    zeilen.append("  " + _material(katalog, stunde.materialliste(), fuer_alle))
 
     if ergebnis:
         if ergebnis.sicherheitshinweise:

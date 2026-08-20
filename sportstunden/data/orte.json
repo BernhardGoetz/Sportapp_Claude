@@ -48,7 +48,91 @@
         "leibchen": 12,
         "eimer": 4,
         "kleintor": 2
-      }
+      },
+      "laenge": 27.0,
+      "breite": 15.0,
+      "geraeteplaetze": [
+        {
+          "geraet": "sprossenwand",
+          "x": 0.3,
+          "y": 2.0,
+          "laenge": 0.4,
+          "breite": 2.5,
+          "notiz": "linke Laengswand, Feld 1"
+        },
+        {
+          "geraet": "sprossenwand",
+          "x": 0.3,
+          "y": 5.0,
+          "laenge": 0.4,
+          "breite": 2.5,
+          "notiz": "linke Laengswand, Feld 2"
+        },
+        {
+          "geraet": "sprossenwand",
+          "x": 0.3,
+          "y": 8.0,
+          "laenge": 0.4,
+          "breite": 2.5,
+          "notiz": "linke Laengswand, Feld 3"
+        },
+        {
+          "geraet": "sprossenwand",
+          "x": 0.3,
+          "y": 11.0,
+          "laenge": 0.4,
+          "breite": 2.5,
+          "notiz": "linke Laengswand, Feld 4"
+        },
+        {
+          "geraet": "reck",
+          "x": 18.5,
+          "y": 3.0,
+          "laenge": 2.4,
+          "breite": 0.8,
+          "notiz": "Bodenhuelsen im hinteren Hallendrittel"
+        },
+        {
+          "geraet": "barren",
+          "x": 18.0,
+          "y": 9.5,
+          "laenge": 3.5,
+          "breite": 1.6,
+          "notiz": "Barren steht im hinteren Hallendrittel"
+        },
+        {
+          "geraet": "ringe",
+          "x": 13.0,
+          "y": 7.0,
+          "laenge": 1.6,
+          "breite": 1.6,
+          "notiz": "Ringe haengen in der Hallenmitte"
+        },
+        {
+          "geraet": "tau",
+          "x": 23.5,
+          "y": 6.0,
+          "laenge": 1.2,
+          "breite": 1.2,
+          "notiz": "Tau 1 an der Deckenschiene"
+        },
+        {
+          "geraet": "tau",
+          "x": 23.5,
+          "y": 8.5,
+          "laenge": 1.2,
+          "breite": 1.2,
+          "notiz": "Tau 2 an der Deckenschiene"
+        },
+        {
+          "geraet": "schwebebalken",
+          "x": 8.0,
+          "y": 12.5,
+          "laenge": 5.0,
+          "breite": 0.6,
+          "notiz": "Balken laengs an der hinteren Laengswand"
+        }
+      ]
     },
     {
       "id": "halle-vereinsheim",
@@ -84,7 +168,35 @@
         "musikanlage": 1,
         "eimer": 2,
         "seifenblasen": 2
-      }
+      },
+      "laenge": 18.0,
+      "breite": 10.0,
+      "geraeteplaetze": [
+        {
+          "geraet": "sprossenwand",
+          "x": 0.3,
+          "y": 2.5,
+          "laenge": 0.4,
+          "breite": 2.5,
+          "notiz": "linke Wand, Feld 1"
+        },
+        {
+          "geraet": "sprossenwand",
+          "x": 0.3,
+          "y": 5.5,
+          "laenge": 0.4,
+          "breite": 2.5,
+          "notiz": "linke Wand, Feld 2"
+        },
+        {
+          "geraet": "sprossenwand",
+          "x": 0.3,
+          "y": 8.0,
+          "laenge": 0.4,
+          "breite": 1.5,
+          "notiz": "linke Wand, Feld 3"
+        }
+      ]
     },
     {
       "id": "wiese-vereinsgelaende",
@@ -109,7 +221,9 @@
         "eimer": 2,
         "bewegungskarten": 1,
         "seifenblasen": 2
-      }
+      },
+      "laenge": 40.0,
+      "breite": 30.0
     },
     {
       "id": "sportplatz-am-wald",
@@ -135,7 +249,9 @@
         "leibchen": 16,
         "eimer": 3,
         "bewegungskarten": 1
-      }
+      },
+      "laenge": 45.0,
+      "breite": 30.0
     }
   ]
 }

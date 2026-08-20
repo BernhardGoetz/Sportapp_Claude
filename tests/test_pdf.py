@@ -98,10 +98,10 @@ class StundenbildTest(unittest.TestCase):
                 cls.ort,
                 cls.katalog,
                 gruppen_id="vorschule",
-                teilnehmer=18,
                 seed=21,
                 stationsbetrieb=True,
                 thema="sommer",
+                ueberschrift="Turnzwerge",
                 datum="2026-07-24",
             )
         )
@@ -128,7 +128,7 @@ class StundenbildTest(unittest.TestCase):
 
     def test_stundenbild_hat_die_form_der_vorlage(self):
         erste = self.text_der_seite(0)
-        self.assertIn("Ki Tu", erste)
+        self.assertIn("Turnzwerge", erste)
         self.assertIn("24.07.2026", erste)
         self.assertIn("Anfang:", erste)
         self.assertIn("Ende:", erste)
@@ -141,6 +141,55 @@ class StundenbildTest(unittest.TestCase):
         for nummer, station in enumerate(stationen, start=1):
             self.assertIn(str(nummer), erste)
             self.assertIn(station.name[:14], erste)
+
+    def test_keine_zeitangaben_im_pdf(self):
+        """Im ganzen PDF steht keine Minutenangabe."""
+        for nummer, seite in enumerate(self.seiten):
+            text = " ".join(t[4] for t in seite)
+            self.assertNotIn(" min", text, f"Seite {nummer + 1}: {text[:200]}")
+            self.assertNotIn("Minute", text, f"Seite {nummer + 1}")
+            self.assertNotIn("Zeit", text, f"Seite {nummer + 1}")
+
+    def test_keine_kinderzahl_im_pdf(self):
+        """Eine Teilnehmerzahl taucht nirgends auf."""
+        for seite in self.seiten:
+            text = " ".join(t[4] for t in seite)
+            self.assertIsNone(
+                re.search(r"\d+\s*(Kinder|Teilnehmende)", text), text[:200]
+            )
+
+    def test_material_fuer_alle_ohne_stueckzahl(self):
+        """Ein Ball je Kind steht ohne Zahl im Stundenbild."""
+        from sportstunden.models import StundenUebung
+        from sportstunden.export import _material_kurz
+
+        uebung = StundenUebung(
+            uebung_id="test",
+            name="Test",
+            dauer=5,
+            beschreibung="",
+            geraete={"springseil": 16, "langbank": 2},
+            pro_kind=["springseil"],
+        )
+        text = _material_kurz(self.katalog, uebung)
+        self.assertIn("Seilchen fuer alle", text)
+        self.assertIn("2x LB", text)
+        self.assertNotIn("16x", text)
+
+    def test_plan_nutzt_die_gespeicherten_positionen(self):
+        """Verschobene Stationen landen an der neuen Stelle im PDF."""
+        import re as _re
+
+        from sportstunden.export import stunden_pdf as _pdf
+
+        stunde = self.stunde
+        station = stunde.teil("hauptteil").uebungen[0]
+        vorher = self.ordner / "vorher.pdf"
+        _pdf(stunde, self.katalog, vorher, bestand=self.ergebnis.bestand)
+        station.x += 4.0
+        nachher = self.ordner / "nachher.pdf"
+        _pdf(stunde, self.katalog, nachher, bestand=self.ergebnis.bestand)
+        self.assertNotEqual(vorher.read_bytes(), nachher.read_bytes())
 
     def test_stundenbild_nennt_material_in_kurzform(self):
         erste = self.text_der_seite(0)
@@ -192,7 +241,6 @@ class StundenbildTest(unittest.TestCase):
                 self.ort,
                 self.katalog,
                 gruppen_id="grundschule_2",
-                teilnehmer=16,
                 seed=4,
                 stationsbetrieb=False,
             )

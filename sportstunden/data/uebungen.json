@@ -3276,6 +3276,238 @@
       "beschreibung": "Der Zauberstab verwandelt die Gruppe Stueck fuer Stueck: erst in Schnecken, dann in schlafende Baeren, dann in Steine. Am Ende sind alle ganz still.",
       "aufbau": "Sitzkreis, ein Gymnastikstab als Zauberstab.",
       "hinweise": "Stimme immer leiser werden lassen - funktioniert besser als jede Ermahnung."
+    },
+    {
+      "id": "koo_handstand",
+      "name": "Handstand an der Wand",
+      "phase": "koordination",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "turnen",
+        "kraft",
+        "mut"
+      ],
+      "organisation": "riegen",
+      "gruppengroesse": 6,
+      "geraete_pro_gruppe": {
+        "sprossenwand": 1
+      },
+      "absicherung_pro_gruppe": {
+        "matte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "kopplung",
+        "orientierung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Methodische Reihe zum Handstand: Bauchlage an der Wand hochlaufen, Handstand mit Partnerhilfe an der Sprossenwand, kurz halten und kontrolliert wieder abbauen. Wer mag, zaehlt die Sekunden.",
+      "aufbau": "Pro Riege eine Matte vor die Sprossenwand legen, Wandflaeche frei raeumen.",
+      "hinweise": "Koerperspannung vor Hoehe. Immer eine Hilfestellung an den Beinen, nie ueber Kopf abrollen lassen."
+    },
+    {
+      "id": "koo_lauf_abc",
+      "name": "Lauf-ABC",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "sportplatz",
+        "freien"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 12,
+      "tags": [
+        "koordination",
+        "rhythmus",
+        "laufen",
+        "technik"
+      ],
+      "organisation": "riegen",
+      "gruppengroesse": 6,
+      "geraete_pro_gruppe": {
+        "huetchen": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "kopplung",
+        "differenzierung"
+      ],
+      "druckbedingungen": [
+        "Zeitdruck",
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Vier Laufformen ueber eine kurze Bahn: Fussgelenkarbeit (Storch), Kniehebelauf (Storch hoch), Anfersen (Pferd) und Hopserlauf. Rueckweg locker gehen, jede Form zweimal.",
+      "aufbau": "Pro Riege zwei Huetchen im Abstand von 12 m aufstellen, dahinter 3 m Auslauf.",
+      "hinweise": "Bilder statt Fachbegriffe nutzen. Qualitaet vor Tempo, kurze Wege, keine langen Wartereihen."
+    },
+    {
+      "id": "koo_langseil_durchlaufen",
+      "name": "Langseil durchlaufen",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 12,
+      "tags": [
+        "koordination",
+        "rhythmus",
+        "sprung",
+        "teamwork"
+      ],
+      "organisation": "gruppen",
+      "gruppengroesse": 8,
+      "geraete_pro_gruppe": {
+        "seil_lang": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "reaktion",
+        "orientierung"
+      ],
+      "druckbedingungen": [
+        "Zeitdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Zwei Kinder schwingen das Langseil. Erst nur durchlaufen, ohne beruehrt zu werden, dann hineinlaufen und einmal mitspringen, spaeter zu zweit.",
+      "aufbau": "Pro Gruppe ein Langseil, ringsum 3 m Platz, Schwungkinder stehen sich gegenueber.",
+      "hinweise": "Gleichmaessig schwingen und laut mitzaehlen - der Rhythmus hilft mehr als jede Erklaerung. Schwungkinder oft wechseln."
+    },
+    {
+      "id": "koo_seilspringen_kunststuecke",
+      "name": "Seilspringen-Kunststuecke",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 7,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 12,
+      "tags": [
+        "koordination",
+        "rhythmus",
+        "sprung",
+        "ausdauer"
+      ],
+      "organisation": "einzeln",
+      "gruppengroesse": 1,
+      "geraete_pro_gruppe": {
+        "springseil": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "kopplung",
+        "differenzierung"
+      ],
+      "druckbedingungen": [
+        "Zeitdruck",
+        "Praezisionsdruck"
+      ],
+      "thema": "",
+      "beschreibung": "Vom Grundsprung zu den Kunststuecken: Wechselschritt, Laufsprung, Seil rueckwaerts, Armkreuzen. Zum Schluss darf jedes Kind sein Lieblingskunststueck zeigen.",
+      "aufbau": "Fuer jedes Kind ein Springseil in passender Laenge (Griffe bis zur Achsel), Abstand 2 m.",
+      "hinweise": "Kurze Serien mit Pausen, weiche Landung ueber die Fussballen. Wer noch nicht springt, laesst das Seil erst nur kreisen."
+    },
+    {
+      "id": "koo_rolle_vorwaerts",
+      "name": "Purzelbaum-Reihe",
+      "phase": "koordination",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 12,
+      "tags": [
+        "koordination",
+        "turnen",
+        "technik"
+      ],
+      "organisation": "riegen",
+      "gruppengroesse": 6,
+      "geraete_pro_gruppe": {
+        "langbank": 1
+      },
+      "absicherung_pro_gruppe": {
+        "matte": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "orientierung",
+        "gleichgewicht",
+        "kopplung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Im Paket wiegen, Rolle vorwaerts von der schiefen Ebene, Rolle auf der ebenen Matte, zum Schluss Rolle mit Aufstehen ohne Handstuetze.",
+      "aufbau": "Pro Riege zwei Matten hintereinander, eine davon als schiefe Ebene ueber das Bankende legen.",
+      "hinweise": "Kinn zur Brust - der Nacken bleibt frei. Hilfestellung an Nacken und Oberschenkel, nie am Kopf ziehen."
+    },
+    {
+      "id": "koo_standwaage",
+      "name": "Standwaage und Kerze",
+      "phase": "koordination",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "gleichgewicht",
+        "turnen",
+        "koerperspannung"
+      ],
+      "organisation": "einzeln",
+      "gruppengroesse": 1,
+      "geraete_pro_gruppe": {
+        "matte": 1
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "gleichgewicht",
+        "differenzierung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "thema": "",
+      "beschreibung": "Standwaage als Flugzeug halten und dabei bis fuenf zaehlen, dann die Kerze in Rueckenlage, zum Schluss Standwaage mit geschlossenen Augen.",
+      "aufbau": "Matten locker verteilt auslegen, pro Kind eine Matte.",
+      "hinweise": "Ruhig atmen, Blick auf einen festen Punkt. Kerze nur bis zur Schulter aufrollen, nicht auf den Nacken druecken."
     }
   ]
 }

@@ -29,7 +29,6 @@ def eigene_stunde(
     ort: Ort,
     gruppen_id: str,
     uebungs_ids: Dict[str, List[str]],
-    teilnehmer: int = 12,
 ) -> Stunde:
     """Baut eine 'eigene' Stunde aus Katalog-Uebungen (fuer Stil-Tests)."""
     gruppe = katalog.altersgruppe(gruppen_id)
@@ -39,7 +38,9 @@ def eigene_stunde(
         for uebung_id in ids:
             uebung = katalog.uebung(uebung_id)
             assert uebung is not None, uebung_id
-            geraete, absicherung, gruppen = katalog.bedarf(uebung, teilnehmer)
+            geraete, absicherung, pro_kind, gruppen = katalog.bedarf(
+                uebung, bestand=ort.ausstattung
+            )
             uebungen.append(
                 StundenUebung(
                     uebung_id=uebung.id,
@@ -55,6 +56,7 @@ def eigene_stunde(
                     intensitaet=uebung.intensitaet,
                     geraete=geraete,
                     absicherung=absicherung,
+                    pro_kind=pro_kind,
                 )
             )
         teile.append(Stundenteil(phase=phase, uebungen=uebungen, parallel=len(uebungen) > 1))
@@ -67,7 +69,6 @@ def eigene_stunde(
         altersgruppe_id=gruppe.id,
         altersgruppe_name=gruppe.name,
         dauer=sum(t.dauer for t in teile),
-        teilnehmer=teilnehmer,
         teile=teile,
         quelle="eigene",
     )
@@ -76,15 +77,13 @@ def eigene_stunde(
 def auftrag(
     ort: Ort,
     katalog: Katalog,
-    gruppen_id: str = "d",
+    gruppen_id: str = "grundschule_1",
     dauer: int = 60,
-    teilnehmer: int = 16,
     **kwargs,
 ) -> Planungsauftrag:
     return Planungsauftrag(
         ort=ort,
         altersgruppe=katalog.altersgruppe(gruppen_id),
         dauer=dauer,
-        teilnehmer=teilnehmer,
         **kwargs,
     )

@@ -38,7 +38,7 @@ class StilTest(unittest.TestCase):
         lernen = Stillernen(self.katalog, stunden)
         p = Planer(self.katalog, lernen.profil(self.katalog.altersgruppe(gruppen_id)))
         return p.plane(
-            auftrag(self.ort, self.katalog, gruppen_id=gruppen_id, seed=seed, teilnehmer=16)
+            auftrag(self.ort, self.katalog, gruppen_id=gruppen_id, seed=seed)
         )
 
     def test_ohne_eigene_stunden_neutrales_profil(self):

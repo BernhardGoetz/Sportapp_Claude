@@ -57,16 +57,52 @@ class KatalogTest(unittest.TestCase):
 
     def test_sicherheitsregel_wird_ergaenzt(self):
         uebung = self.katalog.uebung("st_trampolin_artist")
-        geraete, absicherung, _ = self.katalog.bedarf(uebung, 16)
+        geraete, absicherung, pro_kind, _ = self.katalog.bedarf(uebung)
         self.assertEqual(geraete["minitrampolin"], 1)
         self.assertGreaterEqual(absicherung["niedersprungmatte"], 1)
+        self.assertEqual(pro_kind, [])
 
     def test_absicherung_auch_ohne_deklaration(self):
         uebung = self.katalog.uebung("st_reck_schwingen")
         uebung.absicherung_fix = {}
         uebung.absicherung_pro_gruppe = {}
-        geraete, absicherung, _ = self.katalog.bedarf(uebung, 12)
+        geraete, absicherung, _, _ = self.katalog.bedarf(uebung)
         self.assertEqual(absicherung["matte"], 2 * geraete["reck"])
+
+    def test_material_pro_kind_ohne_stueckzahl(self):
+        """Ein Seilchen je Kind wird als 'fuer alle' gefuehrt."""
+        uebung = self.katalog.uebung("koo_seilchen_springen")
+        geraete, _, pro_kind, _ = self.katalog.bedarf(
+            uebung, bestand={"springseil": 16}
+        )
+        self.assertIn("springseil", pro_kind)
+        # Gebucht wird der Bestand, damit niemand dasselbe Material doppelt nutzt.
+        self.assertEqual(geraete["springseil"], 16)
+
+    def test_riegenmaterial_skaliert_mit_den_riegen(self):
+        uebung = self.katalog.uebung("koo_bank_balancieren")
+        _, _, _, gruppen_eins = self.katalog.bedarf(uebung, 1)
+        geraete_drei, _, _, gruppen_drei = self.katalog.bedarf(uebung, 3)
+        self.assertEqual(gruppen_eins, 1)
+        self.assertEqual(gruppen_drei, 3)
+        self.assertEqual(geraete_drei["langbank"], 3)
+
+    def test_neue_koordinationsuebungen(self):
+        for uebung_id in (
+            "koo_handstand",
+            "koo_lauf_abc",
+            "koo_langseil_durchlaufen",
+            "koo_seilspringen_kunststuecke",
+            "koo_rolle_vorwaerts",
+            "koo_standwaage",
+        ):
+            uebung = self.katalog.uebung(uebung_id)
+            self.assertIsNotNone(uebung, uebung_id)
+            self.assertEqual(uebung.phase, "koordination")
+            self.assertTrue(uebung.koordination, uebung_id)
+        handstand = self.katalog.uebung("koo_handstand")
+        _, absicherung, _, _ = self.katalog.bedarf(handstand, 1)
+        self.assertGreaterEqual(absicherung.get("matte", 0), 1)
 
     def test_koordinationsteil_ab_altersklasse(self):
         for gruppen_id in ("eltern_kind", "kleinkind"):
