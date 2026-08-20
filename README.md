@@ -1,12 +1,21 @@
 # Kinderturnen-Stundenplaner
 
 Plant automatisch Stunden fuer das **Kinderturnen von 1 bis 10 Jahren** -
-Freizeitsport, kein Leistungssport. Ergebnis ist ein **Stundenbild als PDF**:
-Anfang, massstaeblicher Hallenplan mit nummerierten Stationen an ihren
-tatsaechlichen Positionen, Stationsliste mit Material, Ende. Bedienbar ueber
-die Kommandozeile oder eine grafische Oberflaeche, in der sich die Stationen
-mit der Maus verschieben lassen. Reines Python ohne externe Abhaengigkeiten
-(auch der PDF-Export).
+Freizeitsport, kein Leistungssport. Ergebnis ist ein **einseitiges Stundenbild
+als PDF**: Anfang, massstaeblicher Hallenplan mit nummerierten Stationen an
+ihren tatsaechlichen Positionen, Stationsliste mit Material, Ende. Detailseiten
+gibt es auf Wunsch.
+
+Drei Wege zur Bedienung, alle mit demselben Katalog und derselben Logik:
+
+| Weg | Wofuer | Voraussetzung |
+| --- | --- | --- |
+| **`web/kinderturnen.html`** | Handy, Tablet, Rechner - Plan mit dem Finger verschieben | ein Browser, sonst nichts |
+| `python3 -m sportstunden gui` | Fenster-Oberflaeche am Rechner | Python mit tkinter |
+| `python3 -m sportstunden ...` | Kommandozeile, Skripte, Stil-Lernen | Python 3.9+ |
+
+Reines Python beziehungsweise reines JavaScript - keine Fremdbibliotheken,
+auch nicht fuer den PDF-Export.
 
 ## Was das Programm macht
 
@@ -48,6 +57,27 @@ mit der Maus verschieben lassen. Reines Python ohne externe Abhaengigkeiten
 * **Lernt den eigenen Stil.** Aus selbst erstellten Stunden lernt das Programm
   Zeitaufteilung, Inhalte, Stationszahl, Lieblingsstationen und Intensitaet -
   **pro Altersgruppe getrennt**.
+
+## Ohne Installation: die Browser-Fassung
+
+`web/kinderturnen.html` ist **eine einzige Datei** mit Katalog, Oberflaeche und
+PDF-Erzeugung darin. Sie braucht keine Installation und keine Internetverbindung:
+
+* **Rechner:** Datei doppelklicken - sie oeffnet sich im Browser.
+* **Handy und Tablet:** Datei per Mail, Messenger oder Cloud aufs Geraet legen
+  und antippen. In Safari und Chrome laesst sie sich ueber "Zum Home-Bildschirm"
+  wie eine App ablegen.
+* **Verein:** Datei auf eine Webseite legen - dann genuegt der Link.
+
+Die Oberflaeche passt sich der Bildschirmgroesse an: Der Plan bekommt immer den
+groessten Teil des Fensters, auf hochkant gehaltenen Geraeten wird er passend
+gedreht. Stationen werden mit dem Finger oder der Maus verschoben (Fangraster
+25 cm), Ort und Geraetezahlen bleiben auf dem Geraet gespeichert.
+
+```bash
+python3 -m sportstunden web --oeffnen   # zeigt bzw. oeffnet die Datei
+python3 werkzeuge/baue_web.py           # baut sie neu aus den Katalogdaten
+```
 
 ## Installation
 
@@ -135,8 +165,9 @@ Je Stunde geht auch `--mit-koordination` / `--ohne-koordination`.
 | `altersgruppen` | Gruppen, Koordinationsschwerpunkte, Hinweise |
 | `planen` | Stunde planen (interaktiv oder per Flags) |
 | `stunden`, `zeigen <id>`, `loeschen <id>` | Gespeicherte Stunden verwalten |
-| `pdf <id> [--datei] [--ueberschrift] [--nur-stundenbild]` | Stundenbild als PDF speichern |
+| `pdf <id> [--datei] [--ueberschrift] [--mit-details]` | Stundenbild als PDF speichern |
 | `gui` | Grafische Oberflaeche starten |
+| `web [--oeffnen]` | Browser-Fassung anzeigen oder oeffnen |
 | `erfassen` | Eigene Stunde erfassen (Stil-Vorlage) |
 | `markieren <id>` | Stunde als eigene Stunde werten |
 | `importieren <datei>` / `exportieren <id> <datei>` | JSON-Austausch |
@@ -156,7 +187,7 @@ Wichtige Flags von `planen`:
 | `--geraete`, `--ohne` | Ausstattung fuer heute einschraenken |
 | `--gemeinsames-material` | Kein Umbau zwischen den Teilen |
 | `--seed` | Reproduzierbare Planung |
-| `--pdf [pfad]`, `--nur-stundenbild` | PDF schreiben |
+| `--pdf [pfad]`, `--mit-details` | PDF schreiben (Standard: nur das Stundenbild) |
 | `--speichern`, `--eigene` | Stunde ablegen (und als eigenen Stil werten) |
 
 ## Ausstattung pflegen
@@ -253,6 +284,10 @@ python3 -m sportstunden planen --ort halle-grundschule --altersgruppe vorschule 
 python3 -m sportstunden pdf stunde-1a2b3c --datei ~/Stunden/ --nur-stundenbild
 ```
 
+Standardmaessig besteht das PDF nur aus dem Stundenbild; `--mit-details`
+(Kommandozeile) beziehungsweise das Haekchen "PDF mit Detailseiten" haengt
+Ablauf, Beschreibungen, Aufbau und Sicherheitshinweise an.
+
 **Seite 1 - Stundenbild:** Kopfzeile (frei waehlbare Ueberschrift und Datum),
 Zeile `Anfang:` mit Spiel und Material, optional `Koordination:`, der
 massstaebliche Hallenplan mit nummerierten Stationen an ihren Positionen,
@@ -290,7 +325,12 @@ sportstunden/
   cli.py          Kommandozeile
   gui.py          Grafische Oberflaeche (Tkinter)
   data/           Geraete, Sicherheitsregeln, Gruppen, Uebungen, Beispielorte
-tests/            109 Tests (unittest)
+web/
+  kinderturnen.html   fertige Browser-Fassung (eine Datei, keine Installation)
+  quelle/             deren Quelltexte (vorlage.html, stil.css, app.js)
+werkzeuge/
+  baue_web.py     baut web/kinderturnen.html aus Quelle und Katalogdaten
+tests/            121 Tests (unittest)
 ```
 
 ## Tests
@@ -308,6 +348,15 @@ deren Platz, das PDF enthaelt weder Minuten noch eine Kinderzahl, die
 Ueberschrift ist frei waehlbar, der gelernte Stil veraendert die Auswahl - und
 die Oberflaeche laesst sich bedienen und verschiebt Stationen im Raster (diese
 Tests werden ohne tkinter uebersprungen).
+
+Die Browser-Fassung wird zusaetzlich im echten Chromium geprueft: sie plant ohne
+Fehler, alle Stationen liegen in der Halle, Ziehen funktioniert auch im
+gedrehten Plan, der Plan nimmt auf Handy, Tablet und Rechner den groessten Teil
+des Fensters ein, und das erzeugte PDF hat genau eine Seite (mit Details mehr)
+und keine Zeitangaben. Diese Tests brauchen Playwright und werden sonst
+uebersprungen. Nach Aenderungen an `web/quelle/` bitte
+`python3 werkzeuge/baue_web.py` ausfuehren - ein Test prueft, dass die abgelegte
+Datei dazu passt.
 
 ## Uebungskatalog erweitern
 

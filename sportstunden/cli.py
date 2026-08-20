@@ -395,7 +395,7 @@ def _pdf_schreiben(
     stunde: Stunde,
     ziel: Optional[str],
     bestand: Dict[str, int],
-    nur_stundenbild: bool = False,
+    mit_details: bool = False,
 ) -> Path:
     einstellungen = app.speicher.einstellungen()
     if ziel:
@@ -412,7 +412,7 @@ def _pdf_schreiben(
         trainer=einstellungen.get("trainer", ""),
         verein=einstellungen.get("verein", ""),
         titel=einstellungen.get("kopftitel", "Ki Tu"),
-        nur_stundenbild=nur_stundenbild,
+        mit_details=mit_details,
         ort=app.speicher.ort(stunde.ort_id),
     )
 
@@ -616,7 +616,7 @@ def befehl_planen(app: Anwendung, args) -> int:
             ergebnis.stunde,
             args.pdf or None,
             ergebnis.bestand,
-            nur_stundenbild=args.nur_stundenbild,
+            mit_details=args.mit_details,
         )
         print(f"PDF geschrieben: {pfad}")
 
@@ -670,9 +670,31 @@ def befehl_pdf(app: Anwendung, args) -> int:
     ort = app.speicher.ort(stunde.ort_id)
     bestand = dict(ort.ausstattung) if ort else {}
     pfad = _pdf_schreiben(
-        app, stunde, args.datei, bestand, nur_stundenbild=args.nur_stundenbild
+        app, stunde, args.datei, bestand, mit_details=args.mit_details
     )
     print(f"PDF geschrieben: {pfad}")
+    return 0
+
+
+def befehl_web(app: Anwendung, args) -> int:
+    """Zeigt die Browser-Fassung an - laeuft ohne Installation."""
+    seite = Path(__file__).resolve().parent.parent / "web" / "kinderturnen.html"
+    if not seite.exists():
+        print(
+            "Die Browser-Fassung fehlt. Sie laesst sich mit\n"
+            "  python3 werkzeuge/baue_web.py\n"
+            "aus den Katalogdaten erzeugen."
+        )
+        return 1
+    print(f"Browser-Fassung: {seite}")
+    print(
+        "Diese eine Datei laeuft ohne Installation - auf dem Rechner per "
+        "Doppelklick, auf dem Handy nach dem Teilen ueber Dateien oder Cloud."
+    )
+    if args.oeffnen:
+        import webbrowser
+
+        webbrowser.open(seite.as_uri())
     return 0
 
 
@@ -1045,10 +1067,10 @@ def parser_bauen() -> argparse.ArgumentParser:
         help="Hauptteil als grosses Spiel statt Stationen planen",
     )
     p.add_argument(
-        "--nur-stundenbild",
+        "--mit-details",
         action="store_true",
-        dest="nur_stundenbild",
-        help="PDF nur als einseitiges Stundenbild (ohne Detailseiten)",
+        dest="mit_details",
+        help="Detailseiten (Ablauf, Beschreibungen, Aufbau, Sicherheit) anhaengen",
     )
     p.add_argument("--mit-koordination", action="store_true", dest="mit_koordination")
     p.add_argument("--ohne-koordination", action="store_true", dest="ohne_koordination")
@@ -1081,10 +1103,10 @@ def parser_bauen() -> argparse.ArgumentParser:
     p.add_argument("--datei", help="Zieldatei oder Zielordner")
     p.add_argument("--ueberschrift", help="Ueberschrift auf dem Stundenbild")
     p.add_argument(
-        "--nur-stundenbild",
+        "--mit-details",
         action="store_true",
-        dest="nur_stundenbild",
-        help="Nur die erste Seite (Stundenbild) ausgeben",
+        dest="mit_details",
+        help="Detailseiten anhaengen (Standard: nur das Stundenbild)",
     )
     p.set_defaults(funktion=befehl_pdf)
 
@@ -1116,6 +1138,12 @@ def parser_bauen() -> argparse.ArgumentParser:
 
     p = unter.add_parser("gui", help="Grafische Oberflaeche starten")
     p.set_defaults(funktion=befehl_gui)
+
+    p = unter.add_parser(
+        "web", help="Browser-Fassung anzeigen (laeuft ohne Installation)"
+    )
+    p.add_argument("--oeffnen", action="store_true", help="gleich im Browser oeffnen")
+    p.set_defaults(funktion=befehl_web)
 
     p = unter.add_parser("einstellungen", help="Einstellungen anzeigen oder setzen")
     p.add_argument("--setzen", action="append", help="schluessel=wert")

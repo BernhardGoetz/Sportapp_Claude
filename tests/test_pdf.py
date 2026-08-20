@@ -115,6 +115,7 @@ class StundenbildTest(unittest.TestCase):
             bestand=cls.ergebnis.bestand,
             trainer="Testtrainer",
             verein="TSV Test",
+            mit_details=True,
         )
         cls.daten = cls.pfad.read_bytes()
         cls.seiten = texte_aus_pdf(cls.daten)
@@ -214,15 +215,10 @@ class StundenbildTest(unittest.TestCase):
         for uebung in self.stunde.alle_uebungen():
             self.assertIn(uebung.name[:16], rest, uebung.name)
 
-    def test_nur_stundenbild_ergibt_eine_seite(self):
+    def test_standard_ist_eine_seite(self):
+        """Ohne Zusatz besteht der Export nur aus dem Stundenbild."""
         pfad = self.ordner / "kurz.pdf"
-        stunden_pdf(
-            self.stunde,
-            self.katalog,
-            pfad,
-            bestand=self.ergebnis.bestand,
-            nur_stundenbild=True,
-        )
+        stunden_pdf(self.stunde, self.katalog, pfad, bestand=self.ergebnis.bestand)
         self.assertEqual(len(texte_aus_pdf(pfad.read_bytes())), 1)
 
     def test_text_bleibt_im_satzspiegel(self):

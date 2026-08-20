@@ -1,9 +1,9 @@
 """PDF-Export einer Kinderturnstunde als Stundenbild.
 
-Seite 1 ist das Stundenbild im Stil einer handgeschriebenen Stundenskizze:
-Anfang, Hallenplan mit nummerierten Stationen, Stationsliste mit Material,
-Ende. Auf den Folgeseiten stehen Ablauf, Beschreibungen, Aufbau und
-Sicherheitshinweise.
+Das PDF besteht aus dem einseitigen Stundenbild im Stil einer
+handgeschriebenen Stundenskizze: Anfang, Hallenplan mit nummerierten
+Stationen, Stationsliste mit Material, Ende. Auf Wunsch (``mit_details``)
+folgen Seiten mit Ablauf, Beschreibungen, Aufbau und Sicherheitshinweisen.
 """
 
 from __future__ import annotations
@@ -360,11 +360,13 @@ def stunden_pdf(
     trainer: str = "",
     verein: str = "",
     titel: str = "",
-    nur_stundenbild: bool = False,
+    mit_details: bool = False,
     ort: Optional[Ort] = None,
 ) -> Path:
     """Schreibt die Stunde als PDF und gibt den Pfad zurueck.
 
+    Standard ist das einseitige Stundenbild. ``mit_details`` haengt die
+    Folgeseiten mit Ablauf, Beschreibungen, Aufbau und Sicherheit an.
     Die Ueberschrift kommt aus der Stunde, ersatzweise aus ``titel``.
     Zeitangaben stehen bewusst nirgends im PDF.
     """
@@ -381,7 +383,7 @@ def stunden_pdf(
     stundenbild_seite(
         pdf, stunde, katalog, titel=ueberschrift, gruppe_zusatz=trainer, ort=ort
     )
-    if not nur_stundenbild:
+    if mit_details:
         _detailseiten(pdf, stunde, katalog, bestand, trainer)
     return pdf.speichern(pfad)
 

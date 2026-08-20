@@ -176,16 +176,23 @@ class CLITest(unittest.TestCase):
         ][0]
         self.assertLessEqual(len(hauptteil["uebungen"]), 2)
 
-    def test_nur_stundenbild_flag(self):
+    def test_export_ist_standardmaessig_einseitig(self):
         ziel = self.verzeichnis / "kurz.pdf"
         code = self.lauf(
             "planen", "--ort", "halle-grundschule", "--altersgruppe", "vorschule",
-            "--seed", "7", "--nur-stundenbild", "--pdf", str(ziel),
+            "--seed", "7", "--pdf", str(ziel),
         )
         self.assertEqual(code, 0)
-        self.assertTrue(ziel.exists())
-        inhalt = ziel.read_bytes()
-        self.assertIn(b"/Count 1", inhalt)
+        self.assertIn(b"/Count 1", ziel.read_bytes())
+
+    def test_detailseiten_auf_wunsch(self):
+        ziel = self.verzeichnis / "lang.pdf"
+        code = self.lauf(
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "vorschule",
+            "--seed", "7", "--mit-details", "--pdf", str(ziel),
+        )
+        self.assertEqual(code, 0)
+        self.assertNotIn(b"/Count 1", ziel.read_bytes())
 
     def test_ueberschrift_ist_frei_waehlbar(self):
         code = self.lauf(

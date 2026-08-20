@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Baut die Browser-Fassung ``web/kinderturnen.html``.
+
+Die Datei ist danach vollstaendig eigenstaendig: Katalog, Oberflaeche und
+PDF-Erzeugung stecken darin. Sie laesst sich per Doppelklick oeffnen - auf dem
+Rechner wie auf dem Handy, ohne Installation.
+
+Aufruf:  python3 werkzeuge/baue_web.py [--pruefen]
+
+``--pruefen`` baut nur im Speicher und meldet, ob die abgelegte Datei aktuell
+ist (fuer die Tests).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+WURZEL = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(WURZEL))
+
+from sportstunden.katalog import Katalog  # noqa: E402
+from sportstunden.pdf import _HELVETICA, _HELVETICA_BOLD  # noqa: E402
+from sportstunden.platzierung import GERAETEMASSE, ORTSFESTE_GERAETE  # noqa: E402
+
+QUELLE = WURZEL / "web" / "quelle"
+ZIEL = WURZEL / "web" / "kinderturnen.html"
+
+
+def sammle_daten() -> dict:
+    """Alle Stammdaten in der Form, die die Browser-Fassung braucht."""
+    katalog = Katalog.laden()
+    geraete_datei = json.loads(
+        (WURZEL / "sportstunden" / "data" / "geraete.json").read_text(encoding="utf-8")
+    )
+    orte = [o.to_dict() for o in Katalog.beispiel_orte()]
+
+    return {
+        "geraete": [
+            {
+                "id": g.id,
+                "name": g.name,
+                "kurz": g.kurzname,
+                "kategorie": g.kategorie,
+            }
+            for g in katalog.geraete.values()
+        ],
+        "sicherheitsregeln": katalog.sicherheitsregeln,
+        "sicherheitshinweise": geraete_datei.get("sicherheitsregeln_hinweis", {}),
+        "altersgruppen": [g.to_dict() for g in katalog.altersgruppen],
+        "koordination_ab_alter": katalog.koordination_ab_alter,
+        "uebungen": [u.to_dict() for u in katalog.uebungen],
+        "orte": orte,
+        "geraetemasse": {k: list(v) for k, v in GERAETEMASSE.items()},
+        "ortsfeste_geraete": list(ORTSFESTE_GERAETE),
+        "schriftbreiten": {"normal": _HELVETICA, "fett": _HELVETICA_BOLD},
+    }
+
+
+def baue() -> str:
+    vorlage = (QUELLE / "vorlage.html").read_text(encoding="utf-8")
+    stil = (QUELLE / "stil.css").read_text(encoding="utf-8")
+    anwendung = (QUELLE / "app.js").read_text(encoding="utf-8")
+    daten = json.dumps(sammle_daten(), ensure_ascii=False, separators=(",", ":"))
+
+    seite = vorlage.replace("__STIL__", stil)
+    seite = seite.replace("__DATEN__", daten)
+    seite = seite.replace("__ANWENDUNG__", anwendung)
+    return seite
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--pruefen",
+        action="store_true",
+        help="nur pruefen, ob die abgelegte Datei aktuell ist",
+    )
+    args = parser.parse_args()
+
+    seite = baue()
+    if args.pruefen:
+        if not ZIEL.exists():
+            print(f"{ZIEL} fehlt - bitte 'python3 werkzeuge/baue_web.py' ausfuehren.")
+            return 1
+        if ZIEL.read_text(encoding="utf-8") != seite:
+            print(
+                f"{ZIEL} ist nicht aktuell - bitte "
+                "'python3 werkzeuge/baue_web.py' ausfuehren."
+            )
+            return 1
+        print(f"{ZIEL.name} ist aktuell ({len(seite) // 1024} KB).")
+        return 0
+
+    ZIEL.parent.mkdir(parents=True, exist_ok=True)
+    ZIEL.write_text(seite, encoding="utf-8")
+    print(f"{ZIEL} geschrieben ({len(seite) // 1024} KB, eine Datei, keine Abhaengigkeiten).")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

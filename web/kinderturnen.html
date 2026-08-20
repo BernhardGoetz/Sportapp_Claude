@@ -1,0 +1,2482 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17568c">
+<title>Ki Tu - Stundenplaner</title>
+<style>/* Kinderturnen-Stundenplaner - Oberflaeche fuer Handy und Rechner.
+   Der Plan bekommt so viel Platz wie moeglich. */
+
+:root {
+  --akzent: #17568c;
+  --akzent-hell: #e7eef6;
+  --linie: #cfd8e3;
+  --text: #1a1c20;
+  --grau: #6b7280;
+  --warn: #b02a19;
+  --grund: #ffffff;
+  --flaeche: #f5f7fa;
+  --rand: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --akzent: #7fb3e6;
+    --akzent-hell: #1d2836;
+    --linie: #33415a;
+    --text: #eef2f7;
+    --grau: #a6b0be;
+    --grund: #131720;
+    --flaeche: #1a1f2a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* Das hidden-Attribut muss staerker sein als eigene display-Regeln. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--grund);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* -- Kopf ---------------------------------------------------------------- */
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px var(--rand);
+  border-bottom: 1px solid var(--linie);
+  flex: 0 0 auto;
+}
+
+.kopf-titel {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ueberschrift {
+  font-size: clamp(1.1rem, 4vw, 1.6rem);
+  font-weight: 700;
+  color: var(--akzent);
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  min-width: 3ch;
+  width: 8ch;
+  flex: 0 1 auto;
+}
+
+.ueberschrift:focus { outline: 2px solid var(--akzent); border-radius: 6px; }
+
+.datum {
+  border: none;
+  background: transparent;
+  color: var(--grau);
+  font-size: 0.9rem;
+  padding: 2px;
+}
+
+/* -- Einstellungen ------------------------------------------------------- */
+.einstellungen {
+  display: grid;
+  max-height: 46vh;
+  overflow-y: auto;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 12px;
+  padding: 10px var(--rand);
+  background: var(--flaeche);
+  border-bottom: 1px solid var(--linie);
+  flex: 0 0 auto;
+}
+
+.einstellungen label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  color: var(--grau);
+  gap: 3px;
+}
+
+.einstellungen label.haken {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.einstellungen input,
+.einstellungen select {
+  font-size: 0.95rem;
+  padding: 7px 8px;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  background: var(--grund);
+  color: var(--text);
+  min-height: 38px;
+}
+
+.einstellungen-fuss {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+
+/* -- Hauptbereich: Plan gross, Liste daneben oder darunter --------------- */
+.haupt {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+/* Der Plan liegt absolut in seiner Flaeche - so kann die Leinwand nie
+   auf ihre eigene Groesse zurueckwirken und bleibt immer maximal gross. */
+.planflaeche {
+  position: relative;
+  min-height: min(50vh, 420px);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.planrahmen {
+  position: absolute;
+  top: 6px;
+  left: var(--rand);
+  right: var(--rand);
+  bottom: 16px;
+}
+
+#plan {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;   /* Ziehen statt Scrollen */
+  border-radius: 8px;
+}
+
+.planhinweis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 0 2px;
+  font-size: 0.72rem;
+  color: var(--grau);
+  text-align: center;
+}
+
+.seite {
+  padding: 6px var(--rand) 8px;
+  overflow-y: auto;
+  max-height: 24vh;
+  border-top: 1px solid var(--linie);
+  font-size: 0.86rem;
+}
+
+.zeile { display: flex; gap: 8px; padding: 2px 0; }
+.marke { color: var(--akzent); font-weight: 700; min-width: 6.8rem; }
+
+.stationsliste {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+  counter-reset: station;
+}
+
+.stationsliste li {
+  counter-increment: station;
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+  align-items: baseline;
+}
+
+.stationsliste li::before {
+  content: counter(station);
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  line-height: 1.3rem;
+  text-align: center;
+  border: 1px solid var(--akzent);
+  border-radius: 50%;
+  color: var(--akzent);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.stationsliste .name { font-weight: 600; }
+.stationsliste .material { color: var(--grau); }
+
+.warnungen { color: var(--warn); font-size: 0.78rem; margin: 6px 0 0; }
+
+/* -- Knopfleiste --------------------------------------------------------- */
+.leiste {
+  display: flex;
+  gap: 8px;
+  padding: 8px var(--rand);
+  border-top: 1px solid var(--linie);
+  background: var(--flaeche);
+  flex: 0 0 auto;
+  overflow-x: auto;
+}
+
+.knopf {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  background: var(--grund);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.knopf:active { background: var(--akzent-hell); }
+.knopf.haupt-knopf { background: var(--akzent); border-color: var(--akzent); color: #fff; font-weight: 600; }
+.knopf.klein { flex: 0 0 auto; min-height: 38px; font-size: 0.82rem; }
+
+/* -- Dialog -------------------------------------------------------------- */
+.dialog {
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  max-width: min(560px, 92vw);
+  max-height: 84vh;
+  background: var(--grund);
+  color: var(--text);
+}
+
+.dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+.dialog h2 { margin: 0 0 4px; font-size: 1.05rem; color: var(--akzent); }
+.hinweis { font-size: 0.8rem; color: var(--grau); margin: 0 0 10px; }
+
+.geraete-liste {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 6px 10px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.geraete-liste label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.geraete-liste input {
+  width: 4.5rem;
+  min-height: 34px;
+  padding: 4px 6px;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  background: var(--grund);
+  color: var(--text);
+}
+
+.dialog-fuss { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+/* -- Breite Bildschirme: Liste neben den Plan ---------------------------- */
+@media (min-width: 900px) {
+  .haupt {
+    grid-template-columns: minmax(0, 1fr) 330px;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .seite {
+    max-height: none;
+    border-top: none;
+    border-left: 1px solid var(--linie);
+  }
+
+  .leiste .knopf { flex: 0 1 auto; min-width: 130px; }
+}
+
+/* Handy quer: Liste neben den Plan, damit der Plan hoch bleibt */
+@media (max-height: 560px) and (min-width: 600px) and (max-width: 899px) {
+  .haupt {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .seite {
+    max-height: none;
+    border-top: none;
+    border-left: 1px solid var(--linie);
+    font-size: 0.78rem;
+  }
+
+  .planflaeche { min-height: 0; }
+  .planhinweis { display: none; }
+  .kopf, .leiste { padding-top: 4px; padding-bottom: 4px; }
+  .knopf { min-height: 38px; }
+}
+
+/* Sehr flache Fenster ohne Platz daneben */
+@media (max-height: 520px) and (max-width: 599px) {
+  .seite { max-height: 22vh; }
+  .planhinweis { display: none; }
+  .planflaeche { min-height: 0; }
+}
+</style>
+</head>
+<body>
+<header class="kopf">
+  <div class="kopf-titel">
+    <input id="ueberschrift" class="ueberschrift" value="Ki Tu" aria-label="Ueberschrift">
+    <input id="datum" type="date" class="datum" aria-label="Datum">
+  </div>
+  <button id="knopf-einstellungen" class="knopf klein" type="button" aria-expanded="false">
+    Einstellungen
+  </button>
+</header>
+
+<section id="einstellungen" class="einstellungen" hidden>
+  <label>Ort<select id="ort"></select></label>
+  <label>Gruppe<select id="gruppe"></select></label>
+  <label>Dauer (min)<input id="dauer" type="number" min="20" max="180" step="5" value="60"></label>
+  <label>Motto<select id="thema"></select></label>
+  <label>Schwerpunkt<input id="schwerpunkt" type="text" placeholder="z. B. turnen"></label>
+  <label>Hauptteil<select id="form">
+    <option value="stationen">Bewegungslandschaft</option>
+    <option value="spiel">Grosses Spiel</option>
+    <option value="auto">automatisch</option>
+  </select></label>
+  <label>Stationen<input id="stationszahl" type="number" min="1" max="8" placeholder="nach Platz"></label>
+  <label>Koordinationsteil<select id="koordination">
+    <option value="auto">automatisch</option>
+    <option value="ja">ja</option>
+    <option value="nein">nein</option>
+  </select></label>
+  <label class="haken"><input id="details" type="checkbox"> PDF mit Detailseiten</label>
+  <div class="einstellungen-fuss">
+    <button id="knopf-geraete" class="knopf klein" type="button">Geraete des Ortes</button>
+    <button id="knopf-schliessen" class="knopf klein" type="button">Fertig</button>
+  </div>
+</section>
+
+<main class="haupt">
+  <div class="planflaeche" id="planflaeche">
+    <div class="planrahmen"><canvas id="plan"></canvas></div>
+    <p id="planhinweis" class="planhinweis">Stationen lassen sich mit dem Finger oder der Maus verschieben.</p>
+  </div>
+  <aside class="seite" id="seite">
+    <div class="zeile"><span class="marke">Anfang</span><span id="anfang">-</span></div>
+    <div class="zeile" id="koordination-zeile" hidden><span class="marke">Koordination</span><span id="koordination-text">-</span></div>
+    <ol id="stationsliste" class="stationsliste"></ol>
+    <div class="zeile"><span class="marke">Ende</span><span id="ende">-</span></div>
+    <p id="warnungen" class="warnungen"></p>
+  </aside>
+</main>
+
+<nav class="leiste">
+  <button id="knopf-planen" class="knopf haupt-knopf" type="button">Stunde planen</button>
+  <button id="knopf-wuerfeln" class="knopf" type="button">Neu wuerfeln</button>
+  <button id="knopf-pdf" class="knopf" type="button">PDF</button>
+  <button id="knopf-speichern" class="knopf" type="button">Merken</button>
+  <button id="knopf-eigene" class="knopf" type="button" title="Zaehlt fuer den gelernten Stil">Eigene Stunde</button>
+</nav>
+
+<dialog id="geraete-dialog" class="dialog">
+  <h2>Geraete am Ort</h2>
+  <p class="hinweis">Anzahl anpassen oder auf 0 setzen, wenn heute etwas fehlt. Wird auf diesem Geraet gespeichert.</p>
+  <div id="geraete-liste" class="geraete-liste"></div>
+  <div class="dialog-fuss">
+    <button id="geraete-zuruecksetzen" class="knopf klein" type="button">Zuruecksetzen</button>
+    <button id="geraete-fertig" class="knopf klein" type="button">Fertig</button>
+  </div>
+</dialog>
+
+<script>const DATEN = {"geraete":[{"id":"matte","name":"Blaue Matte (Turnmatte)","kurz":"blaue Matte","kategorie":"absicherung"},{"id":"weichbodenmatte","name":"Weichbodenmatte","kurz":"WB","kategorie":"absicherung"},{"id":"niedersprungmatte","name":"Niedersprungmatte","kurz":"Niedersprungmatte","kategorie":"absicherung"},{"id":"kasten_gross","name":"Grosser Kasten","kurz":"gr. Kasten","kategorie":"grossgeraet"},{"id":"kasten_klein","name":"Kleiner Kasten","kurz":"kl. Kasten","kategorie":"grossgeraet"},{"id":"kastenteil","name":"Kastenteil","kurz":"Kastenteil","kategorie":"grossgeraet"},{"id":"langbank","name":"Langbank","kurz":"LB","kategorie":"grossgeraet"},{"id":"sprungbrett","name":"Sprungbrett","kurz":"Sprungbrett","kategorie":"grossgeraet"},{"id":"minitrampolin","name":"Minitrampolin","kurz":"Minitramp","kategorie":"grossgeraet"},{"id":"barren","name":"Barren","kurz":"Barren","kategorie":"grossgeraet"},{"id":"reck","name":"Reckstange","kurz":"Reckstange","kategorie":"grossgeraet"},{"id":"ringe","name":"Schaukelringe","kurz":"Ringe","kategorie":"grossgeraet"},{"id":"tau","name":"Kletterseil / Tau","kurz":"Tau","kategorie":"grossgeraet"},{"id":"sprossenwand","name":"Sprossenwand","kurz":"Sprossenwand","kategorie":"grossgeraet"},{"id":"schwebebalken","name":"Schwebebalken","kurz":"Balken","kategorie":"grossgeraet"},{"id":"klettergeruest","name":"Klettergeruest / Kletterwand","kurz":"Klettergeruest","kategorie":"grossgeraet"},{"id":"reifen","name":"Gymnastikreifen","kurz":"Reifen","kategorie":"kleingeraet"},{"id":"springseil","name":"Springseil (Seilchen)","kurz":"Seilchen","kategorie":"kleingeraet"},{"id":"seil_lang","name":"Langseil","kurz":"Langseil","kategorie":"kleingeraet"},{"id":"gummiband","name":"Gummiband / Zauberschnur","kurz":"Gummiband","kategorie":"kleingeraet"},{"id":"softball","name":"Softball / Schaumstoffball","kurz":"Softball","kategorie":"kleingeraet"},{"id":"kleiner_ball","name":"Kleine Baelle","kurz":"kleine Baelle","kategorie":"kleingeraet"},{"id":"grosser_ball","name":"Grosse Baelle / Gymnastikball","kurz":"gr. Ball","kategorie":"kleingeraet"},{"id":"luftballon","name":"Luftballon","kurz":"Luftballon","kategorie":"kleingeraet"},{"id":"schwungtuch","name":"Schwungtuch","kurz":"Schwungtuch","kategorie":"kleingeraet"},{"id":"jongliertuch","name":"Jongliertuch","kurz":"Tuch","kategorie":"kleingeraet"},{"id":"sandsaeckchen","name":"Sandsaeckchen","kurz":"Saeckchen","kategorie":"kleingeraet"},{"id":"rollbrett","name":"Rollbrett","kurz":"Rollbrett","kategorie":"kleingeraet"},{"id":"pedalo","name":"Pedalo","kurz":"Pedalo","kategorie":"kleingeraet"},{"id":"teppichfliese","name":"Teppichfliese","kurz":"Teppichfliese","kategorie":"kleingeraet"},{"id":"baustein","name":"Schaumstoff-Baustein","kurz":"Baustein","kategorie":"kleingeraet"},{"id":"huetchen","name":"Huetchen / Pylone","kurz":"Huetchen","kategorie":"kleingeraet"},{"id":"markierungsteller","name":"Markierungsteller","kurz":"Teller","kategorie":"kleingeraet"},{"id":"huerde_klein","name":"Minihuerde","kurz":"Minihuerde","kategorie":"kleingeraet"},{"id":"koordinationsleiter","name":"Koordinationsleiter","kurz":"Leiter","kategorie":"kleingeraet"},{"id":"gymnastikstab","name":"Gymnastikstab","kurz":"Stab","kategorie":"kleingeraet"},{"id":"balancekreisel","name":"Balancekreisel / Wackelbrett","kurz":"Kreisel","kategorie":"kleingeraet"},{"id":"bewegungskarten","name":"Bewegungskarten","kurz":"Karten","kategorie":"sonstiges"},{"id":"musikanlage","name":"Musikanlage","kurz":"Musik","kategorie":"sonstiges"},{"id":"leibchen","name":"Leibchen","kurz":"Leibchen","kategorie":"kleingeraet"},{"id":"kreide","name":"Strassenkreide","kurz":"Kreide","kategorie":"kleingeraet"},{"id":"wurfscheibe","name":"Wurfscheibe / Frisbee","kurz":"Frisbee","kategorie":"kleingeraet"},{"id":"kleintor","name":"Kleinfeldtor","kurz":"Tor","kategorie":"spielfeld"},{"id":"eimer","name":"Eimer / Wanne","kurz":"Eimer","kategorie":"sonstiges"},{"id":"seifenblasen","name":"Seifenblasen","kurz":"Seifenblasen","kategorie":"sonstiges"}],"sicherheitsregeln":{"minitrampolin":{"niedersprungmatte":1},"kasten_gross":{"matte":2},"kasten_klein":{"matte":1},"kastenteil":{"matte":1},"sprungbrett":{"matte":1},"barren":{"matte":2},"reck":{"matte":2},"ringe":{"weichbodenmatte":1},"tau":{"matte":2},"schwebebalken":{"matte":2},"klettergeruest":{"matte":2},"sprossenwand":{"matte":1}},"sicherheitshinweise":{"minitrampolin":"Landebereich lueckenlos mit Niedersprungmatte abdecken, Uebungsleitung steht seitlich am Landepunkt.","kasten_gross":"Matten an der Absprungseite, Kastenteile verriegelt, Hoehe kindgerecht waehlen.","kasten_klein":"Matte an der Landeseite, Kasten auf Standfestigkeit pruefen.","kastenteil":"Matte an der Absprungseite, Kastenteile duerfen nicht verrutschen.","sprungbrett":"Brett rutschfest stellen, Landebereich mit Matte sichern.","barren":"Matten unter beiden Holmen, Holme niedrig einstellen und arretieren.","reck":"Matten unter der Stange, Hoehe in Brusthoehe der Kinder, Spannseile pruefen.","ringe":"Weichbodenmatte unter dem Schwungbereich, Ringe nur bis Schulterhoehe der Kinder.","tau":"Matten unter dem Tau, Klettern nur bis zur vereinbarten Markierung, kein Herunterrutschen.","schwebebalken":"Balken niedrig stellen, Matten beidseitig auf ganzer Laenge.","klettergeruest":"Matten im gesamten Fallbereich, maximale Kletterhoehe vorher festlegen.","sprossenwand":"Matte im Fallbereich, Klettern nur bis zur abgesprochenen Sprosse."},"altersgruppen":[{"id":"eltern_kind","name":"Eltern-Kind-Turnen (1-3 Jahre)","alter_min":1,"alter_max":3,"koordination_schwerpunkte":["gleichgewicht","orientierung"],"druckbedingungen":[],"hinweis":"Immer mit Begleitperson. Kurze Impulse, viel Wiederholung, alles zum Ausprobieren - kein Vormachen und Nachmachen, keine Wartezeiten.","max_intensitaet":2,"kinder_pro_station":3},{"id":"kleinkind","name":"Kleinkinderturnen (3-4 Jahre)","alter_min":3,"alter_max":4,"koordination_schwerpunkte":["gleichgewicht","orientierung"],"druckbedingungen":[],"hinweis":"Bewegungsgrundformen spielerisch: krabbeln, klettern, rutschen, schaukeln. Bilder und Geschichten statt Technikansagen.","max_intensitaet":3,"kinder_pro_station":3},{"id":"vorschule","name":"Vorschulkinder (5-6 Jahre)","alter_min":5,"alter_max":6,"koordination_schwerpunkte":["gleichgewicht","orientierung","reaktion","rhythmus"],"druckbedingungen":["Praezisionsdruck"],"hinweis":"Grosse Bewegungsfreude, erste einfache Regeln. Koordination spielerisch verpacken, Erfolgserlebnisse fuer alle einplanen.","max_intensitaet":3,"kinder_pro_station":4},{"id":"grundschule_1","name":"Grundschule 1./2. Klasse (7-8 Jahre)","alter_min":7,"alter_max":8,"koordination_schwerpunkte":["reaktion","rhythmus","gleichgewicht","orientierung"],"druckbedingungen":["Zeitdruck","Praezisionsdruck"],"hinweis":"Lust auf Bewegungsaufgaben mit klarem Ergebnis. Kleine Wettspiele ja - aber ohne Rangliste, jedes Kind kommt oft dran.","max_intensitaet":4,"kinder_pro_station":4},{"id":"grundschule_2","name":"Grundschule 3./4. Klasse (9-10 Jahre)","alter_min":9,"alter_max":10,"koordination_schwerpunkte":["rhythmus","differenzierung","kopplung","orientierung","reaktion"],"druckbedingungen":["Zeitdruck","Praezisionsdruck","Komplexitaetsdruck"],"hinweis":"Kinder wollen etwas koennen und selbst mitgestalten. Stationen variieren lassen, eigene Ideen der Kinder aufnehmen.","max_intensitaet":4,"kinder_pro_station":5}],"koordination_ab_alter":6,"uebungen":[{"id":"aufw_karten_laufen","name":"Karten laufen","phase":"aufwaermen","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":10,"dauer_min":6,"dauer_max":12,"beschreibung":"Die Kinder laufen frei durch die Halle. Die Uebungsleitung zieht eine Bewegungskarte und zeigt sie: huepfen wie ein Frosch, schleichen wie eine Katze, rennen wie der Wind, schlafen wie ein Baer. Jedes Bild wird sofort nachgemacht.","aufbau":"Kein Aufbau, freie Flaeche. Bewegungskarten bereitlegen.","hinweise":"Bilder statt Erklaerungen. Karten nach der Stunde von den Kindern aussuchen lassen - das macht Lust auf die naechste Woche.","tags":["spielform","laufen","reaktion","fantasie"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"bewegungskarten":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_sommer_karten","name":"Sommer-Karten laufen","phase":"aufwaermen","orte":["halle","freien"],"alter_min":4,"alter_max":10,"dauer_min":6,"dauer_max":12,"beschreibung":"Sommergeschichte in Bewegung: durch den Sand stapfen, ins Wasser springen, Wellen ueberhuepfen, Sonnencreme verteilen (Koerper abklopfen), Eis schlecken und wieder losrennen. Jede Karte zeigt ein Sommerbild.","aufbau":"Kein Aufbau noetig, Sommer-Bewegungskarten bereitlegen.","hinweise":"Passt als Einstieg zu einer Sommer-Bewegungslandschaft - Bilder in der Stunde wieder aufgreifen.","tags":["spielform","laufen","fantasie","reaktion"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"bewegungskarten":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"sommer"},{"id":"aufw_inselspiel","name":"Inselspiel","phase":"aufwaermen","orte":["halle","freien","sportplatz"],"alter_min":3,"alter_max":8,"dauer_min":6,"dauer_max":12,"beschreibung":"Die Kinder schwimmen als Fische durch die Halle. Auf das Signal 'Welle!' rettet sich jedes Kind auf eine Insel (Reifen). Nach jeder Runde verschwindet eine Insel - dann teilen sich mehrere Kinder eine Insel.","aufbau":"8 Reifen mit mindestens 2 m Abstand ueber die Flaeche verteilen.","hinweise":"Am Ende passen alle gemeinsam auf wenige Inseln - das feiern statt jemanden ausscheiden zu lassen.","tags":["spielform","laufen","reaktion","fantasie"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"reifen":8},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"wasser"},{"id":"aufw_feuer_wasser_sturm","name":"Feuer - Wasser - Sturm","phase":"aufwaermen","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":6,"dauer_max":10,"beschreibung":"Freies Laufen. Bei 'Feuer' auf eine Bank steigen, bei 'Wasser' auf eine Matte legen, bei 'Sturm' an die Sprossenwand fassen und festhalten.","aufbau":"3 Langbaenke und 3 Matten verteilt aufstellen, Laufwege frei lassen.","hinweise":"Von den Baenken wird abgestiegen, nicht gesprungen. Bei den Kleinen nur zwei Signale nutzen.","tags":["spielform","laufen","reaktion","orientierung"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"langbank":3,"matte":3},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_tierlauf","name":"Tierbewegungen","phase":"aufwaermen","orte":["halle","freien"],"alter_min":2,"alter_max":7,"dauer_min":5,"dauer_max":10,"beschreibung":"Alle bewegen sich wie Tiere durch den Dschungel: Baerengang, Krebsgang, Froschhuepfer, Schlange am Boden, Affensprung, Elefantenstampfen.","aufbau":"Freie Flaeche, kein Material.","hinweise":"Kraftformen kurz halten und mit lockerem Laufen abwechseln. Kinder duerfen eigene Tiere vorschlagen.","tags":["fantasie","kraft","koordination","spielform"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"dschungel"},{"id":"aufw_versteinern","name":"Versteinern mit Befreien","phase":"aufwaermen","orte":["halle","freien","sportplatz"],"alter_min":5,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Zwei Fangkinder (Leibchen) versuchen abzuschlagen. Wer gefangen ist, steht breitbeinig - ein anderes Kind befreit durch Hindurchkriechen.","aufbau":"Spielfeld mit 4 Huetchen begrenzen, Fangkinder mit Leibchen kennzeichnen.","hinweise":"Fangkinder oft wechseln, damit jedes Kind einmal drankommt.","tags":["spielform","fangspiel","laufen"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"leibchen":2,"huetchen":4},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_farben_fangen","name":"Farbenfangen","phase":"aufwaermen","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":9,"dauer_min":5,"dauer_max":10,"beschreibung":"Die Uebungsleitung ruft eine Farbe. Alle Kinder laufen zu einem Teller dieser Farbe und stellen sich darauf oder daneben. Wer zuerst dort ist, darf die naechste Farbe rufen.","aufbau":"12 Markierungsteller in vier Farben ueber die Flaeche verteilen.","hinweise":"Farben vorher gemeinsam benennen - fuer die Kleinen sind zwei Farben genug.","tags":["spielform","fangspiel","reaktion","wahrnehmung"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"markierungsteller":12},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_seifenblasen","name":"Seifenblasen fangen","phase":"aufwaermen","orte":["halle","freien"],"alter_min":1,"alter_max":4,"dauer_min":5,"dauer_max":10,"beschreibung":"Die Uebungsleitung pustet Seifenblasen, die Kinder laufen, huepfen und strecken sich, um sie zu zerplatzen. Danach das Gleiche mit den Eltern auf dem Arm oder an der Hand.","aufbau":"Freie Flaeche, Seifenblasen bereithalten.","hinweise":"Boden wird rutschig - Seifenblasen nur ueber Matten oder in einem Bereich pusten und danach trocknen.","tags":["spielform","wahrnehmung","fantasie","eltern_kind"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"seifenblasen":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_luftballon_hoch","name":"Luftballon hochhalten","phase":"aufwaermen","orte":["halle"],"alter_min":2,"alter_max":8,"dauer_min":5,"dauer_max":10,"beschreibung":"Jedes Kind haelt einen Luftballon in der Luft - mit der Hand, dem Kopf, dem Knie, dem Fuss. Danach zu zweit gemeinsam.","aufbau":"Pro Kind einen Luftballon aufblasen (einige Ersatzballons bereithalten).","hinweise":"Geplatzte Ballonreste sofort einsammeln (Verschluckungsgefahr).","tags":["ballschule","koordination","spielform","wahrnehmung"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{},"geraete_pro_gruppe":{"luftballon":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_zauberer","name":"Der Zauberer verwandelt","phase":"aufwaermen","orte":["halle","freien"],"alter_min":3,"alter_max":7,"dauer_min":5,"dauer_max":10,"beschreibung":"Der Zauberer (Uebungsleitung, spaeter ein Kind) verwandelt die Gruppe mit dem Zauberstab: in Riesen, Zwerge, Roboter, Schmetterlinge, Steine. Bei 'Abrakadabra' laufen alle wieder frei.","aufbau":"Freie Flaeche, ein Gymnastikstab als Zauberstab.","hinweise":"Kinder als Zauberer einsetzen - sie erfinden die besten Verwandlungen.","tags":["fantasie","spielform","laufen","reaktion"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"gymnastikstab":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"ritter"},{"id":"aufw_schwungtuch_wellen","name":"Schwungtuch-Wellen","phase":"aufwaermen","orte":["halle"],"alter_min":2,"alter_max":10,"dauer_min":6,"dauer_max":12,"beschreibung":"Alle halten das Schwungtuch: kleine und grosse Wellen, Baelle darauf huepfen lassen, gemeinsam unter das Tuch huschen (Zelt), Namen aufrufen und Platz tauschen.","aufbau":"Schwungtuch in der Hallenmitte ausbreiten, Baelle bereitlegen.","hinweise":"Klare Kommandos, alle heben und senken gemeinsam. Nicht am Tuch ziehen oder daran haengen.","tags":["teamwork","spielform","rhythmus","kraft"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"schwungtuch":1,"softball":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"wasser"},{"id":"aufw_reifenparcours","name":"Reifenweg","phase":"aufwaermen","orte":["halle","freien"],"alter_min":3,"alter_max":8,"dauer_min":6,"dauer_max":12,"beschreibung":"Die Reifen liegen als Weg aus. Die Kinder huepfen von Reifen zu Reifen und umlaufen die Huetchen - beidbeinig, einbeinig, rueckwaerts, ganz langsam, ganz schnell.","aufbau":"10 Reifen als Weg auslegen, dazwischen 4 Huetchen als Slalom.","hinweise":"Einbahnrichtung festlegen, damit es kein Gedraenge gibt.","tags":["spielform","huepfen","koordination","orientierung"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"reifen":10,"huetchen":4},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_musikstopp","name":"Musikstopp-Tanz","phase":"aufwaermen","orte":["halle"],"alter_min":3,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Solange Musik laeuft, wird getanzt und gelaufen. Bei Stopp erstarren alle in einer Figur - Standbild halten, bis die Musik wieder anfaengt. Spaeter Aufgaben ergaenzen: auf einem Bein, ganz klein, ganz gross.","aufbau":"Freie Flaeche, Musikanlage aufstellen.","hinweise":"Niemand scheidet aus. Lieblingslieder der Gruppe mitbringen lassen.","tags":["rhythmus","spielform","tanz","reaktion"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"musikanlage":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_ballkontakte","name":"Ball-Entdecker","phase":"aufwaermen","orte":["halle","sportplatz","freien"],"alter_min":4,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Jedes Kind probiert mit einem Ball: hochwerfen und fangen, um den Bauch kreisen, unter dem Bein durchgeben, im Gehen prellen, vor dem Fangen klatschen.","aufbau":"Pro Kind einen weichen Ball verteilen.","hinweise":"Aufgaben nacheinander ansagen und immer Zeit zum freien Ausprobieren lassen.","tags":["ballschule","koordination","wahrnehmung"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{},"geraete_pro_gruppe":{"softball":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_eltern_kind_reise","name":"Reise mit Mama und Papa","phase":"aufwaermen","orte":["halle"],"alter_min":1,"alter_max":3,"dauer_min":6,"dauer_max":12,"beschreibung":"Gemeinsame Reise durch die Halle: im Auto fahren (Kind auf dem Schoss schaukeln), im Flugzeug fliegen (Kind auf den Armen), auf dem Pferd reiten, im Boot schaukeln. Zum Schluss krabbeln alle gemeinsam durch die Halle.","aufbau":"Freie Flaeche, ruhige Musik.","hinweise":"Alle Bewegungen sind Angebote - jedes Kind entscheidet mit, was es mitmacht.","tags":["eltern_kind","fantasie","wahrnehmung","spielform"],"organisation":"partner","gruppengroesse":2,"geraete_fix":{"musikanlage":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"aufw_schatzsuche_start","name":"Schatzsuche zum Start","phase":"aufwaermen","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":9,"dauer_min":6,"dauer_max":12,"beschreibung":"Ueberall in der Halle liegen Goldstuecke (Sandsaeckchen). Die Kinder sammeln sie einzeln ein und bringen sie in die Schatztruhe. Zweite Runde: nur mit einer Hand, dann auf dem Handruecken balancierend.","aufbau":"Sandsaeckchen weit verstreut auslegen, zwei Eimer als Schatztruhen aufstellen.","hinweise":"Immer nur ein Goldstueck pro Weg - so bleibt die Gruppe in Bewegung.","tags":["spielform","teamwork","laufen","fantasie"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"sandsaeckchen":12,"eimer":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"ritter"},{"id":"aufw_ampelspiel","name":"Ampelspiel","phase":"aufwaermen","orte":["halle","freien","sportplatz"],"alter_min":3,"alter_max":8,"dauer_min":5,"dauer_max":10,"beschreibung":"Rot: stehen bleiben. Gelb: auf der Stelle laufen. Gruen: losfahren. Die Kinder sind Autos, Baustellenfahrzeuge oder Feuerwehr - mit passenden Geraeuschen.","aufbau":"Drei farbige Markierungsteller als Ampel bereithalten.","hinweise":"Fuer die Kleinsten nur Rot und Gruen verwenden.","tags":["spielform","reaktion","laufen"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"markierungsteller":3},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"baustelle"},{"id":"aufw_wettlauf_wiese","name":"Laufspiele auf der Wiese","phase":"aufwaermen","orte":["freien","sportplatz"],"alter_min":5,"alter_max":10,"dauer_min":6,"dauer_max":12,"beschreibung":"Drei kurze Laufspiele im Wechsel: Tag und Nacht (auf Zuruf zur eigenen Linie laufen), Huetchen umlaufen im Slalom, Paare finden und gemeinsam zum Huetchen laufen.","aufbau":"Zwei Linien im Abstand von 15 m mit je vier Huetchen markieren.","hinweise":"Untergrund vorher auf Loecher und Steine pruefen.","tags":["spielform","laufen","teamwork","natur"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"huetchen":8},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"koo_bank_balancieren","name":"Balancieren auf der Bank","phase":"koordination","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Ueber die Bank balancieren: vorwaerts, rueckwaerts, seitlich, mit einem Saeckchen auf dem Kopf, mit einer Drehung in der Mitte.","aufbau":"Pro Riege eine Langbank aufstellen, am Ende eine Matte auslegen.","hinweise":"Immer nur ein Kind pro Bankhaelfte. Hand zum Festhalten anbieten, nicht ziehen.","tags":["koordination","gleichgewicht","spielform"],"organisation":"riegen","gruppengroesse":6,"geraete_fix":{},"geraete_pro_gruppe":{"langbank":1},"absicherung_fix":{},"absicherung_pro_gruppe":{"matte":1},"intensitaet":2,"koordination":["gleichgewicht","orientierung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_reifen_sprungmuster","name":"Sprungmuster in Reifen","phase":"koordination","orte":["halle","freien"],"alter_min":5,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Reifen liegen mal nebeneinander, mal hintereinander, mal versetzt. Sprungmuster: beidbeinig, einbeinig links, einbeinig rechts, im Wechsel, mit halber Drehung.","aufbau":"Pro Bahn 6 Reifen im vorgegebenen Muster auslegen, danach 2 m Auslauf.","hinweise":"Weiche Landung ueber die Fussballen zeigen. Kinder duerfen eigene Muster legen.","tags":["koordination","sprung","rhythmus"],"organisation":"riegen","gruppengroesse":6,"geraete_fix":{},"geraete_pro_gruppe":{"reifen":6},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","orientierung","differenzierung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_huepfkaestchen","name":"Huepfkaestchen","phase":"koordination","orte":["freien","sportplatz","halle"],"alter_min":5,"alter_max":10,"dauer_min":5,"dauer_max":12,"beschreibung":"Klassisches Huepfkaestchen: Saeckchen in ein Feld werfen, die Bahn ein- und beidbeinig durchhuepfen, das Saeckchen im Ruecksprung aufheben.","aufbau":"Pro Gruppe ein Huepfkaestchen mit Kreide aufmalen (in der Halle mit Teppichfliesen oder Reifen legen).","hinweise":"Bahn kurz halten, damit alle schnell wieder dran sind.","tags":["koordination","sprung","rhythmus","spielform"],"organisation":"riegen","gruppengroesse":5,"geraete_fix":{},"geraete_pro_gruppe":{"kreide":1,"sandsaeckchen":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","gleichgewicht","differenzierung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_tuch_jonglieren","name":"Tuecher fangen","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Ein Tuch hochwerfen und mit der Hand, dem Kopf, dem Knie oder dem Fuss fangen. Danach mit zwei Tuechern im Wechsel - der Einstieg ins Jonglieren.","aufbau":"Pro Kind zwei Jongliertuecher, Aufstellung mit Abstand.","hinweise":"Tuecher schweben langsam - das gelingt fast jedem Kind und macht Mut auf mehr.","tags":["koordination","wahrnehmung","technik"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{},"geraete_pro_gruppe":{"jongliertuch":2},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["differenzierung","reaktion","kopplung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":false,"thema":"zirkus"},{"id":"koo_seilchen_springen","name":"Seilchen springen","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Erst das Seil vorwaerts kreisen und darueber steigen, dann beidbeinig springen, dann im Wechselschritt. Wer mag, probiert das Langseil in der Gruppe.","aufbau":"Pro Kind ein Springseil in passender Laenge (Griffe bis zur Achsel), 2 m Abstand.","hinweise":"Kurze Serien mit Pausen. Wer noch nicht springt, laesst das Seil erst nur schwingen.","tags":["koordination","rhythmus","sprung"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{},"geraete_pro_gruppe":{"springseil":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","kopplung"],"druckbedingungen":["Zeitdruck"],"stationsbetrieb":false,"thema":""},{"id":"koo_langseil_wellen","name":"Wackelschlange (Langseil)","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Zwei Kinder bewegen das Langseil als Schlange auf dem Boden - die anderen springen darueber, ohne beruehrt zu werden. Steigerung: Seil pendeln lassen, spaeter langsam drehen.","aufbau":"Pro Gruppe ein Langseil, ringsum 3 m Platz.","hinweise":"Seil bleibt am Boden, bis alle sicher springen. Schwungkinder regelmaessig wechseln.","tags":["koordination","sprung","spielform","teamwork"],"organisation":"gruppen","gruppengroesse":8,"geraete_fix":{},"geraete_pro_gruppe":{"seil_lang":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["reaktion","rhythmus","orientierung"],"druckbedingungen":["Zeitdruck"],"stationsbetrieb":true,"thema":"dschungel"},{"id":"koo_rollbrett_fahren","name":"Rollbrett-Fuehrerschein","phase":"koordination","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":6,"dauer_max":12,"beschreibung":"Im Sitzen und in Bauchlage mit den Haenden vorwaerts ziehen, um Huetchen slalomfahren, punktgenau anhalten. Wer alles schafft, bekommt den Rollbrett-Fuehrerschein.","aufbau":"Pro Gruppe ein Rollbrett und zwei Huetchen im Abstand von 6 m.","hinweise":"Nie stehen oder knien, Finger weg von den Rollen, lange Haare zusammenbinden.","tags":["koordination","kraft","spielform"],"organisation":"gruppen","gruppengroesse":4,"geraete_fix":{},"geraete_pro_gruppe":{"rollbrett":1,"huetchen":2},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","kopplung","orientierung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":"baustelle"},{"id":"koo_pedalo","name":"Pedalo und Wackelbrett","phase":"koordination","orte":["halle"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Mit Partnerhilfe auf das Pedalo steigen und eine kurze Strecke fahren. Am Wackelbrett das Gleichgewicht halten, erst mit Halt, dann frei.","aufbau":"Pro Gruppe ein Pedalo und ein Balancekreisel, daneben eine Matte auslegen.","hinweise":"Immer ein Kind zum Festhalten daneben. Barfuss oder mit Turnschuhen, nicht in Socken.","tags":["koordination","gleichgewicht"],"organisation":"gruppen","gruppengroesse":4,"geraete_fix":{},"geraete_pro_gruppe":{"pedalo":1,"balancekreisel":1},"absicherung_fix":{},"absicherung_pro_gruppe":{"matte":1},"intensitaet":2,"koordination":["gleichgewicht","differenzierung","kopplung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_farbsignal","name":"Farbsignal-Reaktion","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Alle bewegen sich im Feld. Rot hochgehalten: sofort stehen bleiben. Gelb: Richtung wechseln. Gruen: schnell laufen. Spaeter werden die Bedeutungen getauscht.","aufbau":"8 Markierungsteller im Feld verteilen, drei Farbteller behalten.","hinweise":"Erst zeigen und ansagen, spaeter nur zeigen - das macht den Reiz aus.","tags":["koordination","reaktion","spielform"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"markierungsteller":8},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["reaktion","orientierung","umstellung"],"druckbedingungen":["Zeitdruck"],"stationsbetrieb":false,"thema":""},{"id":"koo_ueberkreuz","name":"Ueberkreuz-Spiel","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":8,"beschreibung":"Im Stand oder Gehen: rechte Hand ans linke Knie und umgekehrt, dann hinten an die Ferse, dann mit Klatschen dazwischen. Zum Schluss zaehlen alle laut mit.","aufbau":"Kein Aufbau, lockere Aufstellung im Kreis.","hinweise":"Langsam beginnen. Fehler gehoeren dazu - gemeinsam lachen und weitermachen.","tags":["koordination","rhythmus","wahrnehmung"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["kopplung","rhythmus","differenzierung"],"druckbedingungen":["Komplexitaetsdruck"],"stationsbetrieb":false,"thema":""},{"id":"koo_leiter_schritte","name":"Zauberleiter","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Durch die Leiter: ein Fuss pro Feld, zwei Fuesse pro Feld, seitlich, ein Feld vor und eins zurueck. Erst ganz langsam, dann schneller.","aufbau":"Koordinationsleiter flach auslegen, Startmarkierung 2 m davor.","hinweise":"Nicht auf die Sprossen treten. Lieber sauber und langsam als schnell und ungenau.","tags":["koordination","rhythmus","fussarbeit"],"organisation":"riegen","gruppengroesse":6,"geraete_fix":{},"geraete_pro_gruppe":{"koordinationsleiter":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","orientierung","differenzierung"],"druckbedingungen":["Zeitdruck","Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_ball_prellen","name":"Ball-Zauberer","phase":"koordination","orte":["halle","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Ball prellen im Stand, im Gehen, mit Handwechsel, um den Koerper herum, im Sitzen. Zum Schluss: prellen und dabei die Zahl zeigen, die die Uebungsleitung in die Luft haelt.","aufbau":"Pro Kind ein Ball, gut aufgepumpt, freie Flaeche.","hinweise":"Blick heben statt auf den Ball schauen - daraus wird ein Spiel.","tags":["koordination","ballschule","technik"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{},"geraete_pro_gruppe":{"softball":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["differenzierung","kopplung","reaktion"],"druckbedingungen":["Praezisionsdruck","Komplexitaetsdruck"],"stationsbetrieb":false,"thema":"zirkus"},{"id":"koo_partner_spiegel","name":"Spiegelbild","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":5,"alter_max":10,"dauer_min":5,"dauer_max":8,"beschreibung":"Zwei Kinder stehen sich gegenueber. Eines bewegt sich langsam, das andere macht alles spiegelbildlich nach. Nach einer Minute wird gewechselt.","aufbau":"Kein Aufbau, Paare mit genug Abstand verteilen.","hinweise":"Ganz langsam ist am schwersten - das gemeinsam ausprobieren.","tags":["koordination","partner","wahrnehmung"],"organisation":"partner","gruppengroesse":2,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["orientierung","reaktion","differenzierung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":false,"thema":""},{"id":"koo_bausteine_stapeln","name":"Turmbauer","phase":"koordination","orte":["halle"],"alter_min":4,"alter_max":9,"dauer_min":5,"dauer_max":10,"beschreibung":"Bausteine einzeln auf der Teppichfliese durch die Halle transportieren und am Ziel zu einem moeglichst hohen Turm stapeln - ohne dass er umfaellt.","aufbau":"Pro Gruppe 6 Bausteine, 2 Teppichfliesen, Start und Ziel im Abstand von 8 m.","hinweise":"Umgefallene Tuerme sind Teil des Spiels - einfach neu bauen.","tags":["koordination","teamwork","wahrnehmung","spielform"],"organisation":"gruppen","gruppengroesse":5,"geraete_fix":{},"geraete_pro_gruppe":{"baustein":6,"teppichfliese":2},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["differenzierung","gleichgewicht","kopplung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":"baustelle"},{"id":"st_gummibaerenstrasse","name":"Gummibaerenstrasse","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Ueber die kleinen Kaesten steigen, am Barren entlanghangeln und ueber die ausgelegten Seilchen balancieren - ohne den Boden zu beruehren, sonst naschen die Gummibaeren alles auf.","aufbau":"Zwei kleine Kaesten hintereinander, dahinter der Barren (niedrig), zwischen den Geraeten zwei Seilchen als Weg auslegen, zwei blaue Matten an die Absprungseiten.","hinweise":"Barren auf Kindhoehe arretieren, Matten unter dem Hangelbereich.","tags":["turnen","gleichgewicht","klettern","koordination"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kasten_klein":2,"barren":1,"springseil":2},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_schiffchen","name":"Schiffchen","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":9,"dauer_min":4,"dauer_max":8,"beschreibung":"Von Schiffchen zu Schiffchen springen, ohne ins Wasser zu fallen. Wer moechte, faehrt rueckwaerts oder mit geschlossenen Augen und Handhalten des naechsten Kindes.","aufbau":"6 Reifen als Schiffchen im Zickzack auslegen, zwei blaue Matten als Hafen an Anfang und Ende.","hinweise":"Reifen bleiben liegen - nicht als Sprungring hochhalten.","tags":["spielform","huepfen","koordination","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"reifen":6},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["orientierung","rhythmus"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"wasser"},{"id":"st_wackelberg","name":"Wackelberg","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Ueber den weichen Berg krabbeln, an der Reckstange hochziehen und mit den Ringen ueber das Tal schwingen und weich landen.","aufbau":"Drei Weichbodenmatten zum Berg stapeln bzw. aneinanderlegen, Reckstange in Brusthoehe daneben, Ringe darueber haengen lassen.","hinweise":"Ringe nur bis Schulterhoehe, Landung immer auf dem Weichboden. Eine Person sichert am Ring.","tags":["turnen","mut","gleichgewicht","kraft"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"weichbodenmatte":3,"reck":1,"ringe":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_gebuesch","name":"Gebuesch","phase":"hauptteil","orte":["halle"],"alter_min":2,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Durch das Gebuesch kriechen: unter den Kastenteilen hindurch, durch die aufgestellten Reifen schluepfen, zwischen den haengenden Tuechern hindurchtauchen.","aufbau":"Zwei Kastenteile als Tunnel auf zwei Matten stellen, drei Reifen dahinter aufstellen oder halten lassen, Tuecher ueber Reifen und Kastenteile haengen.","hinweise":"Tunnel standfest bauen, nichts darf auf die Kinder fallen.","tags":["spielform","kriechen","wahrnehmung","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kastenteil":2,"reifen":3,"jongliertuch":6},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"dschungel"},{"id":"st_brunnen","name":"Brunnen","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":9,"dauer_min":4,"dauer_max":8,"beschreibung":"Ueber die Bank zum Brunnenrand balancieren, auf den kleinen Kasten steigen und in den Brunnen (Matte) springen - erst klein, dann mit Strecksprung.","aufbau":"Langbank zu zwei kleinen Kaesten fuehren, davor eine blaue Matte als Wasser, zweite Matte als Landeflaeche.","hinweise":"Nur ein Kind auf dem Kasten. Landen mit weichen Knien, nicht mit gestreckten Beinen.","tags":["turnen","sprung","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kasten_klein":2,"langbank":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"wasser"},{"id":"st_pfuetzenspringen","name":"Pfuetzenspringen","phase":"hauptteil","orte":["halle"],"alter_min":2,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Auf der Bank entlangbalancieren und von dort in die bunten Pfuetzen springen: mal mit beiden Beinen, mal auf einem, mal ganz weit.","aufbau":"Zwei Langbaenke hintereinander, daneben und dahinter 5 bunte Reifen als Pfuetzen auslegen.","hinweise":"Absprunghoehe niedrig halten, Landeflaeche frei und trocken.","tags":["spielform","sprung","koordination","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"langbank":2,"reifen":5},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","gleichgewicht"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"wasser"},{"id":"st_lianen","name":"Lianenschwingen","phase":"hauptteil","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Vom kleinen Kasten mit dem Tau ueber den Fluss schwingen und auf dem Weichboden landen. Wer mag, klettert am Tau bis zur Markierung.","aufbau":"Kleinen Kasten neben das Tau stellen, Weichbodenmatte in den Schwungbereich legen, zwei blaue Matten unter das Tau.","hinweise":"Nur ein Kind am Tau, Haende nicht rutschen lassen, Uebungsleitung sichert am Absprung.","tags":["turnen","kraft","mut","schwingen"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"tau":1,"kasten_klein":1},"geraete_pro_gruppe":{},"absicherung_fix":{"weichbodenmatte":1,"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"dschungel"},{"id":"st_wackelbruecke","name":"Wackelbruecke","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Ueber die umgedrehte Bank balancieren, am Ende auf den kleinen Kasten steigen und herunterspringen.","aufbau":"Langbank umdrehen (schmale Seite oben) und am Kasten enden lassen, links und rechts je eine Matte.","hinweise":"Umgedrehte Bank erst ab sicherem Balancieren. Hand zum Festhalten anbieten.","tags":["turnen","gleichgewicht","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"langbank":1,"kasten_klein":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["gleichgewicht","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"dschungel"},{"id":"st_krokodilsumpf","name":"Krokodilsumpf","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":9,"dauer_min":4,"dauer_max":8,"beschreibung":"Durch den Sumpf: nur auf den Teppichfliesen darf getreten werden, dazwischen robbt man ueber den Weichboden. Wer eine Fliese verliert, holt sie sich zurueck.","aufbau":"Weichbodenmatte auslegen, vier Teppichfliesen als Trittsteine darauf und davor verteilen.","hinweise":"Teppichfliesen rutschen auf glattem Boden - nur auf der Matte oder auf griffigem Belag nutzen.","tags":["spielform","kraft","fantasie","kriechen"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"weichbodenmatte":1,"teppichfliese":4},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"dschungel"},{"id":"st_affenfelsen","name":"Affenfelsen","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Die schraege Bank hinaufkriechen, an der Sprossenwand seitwaerts wandern und wieder herunterklettern - wie die Affen im Felsen.","aufbau":"Langbank in die Sprossenwand einhaengen (flacher Winkel), zwei Matten unter Bank und Kletterbereich.","hinweise":"Bankhaken vor jeder Stunde pruefen. Maximale Kletterhoehe markieren und mit den Kindern besprechen.","tags":["turnen","klettern","kraft","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"sprossenwand":1,"langbank":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"dschungel"},{"id":"st_burgmauer","name":"Burgmauer","phase":"hauptteil","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Anlauf, Absprung vom Brett, auf die Burgmauer klettern und mutig auf die weiche Wiese springen.","aufbau":"Grossen Kasten quer (3-4 Teile) aufstellen, Sprungbrett davor, Weichbodenmatte an der Landeseite, zwei Matten seitlich.","hinweise":"Kastenhoehe an die Gruppe anpassen. Uebungsleitung steht seitlich am Kasten und sichert.","tags":["turnen","sprung","mut","kraft"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kasten_gross":1,"sprungbrett":1},"geraete_pro_gruppe":{},"absicherung_fix":{"weichbodenmatte":1,"matte":2},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["kopplung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"ritter"},{"id":"st_drachenhoehle","name":"Drachenhoehle","phase":"hauptteil","orte":["halle"],"alter_min":2,"alter_max":7,"dauer_min":4,"dauer_max":8,"beschreibung":"Durch die dunkle Hoehle kriechen: unter dem Schwungtuch hindurch, durch die Kastenteile und am Ende leise wieder heraus - der Drache schlaeft.","aufbau":"Drei Kastenteile als Tunnel auf Matten stellen, Schwungtuch darueber legen und an den Seiten beschweren.","hinweise":"Kein voelliges Dunkel, Ausgang immer sichtbar lassen. Kinder duerfen auch aussen herumgehen.","tags":["spielform","kriechen","fantasie","wahrnehmung"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kastenteil":3,"schwungtuch":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"ritter"},{"id":"st_seiltaenzer","name":"Seiltaenzer","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Wie im Zirkus ueber das Seil balancieren: vorwaerts, seitlich, mit dem Saeckchen auf dem Kopf, in der Mitte einmal drehen.","aufbau":"Schwebebalken niedrig einstellen, links und rechts auf ganzer Laenge Matten auslegen, Saeckchen bereitlegen.","hinweise":"Immer nur ein Kind auf dem Balken. Zum Absteigen die Hand anbieten.","tags":["gleichgewicht","koordination","mut","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"schwebebalken":1,"sandsaeckchen":2},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["gleichgewicht","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"zirkus"},{"id":"st_jonglier_zirkus","name":"Jongleur-Station","phase":"hauptteil","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Tuecher werfen und fangen, Saeckchen auf dem Kopf balancieren, den Stab auf der Handflaeche stehen lassen - jede Nummer wird geuebt und am Ende vorgefuehrt.","aufbau":"Material auf einer Matte oder Bank bereitlegen, ringsum genug Platz.","hinweise":"Staebe nur senkrecht balancieren, nicht schwingen oder werfen.","tags":["koordination","wahrnehmung","technik","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"jongliertuch":6,"sandsaeckchen":4,"gymnastikstab":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["differenzierung","kopplung","reaktion"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"zirkus"},{"id":"st_trampolin_artist","name":"Trampolin-Artist","phase":"hauptteil","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Kurzer Anlauf, ein Absprung auf dem Trampolin, Strecksprung und weich im Stand landen. Wer mag, macht eine halbe Drehung.","aufbau":"Minitrampolin mit 3-4 m Anlauf aufstellen, Niedersprungmatte direkt anschliessen (kein Spalt), Matte seitlich fuer die Uebungsleitung.","hinweise":"Immer nur ein Sprung pro Anlauf, immer eine Person zum Sichern daneben.","tags":["turnen","sprung","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"minitrampolin":1},"geraete_pro_gruppe":{},"absicherung_fix":{"niedersprungmatte":1,"matte":1},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["kopplung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"zirkus"},{"id":"st_raketenstart","name":"Raketenstart","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Countdown zaehlen, ueber das Sprungbrett auf den Kasten steigen und als Rakete mit gestreckten Armen abheben - Landung auf dem Mond (Weichboden).","aufbau":"Kleinen Kasten mit Sprungbrett davor aufstellen, Weichbodenmatte als Mond an der Landeseite, Matte unter dem Brett.","hinweise":"Landung immer im Stand ueben. Absprunghoehe klein halten.","tags":["turnen","sprung","fantasie","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kasten_klein":1,"sprungbrett":1},"geraete_pro_gruppe":{},"absicherung_fix":{"weichbodenmatte":1,"matte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"weltraum"},{"id":"st_mondkrater","name":"Mondkrater","phase":"hauptteil","orte":["halle","freien"],"alter_min":3,"alter_max":9,"dauer_min":4,"dauer_max":8,"beschreibung":"In Zeitlupe wie im Weltall von Krater zu Krater huepfen - erst gross, dann winzig klein, dann rueckwaerts.","aufbau":"6 Reifen und 4 Teppichfliesen als Krater in unterschiedlichen Abstaenden auslegen.","hinweise":"Abstaende so waehlen, dass auch die kleinsten Kinder von Krater zu Krater kommen.","tags":["spielform","sprung","koordination","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"reifen":6,"teppichfliese":4},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","orientierung","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"weltraum"},{"id":"st_kran","name":"Kran","phase":"hauptteil","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"An den Ringen schwingen wie ein Kran und dabei mit den Fuessen einen Baustein von einer Seite zur anderen transportieren.","aufbau":"Ringe auf Schulterhoehe der Kinder einstellen, Weichbodenmatte darunter, Eimer mit Bausteinen an beiden Seiten.","hinweise":"Nur bis Schulterhoehe einhaengen, immer eine Person sichert. Nicht ueber der Matte loslassen.","tags":["turnen","kraft","schwingen","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"ringe":1,"eimer":1,"baustein":4},"geraete_pro_gruppe":{},"absicherung_fix":{"weichbodenmatte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","gleichgewicht"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"baustelle"},{"id":"st_baustelle","name":"Baustelle","phase":"hauptteil","orte":["halle"],"alter_min":2,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Bausteine mit dem Rollbrett zur Baustelle transportieren und dort eine Mauer bauen. Am Ende wird gemeinsam abgerissen und neu gebaut.","aufbau":"Bausteine und zwei Eimer an einer Seite, Baustelle (freie Flaeche) 6 m entfernt, Rollbrett dazwischen.","hinweise":"Rollbrett nur sitzend oder liegend nutzen, nie stehen.","tags":["spielform","teamwork","kraft","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"baustein":8,"rollbrett":1,"eimer":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"baustelle"},{"id":"st_heuhaufen","name":"Heuhaufen","phase":"hauptteil","orte":["halle"],"alter_min":1,"alter_max":6,"dauer_min":4,"dauer_max":8,"beschreibung":"Auf den Heuhaufen klettern, sich hineinfallen lassen, herunterkugeln und wieder hinaufkrabbeln - mit Begleitung der Eltern.","aufbau":"Zwei Weichbodenmatten nebeneinander legen, kleinen Kasten als Aufstiegshilfe daneben, blaue Matte davor.","hinweise":"Immer nur so viele Kinder auf dem Haufen, wie Platz haben. Sprunghoehe klein halten.","tags":["spielform","mut","wahrnehmung","eltern_kind"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"weichbodenmatte":2,"kasten_klein":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"bauernhof"},{"id":"st_pferdestall","name":"Pferdestall","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Im Galopp durch die Reifen springen, ueber die Bank als Huerde steigen und am Ende am Langseil im Stall anbinden - dann wechseln Pferd und Reiter.","aufbau":"4 Reifen als Sprungfeld, Langbank quer als Huerde mit Matte dahinter, Langseil am Ende auslegen.","hinweise":"Ueber die Bank steigen statt springen, wenn die Kinder klein sind.","tags":["spielform","fantasie","koordination","kraft"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"langbank":1,"reifen":4,"seil_lang":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"bauernhof"},{"id":"st_huehnerleiter","name":"Huehnerleiter","phase":"hauptteil","orte":["halle"],"alter_min":2,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Die schraege Bank hinaufkrabbeln wie die Huehner auf die Stange, oben ueber das Kastenteil steigen und auf der Matte wieder herunter.","aufbau":"Langbank flach in die Sprossenwand einhaengen, Kastenteil am oberen Ende danebenstellen, zwei Matten in den Absprungbereich.","hinweise":"Bankhaken kontrollieren, Neigung flach halten, Aufstieg nur von einer Seite.","tags":["turnen","klettern","kraft","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"langbank":1,"sprossenwand":1,"kastenteil":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","gleichgewicht"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"bauernhof"},{"id":"st_purzelbaum","name":"Purzelbaum-Wiese","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Im Paket wiegen, dann die Rolle vorwaerts von der schiefen Ebene, danach auf der ebenen Matte. Wer mag, rollt aus dem Gehen.","aufbau":"Zwei Matten in einer Bahn auslegen, eine dritte Matte ueber die Langbank als schiefe Ebene legen.","hinweise":"Kinn zur Brust - der Nacken muss frei bleiben. Hilfestellung an Nacken und Oberschenkel.","tags":["turnen","technik","koordination"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"langbank":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":3},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["orientierung","gleichgewicht"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_schaukelringe","name":"Schaukelinsel","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Vom kleinen Kasten in die Ringe einhaengen, sanft schwingen und auf der weichen Insel landen. Fuer die Kleinen: im Sitz schaukeln lassen.","aufbau":"Ringe auf Brust- bis Schulterhoehe der Kinder, kleinen Kasten als Aufstieg danebenstellen, Weichbodenmatte darunter.","hinweise":"Nur ein Kind an den Ringen, immer eine Person sichert. Ringe nach der Stunde hochziehen.","tags":["turnen","schwingen","mut","kraft"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"ringe":1,"kasten_klein":1},"geraete_pro_gruppe":{},"absicherung_fix":{"weichbodenmatte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","orientierung","gleichgewicht"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"wasser"},{"id":"st_barren_wandern","name":"Barren-Wanderung","phase":"hauptteil","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Im Stuetz an den Holmen entlangwandern, zwischendurch die Beine anziehen und am Ende vorsichtig absteigen. Fuer Kleinere: unten durchhangeln.","aufbau":"Barren auf Brusthoehe der Kinder einstellen und arretieren, zwei Matten unter beiden Holmen.","hinweise":"Holmhoehe und Verriegelung vor jeder Nutzung pruefen, Hilfestellung an Huefte und Oberarm.","tags":["turnen","kraft","technik"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"barren":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_reck_schwingen","name":"Reck-Station","phase":"hauptteil","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"An der Stange haengen wie eine Fledermaus, im Sturzhang schaukeln und mit Hilfe den Huefaufzug probieren.","aufbau":"Reckstange in Brusthoehe der Kinder einstellen, Spannseile pruefen, zwei Matten unter die Stange legen.","hinweise":"Immer Hilfestellung geben. Kinder mit Kopf ueber der Stange nie allein lassen.","tags":["turnen","kraft","technik","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"reck":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_kletterberg","name":"Kletterberg","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Am Klettergeruest bis zur vereinbarten Markierung hochklettern, seitwaerts wandern und wieder herunterklettern.","aufbau":"Kletterbereich mit zwei Matten auslegen, Kletterhoehe mit einem Band markieren.","hinweise":"Nie springen, immer abklettern. Maximale Hoehe vorher gemeinsam festlegen.","tags":["turnen","klettern","kraft","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"klettergeruest":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_eisscholle","name":"Eisschollen-Wanderung","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":9,"dauer_min":4,"dauer_max":8,"beschreibung":"Nur auf den Eisschollen darf getreten werden. Zu zweit umsetzen und weiterwandern, bis das andere Ufer erreicht ist.","aufbau":"6 Teppichfliesen auf griffigem Boden verteilen, an Start und Ziel je eine Matte als Ufer.","hinweise":"Fliesen nicht auf glattem Parkett verschieben lassen - sonst Matten oder Reifen nutzen.","tags":["spielform","teamwork","koordination","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"teppichfliese":6},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"winter"},{"id":"st_schlittenfahrt","name":"Schlittenfahrt","phase":"hauptteil","orte":["halle"],"alter_min":2,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Ein Kind sitzt auf der Matte, zwei ziehen den Schlitten am Langseil ueber die Strecke. Danach wird gewechselt.","aufbau":"Blaue Matte als Schlitten, Langseil daran befestigen bzw. durchfaedeln, Strecke von 8 m markieren.","hinweise":"Nur sitzend transportieren, Seil nicht um die Hand wickeln, langsam anziehen.","tags":["spielform","teamwork","kraft","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"seil_lang":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"winter"},{"id":"st_zielwurf_eimer","name":"Zielwerfen","phase":"hauptteil","orte":["halle","freien","sportplatz"],"alter_min":3,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Baelle und Saeckchen in die Eimer werfen - aus zwei Entfernungen, mit rechts und links, im Stand und aus der Hocke.","aufbau":"Zwei Eimer aufstellen, Wurflinien mit zwei Huetchen in 2 m und 4 m markieren, Wurfmaterial bereitlegen.","hinweise":"Immer erst alle werfen, dann gemeinsam holen.","tags":["ballschule","wurfspiel","koordination","praezision"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"eimer":2,"kleiner_ball":6,"sandsaeckchen":4,"huetchen":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["differenzierung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_tunnelkriechen","name":"Maeusetunnel","phase":"hauptteil","orte":["halle"],"alter_min":1,"alter_max":6,"dauer_min":4,"dauer_max":8,"beschreibung":"Unter der Bank und durch die Kastenteile kriechen, dabei die Tuecher als Vorhang zur Seite schieben. Die Eltern warten am Ausgang.","aufbau":"Langbank und zwei Kastenteile als Tunnel auf zwei Matten stellen, Tuecher an den Oeffnungen befestigen.","hinweise":"Tunnel kurz halten, Ausgang muss immer sichtbar sein.","tags":["spielform","kriechen","eltern_kind","wahrnehmung"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kastenteil":2,"langbank":1,"jongliertuch":4},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"bauernhof"},{"id":"st_rutschbahn","name":"Rutschbahn","phase":"hauptteil","orte":["halle"],"alter_min":1,"alter_max":6,"dauer_min":4,"dauer_max":8,"beschreibung":"Auf den kleinen Kasten klettern und die schraege Bank hinunterrutschen - im Sitzen, spaeter auf dem Bauch mit den Fuessen voran.","aufbau":"Langbank am kleinen Kasten einhaengen oder auflegen und sichern, Weichbodenmatte an das Bankende, Matte am Aufstieg.","hinweise":"Bank gegen Verrutschen sichern. Immer nur ein Kind auf der Rutsche, unten muss frei sein.","tags":["spielform","mut","eltern_kind","wahrnehmung"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"langbank":1,"kasten_klein":1},"geraete_pro_gruppe":{},"absicherung_fix":{"weichbodenmatte":1,"matte":1},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["gleichgewicht","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_wackelmatte","name":"Wackelmatte","phase":"hauptteil","orte":["halle"],"alter_min":1,"alter_max":5,"dauer_min":4,"dauer_max":8,"beschreibung":"Ueber die weiche Matte laufen, krabbeln und huepfen, waehrend die Erwachsenen an einer Seite leicht wippen. Danach auf dem grossen Ball wippen mit Halt.","aufbau":"Weichbodenmatte frei auslegen, zwei grosse Baelle bereitlegen.","hinweise":"Nur so stark bewegen, wie das Kind es mag - immer eine Hand zum Festhalten.","tags":["spielform","gleichgewicht","eltern_kind","wahrnehmung"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"weichbodenmatte":1,"grosser_ball":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["gleichgewicht"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_slalomwald","name":"Slalomwald","phase":"hauptteil","orte":["freien","sportplatz","halle"],"alter_min":3,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Im Slalom um die Baeume laufen - vorwaerts, rueckwaerts, seitlich, ganz langsam wie ein Faultier und ganz schnell wie ein Affe.","aufbau":"6 Huetchen im Abstand von 2 m als Slalom aufstellen (draussen auch Baeume nutzen).","hinweise":"Nur eine Laufrichtung, damit sich niemand entgegenkommt.","tags":["spielform","laufen","koordination","natur"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"huetchen":6},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["orientierung","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"dschungel"},{"id":"st_seilbruecke_draussen","name":"Seilbruecke","phase":"hauptteil","orte":["freien","sportplatz"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Auf dem am Boden liegenden Langseil balancieren wie auf einer Haengebruecke - vorwaerts, rueckwaerts, mit Partnerhand.","aufbau":"Langseil in einer Kurve auf dem Rasen auslegen, Anfang und Ende mit Huetchen markieren.","hinweise":"Untergrund vorher auf Steine und Loecher pruefen.","tags":["gleichgewicht","koordination","natur","mut"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"seil_lang":1,"huetchen":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["gleichgewicht","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"dschungel"},{"id":"st_kreidewelt","name":"Kreidewelt","phase":"hauptteil","orte":["freien","sportplatz"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Die Kinder malen selbst einen Bewegungsparcours auf den Boden: Linien zum Balancieren, Felder zum Huepfen, Kreise zum Drehen - und probieren ihn dann gegenseitig aus.","aufbau":"Asphaltflaeche und Strassenkreide bereitstellen, Bereich abgrenzen.","hinweise":"Nur auf ausgewiesenen Flaechen malen. Bei Naesse durch Reifen und Seile ersetzen.","tags":["spielform","sprung","koordination","kreativitaet"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kreide":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","gleichgewicht","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_frisbee_ziel","name":"Frisbee-Ziel","phase":"hauptteil","orte":["freien","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Die Scheibe auf die Huetchen werfen - aus kurzer und aus grosser Entfernung. Wer trifft, geht einen Schritt zurueck.","aufbau":"Drei Huetchen als Ziele in 5, 8 und 12 m aufstellen, Wurfrichtung von anderen Gruppen wegdrehen.","hinweise":"Nur werfen, wenn die Bahn frei ist. Nie in Richtung anderer Kinder werfen.","tags":["wurfspiel","koordination","technik","praezision"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"wurfscheibe":2,"huetchen":3},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["differenzierung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_hindernisweg_draussen","name":"Waldhindernisweg","phase":"hauptteil","orte":["freien"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Ueber Baumstaemme steigen, unter Aesten durchkriechen, um Baeume laufen und am Seil einen kleinen Hang hinauf - das Gelaende gibt den Parcours vor.","aufbau":"Start und Ziel mit Huetchen markieren, Langseil als Aufstiegshilfe befestigen, Strecke vorher ablaufen.","hinweise":"Gelaende vorher auf morsche Aeste, Loecher und Muell pruefen. Kletterhoehe maximal huefthoch.","tags":["natur","koordination","kraft","spielform"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"huetchen":2,"seil_lang":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","orientierung","kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_ballstation_klein","name":"Ball-Station","phase":"hauptteil","orte":["halle","freien","sportplatz"],"alter_min":2,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Baelle in den Reifen rollen, ins Tor schiessen, hochwerfen und fangen - jedes Kind probiert in seinem Tempo.","aufbau":"Zwei Reifen als Ziele auslegen, Kleintor aufstellen, vier weiche Baelle bereitlegen.","hinweise":"Tor gegen Umkippen sichern. Grosse, weiche Baelle nehmen.","tags":["ballschule","koordination","spielform"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"softball":4,"reifen":2,"kleintor":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["differenzierung","kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_schwungtuch_station","name":"Schwungtuch-Station","phase":"hauptteil","orte":["halle","freien"],"alter_min":2,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Gemeinsam Wellen machen, Baelle huepfen lassen, unter das Tuch krabbeln und das Zelt bauen.","aufbau":"Schwungtuch flach ausbreiten, ringsum 1 m Platz, zwei weiche Baelle bereitlegen.","hinweise":"Alle heben gleichzeitig, niemand haengt sich an das Tuch.","tags":["teamwork","spielform","rhythmus"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"schwungtuch":1,"softball":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","rhythmus","reaktion"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_sandburg","name":"Sandburg bauen","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Aus Kastenteilen und Bausteinen gemeinsam eine Sandburg bauen, hinaufsteigen und wieder abbauen - die Kinder bestimmen, wie die Burg aussieht.","aufbau":"Kastenteile und Bausteine auf einer Matte bereitlegen, ringsum genug Platz.","hinweise":"Maximal zwei Kastenteile hoch stapeln, immer eine Person daneben. Nicht von der Burg springen.","tags":["teamwork","kraft","fantasie","spielform"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"kastenteil":3,"baustein":4},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","differenzierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"sommer"},{"id":"st_wasserfall","name":"Wasserfall","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"An der Sprossenwand hinaufklettern, durch den Wasserfall aus Tuechern greifen und ueber die Bank wieder herunter zum weichen Becken.","aufbau":"Tuecher an der Sprossenwand einhaengen, Bank flach einhaengen, Weichbodenmatte unten, blaue Matte am Aufstieg.","hinweise":"Kletterhoehe markieren, kein Springen von der Sprossenwand.","tags":["turnen","mut","sprung","fantasie"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"sprossenwand":1,"langbank":1,"jongliertuch":6},"geraete_pro_gruppe":{},"absicherung_fix":{"weichbodenmatte":1,"matte":1},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":"wasser"},{"id":"st_leiterweg","name":"Leiterweg","phase":"hauptteil","orte":["halle","freien","sportplatz"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Durch die Leiter mit schnellen Fuessen, danach ueber die kleinen Huerden - erst gehen, dann laufen, dann huepfen.","aufbau":"Koordinationsleiter auslegen, dahinter drei Minihuerden im Abstand von 1,5 m aufstellen.","hinweise":"Huerden muessen umkippbar sein, Abstaende an die Kindergroesse anpassen.","tags":["koordination","rhythmus","fussarbeit"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"koordinationsleiter":1,"huerde_klein":3},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","differenzierung","orientierung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"st_gummiband_huepfen","name":"Gummitwist-Station","phase":"hauptteil","orte":["halle","freien","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Gummitwist auf Knoechelhoehe: hinein, hinaus, darauf. Danach die Hoehe steigern und eigene Sprungfolgen erfinden.","aufbau":"Gummiband zwischen zwei Huetchen (oder zwei Kindern) auf Knoechelhoehe spannen.","hinweise":"Band locker spannen, damit es beim Haengenbleiben nachgibt.","tags":["koordination","rhythmus","sprung","spielform"],"organisation":"stationen","gruppengroesse":0,"geraete_fix":{"gummiband":1,"huetchen":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","differenzierung","kopplung"],"druckbedingungen":[],"stationsbetrieb":true,"thema":""},{"id":"spiel_feuerwehr","name":"Feuerwehrspiel","phase":"hauptteil","orte":["halle"],"alter_min":4,"alter_max":9,"dauer_min":10,"dauer_max":20,"beschreibung":"Die Feuerwehr rueckt aus: ueber die Baenke zur Sprossenwand klettern, das Feuer (Baelle) loeschen und in den Eimer bringen. Auf 'Alarm!' rennen alle zum Feuerwehrhaus zurueck.","aufbau":"Zwei Baenke als Weg, Sprossenwand mit zwei Matten davor, Eimer und Baelle als Feuer verteilen.","hinweise":"Kletterhoehe festlegen. Laufwege so legen, dass sich niemand entgegenkommt.","tags":["spielform","teamwork","laufen","fantasie","klettern"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"langbank":2,"sprossenwand":1,"eimer":2,"softball":6},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["orientierung","reaktion"],"druckbedingungen":[],"stationsbetrieb":false,"thema":"baustelle"},{"id":"spiel_fischer","name":"Fischer, Fischer, wie tief ist das Wasser?","phase":"hauptteil","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":9,"dauer_min":10,"dauer_max":18,"beschreibung":"Die Kinder fragen den Fischer, wie tief das Wasser ist. Der Fischer nennt Tiefe und Fortbewegungsart (schwimmen, huepfen, krabbeln) - so muss die Gruppe hinueber, ohne gefangen zu werden.","aufbau":"Zwei Ufer mit Markierungstellern im Abstand von 12 m markieren.","hinweise":"Gefangene Kinder werden Helfer des Fischers - so ist niemand raus.","tags":["spielform","fangspiel","laufen","fantasie"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"markierungsteller":8},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["reaktion","orientierung"],"druckbedingungen":[],"stationsbetrieb":false,"thema":"wasser"},{"id":"spiel_katz_maus_reifen","name":"Katz und Maus mit Reifen","phase":"hauptteil","orte":["halle","freien"],"alter_min":4,"alter_max":9,"dauer_min":10,"dauer_max":18,"beschreibung":"Die Katze jagt die Maeuse. In einem Reifen ist die Maus sicher - aber nur, solange sie allein darin steht. Kommt eine zweite Maus, muss die erste weiterlaufen.","aufbau":"8 Reifen verteilt auslegen, Katze und Helfer mit Leibchen kennzeichnen.","hinweise":"Bei vielen Kindern zwei Katzen einsetzen und Rollen oft wechseln.","tags":["spielform","fangspiel","laufen","reaktion"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"reifen":8,"leibchen":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["reaktion","orientierung","umstellung"],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"spiel_schwungtuch_spiele","name":"Schwungtuch-Spiele","phase":"hauptteil","orte":["halle","freien"],"alter_min":2,"alter_max":10,"dauer_min":10,"dauer_max":20,"beschreibung":"Wellen und Sturm, Popcorn mit Baellen, Platzwechsel unter dem Tuch, Zelt bauen und darunter sitzen, Karussell im Kreis.","aufbau":"Schwungtuch in der Mitte ausbreiten, Baelle bereitlegen, ruhige und schnelle Musik vorbereiten.","hinweise":"Bei 'Zelt' erst zaehlen, dann gemeinsam senken - so bekommt niemand das Tuch ins Gesicht.","tags":["teamwork","spielform","rhythmus","fantasie"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"schwungtuch":1,"softball":4,"musikanlage":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","rhythmus","reaktion"],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"spiel_voelkerball_soft","name":"Weichball-Voelkerball","phase":"hauptteil","orte":["halle","sportplatz"],"alter_min":7,"alter_max":10,"dauer_min":12,"dauer_max":20,"beschreibung":"Voelkerball mit weichen Baellen. Getroffene Kinder gehen ins Aussenfeld und koennen sich durch einen eigenen Treffer zurueckholen.","aufbau":"Spielfeld mit Markierungstellern in zwei Haelften teilen, Aussenfelder markieren.","hinweise":"Nur weiche Baelle, nur unterhalb der Schulter werfen. Kopftreffer zaehlen nicht.","tags":["spielform","wurfspiel","teamwork"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"softball":3,"markierungsteller":10,"leibchen":8},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["reaktion","orientierung","differenzierung"],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"spiel_brennball_klein","name":"Kleines Brennball","phase":"hauptteil","orte":["halle","sportplatz"],"alter_min":7,"alter_max":10,"dauer_min":12,"dauer_max":20,"beschreibung":"Ein Kind wirft den Ball ins Feld und laeuft die Bahn entlang. Das andere Team holt den Ball und legt ihn in den Reifen - dann brennt es. Punkte gibt es fuer jede geschaffte Runde.","aufbau":"Drei Baenke als Laufmarkierung, Reifen als Brennstelle, Kastenteil mit Matte als Wurfstation.","hinweise":"Laufweg eindeutig markieren, nicht auf die Baenke steigen.","tags":["spielform","teamwork","laufen","wurfspiel"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"langbank":3,"reifen":1,"softball":2,"kastenteil":1},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":1},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["orientierung","reaktion"],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"spiel_bewegungsgeschichte","name":"Bewegungsgeschichte","phase":"hauptteil","orte":["halle","freien"],"alter_min":1,"alter_max":7,"dauer_min":10,"dauer_max":20,"beschreibung":"Eine Geschichte gibt die Bewegungen vor: ueber den Bach balancieren (Bank), von Stein zu Stein springen (Reifen), durch das hohe Gras schleichen, vor dem Regen davonlaufen und im Zelt ausruhen.","aufbau":"Zwei Baenke als Bruecken mit Matten am Ende, sechs Reifen als Steine auslegen.","hinweise":"Alle Kinder sind gleichzeitig in Bewegung - keine Wartereihen bilden.","tags":["fantasie","spielform","wahrnehmung","koordination"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"langbank":2,"reifen":6},"geraete_pro_gruppe":{},"absicherung_fix":{"matte":2},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["gleichgewicht","orientierung"],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"spiel_schatzsuche","name":"Schatzsuche","phase":"hauptteil","orte":["freien","sportplatz","halle"],"alter_min":4,"alter_max":10,"dauer_min":12,"dauer_max":20,"beschreibung":"Der Schatz ist im Gelaende verteilt. In kleinen Gruppen suchen die Kinder die Goldstuecke und bringen sie zur Truhe - unterwegs warten Aufgaben an den Huetchen (huepfen, drehen, balancieren).","aufbau":"Sandsaeckchen im Gebiet verstecken, sechs Huetchen als Aufgabenpunkte aufstellen, zwei Eimer als Truhen.","hinweise":"Gebietsgrenzen deutlich zeigen, Gruppen bleiben zusammen. Draussen Treffpunkt und Signal vereinbaren.","tags":["spielform","teamwork","laufen","fantasie","natur"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"sandsaeckchen":12,"huetchen":6,"eimer":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":4,"koordination":["orientierung","reaktion"],"druckbedingungen":[],"stationsbetrieb":false,"thema":"ritter"},{"id":"spiel_tunnelball","name":"Tunnelball und Ballstaffel","phase":"hauptteil","orte":["halle","freien","sportplatz"],"alter_min":5,"alter_max":10,"dauer_min":10,"dauer_max":18,"beschreibung":"Der Ball wandert durch den Tunnel aus gegraetschten Beinen, ueber die Koepfe, im Zickzack. Danach als Staffel um das Huetchen und zurueck.","aufbau":"Pro Gruppe eine Reihe bilden, Wendehuetchen in 8 m Entfernung, ein Ball je Gruppe.","hinweise":"Nicht auf Schnelligkeit trimmen - der Spass am gemeinsamen Rhythmus zaehlt.","tags":["spielform","teamwork","ballschule","koordination"],"organisation":"gruppen","gruppengroesse":6,"geraete_fix":{},"geraete_pro_gruppe":{"softball":1,"huetchen":2},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["kopplung","rhythmus"],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"spiel_luftballon_rally","name":"Luftballon-Rallye","phase":"hauptteil","orte":["halle"],"alter_min":3,"alter_max":9,"dauer_min":10,"dauer_max":18,"beschreibung":"Luftballons duerfen nicht auf den Boden fallen: allein hochhalten, zu zweit, ueber die Bank transportieren, in den Reifen ablegen. Zum Schluss halten alle gemeinsam so viele Ballons wie moeglich in der Luft.","aufbau":"Zwei Baenke als Strecke, vier Reifen als Ablagen, Ballons aufblasen (Ersatz bereithalten).","hinweise":"Geplatzte Ballonreste sofort aufsammeln.","tags":["spielform","teamwork","koordination","ballschule"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"luftballon":12,"reifen":4,"langbank":2},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["differenzierung","kopplung","reaktion"],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_kleine_baelle","name":"Kleine Baelle im Kreis","phase":"abschluss","orte":["halle","freien","sportplatz"],"alter_min":3,"alter_max":10,"dauer_min":4,"dauer_max":10,"beschreibung":"Im Sitzkreis werden kleine Baelle mit Namensnennung zugerollt. Danach zwei Baelle gleichzeitig, zum Schluss ganz langsam und leise.","aufbau":"Sitzkreis in der Hallenmitte, vier kleine Baelle bereitlegen.","hinweise":"Guter Uebergang von Bewegung zu Ruhe - Tempo bewusst herausnehmen.","tags":["ruhespiel","abschlusskreis","ballschule","wahrnehmung"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"kleiner_ball":4},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_schwungtuch_ruhe","name":"Schwungtuch-Wolke","phase":"abschluss","orte":["halle"],"alter_min":2,"alter_max":10,"dauer_min":4,"dauer_max":10,"beschreibung":"Das Tuch wird ganz langsam gehoben und gesenkt. Reihum darf ein Kind in die Mitte legen und die Wolke ueber sich schweben lassen.","aufbau":"Schwungtuch ausbreiten, alle sitzen oder knien am Rand.","hinweise":"Leise Stimme, langsame Bewegungen - das beruhigt die Gruppe zuverlaessig.","tags":["entspannung","teamwork","wahrnehmung","abschlusskreis"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"schwungtuch":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_fantasiereise","name":"Fantasiereise auf der Matte","phase":"abschluss","orte":["halle"],"alter_min":3,"alter_max":10,"dauer_min":4,"dauer_max":10,"beschreibung":"Alle liegen bequem. Eine kurze Geschichte fuehrt durch die Sinne: schwere Arme, warme Fuesse, leiser Wind. Am Ende wird langsam zurueckgeholt - recken, straecken, aufsetzen.","aufbau":"Matten sternfoermig auslegen, Licht daempfen, leise Musik.","hinweise":"Kein abruptes Ende. Wer nicht liegen mag, sitzt dabei.","tags":["entspannung","wahrnehmung","fantasie"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{"musikanlage":1},"geraete_pro_gruppe":{"matte":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_massage_igelball","name":"Partnermassage mit Ball","phase":"abschluss","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":10,"beschreibung":"Ein Kind liegt auf dem Bauch, das andere rollt den kleinen Ball langsam ueber Ruecken, Schultern und Beine - Pizza backen, Regen, Sonne. Dann wird gewechselt.","aufbau":"Pro Paar eine Matte und ein kleiner Ball, ruhige Atmosphaere.","hinweise":"Wirbelsaeule aussparen, immer fragen, ob es angenehm ist. Mitmachen ist freiwillig.","tags":["entspannung","partner","wahrnehmung"],"organisation":"partner","gruppengroesse":2,"geraete_fix":{},"geraete_pro_gruppe":{"matte":1,"kleiner_ball":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_stille_post_bewegung","name":"Bewegungs-Stille-Post","phase":"abschluss","orte":["halle","freien","sportplatz"],"alter_min":5,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Die Gruppe steht hintereinander. Eine kleine Bewegungsfolge wandert nach vorne, am Ende wird verglichen: Ist sie noch dieselbe?","aufbau":"Reihenaufstellung, kein Material.","hinweise":"Ohne Sprechen - das macht den Reiz aus und wird ganz leise.","tags":["ruhespiel","spielform","wahrnehmung","abschlusskreis"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_koffer_packen","name":"Ich packe meinen Turnkoffer","phase":"abschluss","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":9,"dauer_min":4,"dauer_max":8,"beschreibung":"Im Sitzkreis nennt und zeigt jedes Kind eine Bewegung aus der heutigen Stunde. Die naechsten wiederholen alle vorherigen und ergaenzen eine neue.","aufbau":"Sitzkreis, kein Material.","hinweise":"Bei den Kleinen hoechstens fuenf Bewegungen - gemeinsam helfen ist ausdruecklich erlaubt.","tags":["ruhespiel","abschlusskreis","gedaechtnis","spielform"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_traumreise_eltern","name":"Kuschelrunde mit Eltern","phase":"abschluss","orte":["halle"],"alter_min":1,"alter_max":4,"dauer_min":4,"dauer_max":8,"beschreibung":"Die Kinder liegen oder sitzen bei ihrer Begleitperson. Zu ruhiger Musik wird gestreichelt, gewiegt und ein kurzes Abschlusslied gesungen.","aufbau":"Matten im Kreis auslegen, leise Musik.","hinweise":"Immer dasselbe Lied als Ritual - die Kinder erkennen daran das Stundenende.","tags":["entspannung","eltern_kind","wahrnehmung","abschlusskreis"],"organisation":"partner","gruppengroesse":2,"geraete_fix":{"musikanlage":1},"geraete_pro_gruppe":{"matte":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_luftballon_ruhe","name":"Luftballon-Ballett","phase":"abschluss","orte":["halle"],"alter_min":3,"alter_max":9,"dauer_min":4,"dauer_max":8,"beschreibung":"Zu ruhiger Musik wird der Ballon ganz langsam und leise in der Luft gehalten - mit dem Finger, dem Kopf, im Sitzen, im Liegen.","aufbau":"Pro Kind ein Ballon, ruhige Musik.","hinweise":"Bewusst langsam - das senkt das Tempo am Stundenende.","tags":["ruhespiel","wahrnehmung","koordination"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{"musikanlage":1},"geraete_pro_gruppe":{"luftballon":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_tier_raten","name":"Tier raten","phase":"abschluss","orte":["halle","freien","sportplatz"],"alter_min":3,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Ein Kind stellt ein Tier in Zeitlupe dar, die anderen raten. Wer richtig raet, darf als naechstes zeigen.","aufbau":"Sitzkreis, kein Material.","hinweise":"Zeitlupe bremst die Gruppe angenehm herunter.","tags":["ruhespiel","fantasie","abschlusskreis","spielform"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"dschungel"},{"id":"abs_dehnen_kindgerecht","name":"Lange machen, klein machen","phase":"abschluss","orte":["halle","freien","sportplatz"],"alter_min":4,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Kindgerechtes Dehnen in Bildern: hoher Baum (strecken), kleiner Stein (Paket), Katzenbuckel, Schmetterling im Sitz, Wind im Gras (Rumpf pendeln).","aufbau":"Kreisaufstellung, kein Material noetig.","hinweise":"Nur so weit, wie es sich gut anfuehlt - nicht wippen, nicht vergleichen.","tags":["entspannung","wahrnehmung","mobilisation","abschlusskreis"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_aufraeumspiel","name":"Aufraeumspiel und Abschiedskreis","phase":"abschluss","orte":["halle","freien","sportplatz"],"alter_min":2,"alter_max":10,"dauer_min":4,"dauer_max":8,"beschreibung":"Alle raeumen gemeinsam ihre Station auf - Kleingeraete zaehlen und wegbringen. Danach Abschlusskreis mit gemeinsamem Ritual: Haende in die Mitte und Gruppenruf.","aufbau":"Kein zusaetzlicher Aufbau, Zustaendigkeiten vorher verteilen.","hinweise":"Grossgeraete raeumen nur Erwachsene weg. Kinder tragen keine Kastenteile und keine Matten allein.","tags":["ruhespiel","teamwork","abschlusskreis","organisation"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":""},{"id":"abs_zauberstab_ruhe","name":"Der Zauberstab macht leise","phase":"abschluss","orte":["halle","freien"],"alter_min":3,"alter_max":8,"dauer_min":4,"dauer_max":8,"beschreibung":"Der Zauberstab verwandelt die Gruppe Stueck fuer Stueck: erst in Schnecken, dann in schlafende Baeren, dann in Steine. Am Ende sind alle ganz still.","aufbau":"Sitzkreis, ein Gymnastikstab als Zauberstab.","hinweise":"Stimme immer leiser werden lassen - funktioniert besser als jede Ermahnung.","tags":["ruhespiel","fantasie","wahrnehmung","abschlusskreis"],"organisation":"ganze_gruppe","gruppengroesse":0,"geraete_fix":{"gymnastikstab":1},"geraete_pro_gruppe":{},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":1,"koordination":[],"druckbedingungen":[],"stationsbetrieb":false,"thema":"ritter"},{"id":"koo_handstand","name":"Handstand an der Wand","phase":"koordination","orte":["halle"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Methodische Reihe zum Handstand: Bauchlage an der Wand hochlaufen, Handstand mit Partnerhilfe an der Sprossenwand, kurz halten und kontrolliert wieder abbauen. Wer mag, zaehlt die Sekunden.","aufbau":"Pro Riege eine Matte vor die Sprossenwand legen, Wandflaeche frei raeumen.","hinweise":"Koerperspannung vor Hoehe. Immer eine Hilfestellung an den Beinen, nie ueber Kopf abrollen lassen.","tags":["koordination","turnen","kraft","mut"],"organisation":"riegen","gruppengroesse":6,"geraete_fix":{},"geraete_pro_gruppe":{"sprossenwand":1},"absicherung_fix":{},"absicherung_pro_gruppe":{"matte":1},"intensitaet":3,"koordination":["gleichgewicht","kopplung","orientierung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_lauf_abc","name":"Lauf-ABC","phase":"koordination","orte":["halle","sportplatz","freien"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":12,"beschreibung":"Vier Laufformen ueber eine kurze Bahn: Fussgelenkarbeit (Storch), Kniehebelauf (Storch hoch), Anfersen (Pferd) und Hopserlauf. Rueckweg locker gehen, jede Form zweimal.","aufbau":"Pro Riege zwei Huetchen im Abstand von 12 m aufstellen, dahinter 3 m Auslauf.","hinweise":"Bilder statt Fachbegriffe nutzen. Qualitaet vor Tempo, kurze Wege, keine langen Wartereihen.","tags":["koordination","rhythmus","laufen","technik"],"organisation":"riegen","gruppengroesse":6,"geraete_fix":{},"geraete_pro_gruppe":{"huetchen":2},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","kopplung","differenzierung"],"druckbedingungen":["Zeitdruck","Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_langseil_durchlaufen","name":"Langseil durchlaufen","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":6,"alter_max":10,"dauer_min":5,"dauer_max":12,"beschreibung":"Zwei Kinder schwingen das Langseil. Erst nur durchlaufen, ohne beruehrt zu werden, dann hineinlaufen und einmal mitspringen, spaeter zu zweit.","aufbau":"Pro Gruppe ein Langseil, ringsum 3 m Platz, Schwungkinder stehen sich gegenueber.","hinweise":"Gleichmaessig schwingen und laut mitzaehlen - der Rhythmus hilft mehr als jede Erklaerung. Schwungkinder oft wechseln.","tags":["koordination","rhythmus","sprung","teamwork"],"organisation":"gruppen","gruppengroesse":8,"geraete_fix":{},"geraete_pro_gruppe":{"seil_lang":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","reaktion","orientierung"],"druckbedingungen":["Zeitdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_seilspringen_kunststuecke","name":"Seilspringen-Kunststuecke","phase":"koordination","orte":["halle","freien","sportplatz"],"alter_min":7,"alter_max":10,"dauer_min":5,"dauer_max":12,"beschreibung":"Vom Grundsprung zu den Kunststuecken: Wechselschritt, Laufsprung, Seil rueckwaerts, Armkreuzen. Zum Schluss darf jedes Kind sein Lieblingskunststueck zeigen.","aufbau":"Fuer jedes Kind ein Springseil in passender Laenge (Griffe bis zur Achsel), Abstand 2 m.","hinweise":"Kurze Serien mit Pausen, weiche Landung ueber die Fussballen. Wer noch nicht springt, laesst das Seil erst nur kreisen.","tags":["koordination","rhythmus","sprung","ausdauer"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{},"geraete_pro_gruppe":{"springseil":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":3,"koordination":["rhythmus","kopplung","differenzierung"],"druckbedingungen":["Zeitdruck","Praezisionsdruck"],"stationsbetrieb":false,"thema":""},{"id":"koo_rolle_vorwaerts","name":"Purzelbaum-Reihe","phase":"koordination","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":5,"dauer_max":12,"beschreibung":"Im Paket wiegen, Rolle vorwaerts von der schiefen Ebene, Rolle auf der ebenen Matte, zum Schluss Rolle mit Aufstehen ohne Handstuetze.","aufbau":"Pro Riege zwei Matten hintereinander, eine davon als schiefe Ebene ueber das Bankende legen.","hinweise":"Kinn zur Brust - der Nacken bleibt frei. Hilfestellung an Nacken und Oberschenkel, nie am Kopf ziehen.","tags":["koordination","turnen","technik"],"organisation":"riegen","gruppengroesse":6,"geraete_fix":{},"geraete_pro_gruppe":{"langbank":1},"absicherung_fix":{},"absicherung_pro_gruppe":{"matte":2},"intensitaet":2,"koordination":["orientierung","gleichgewicht","kopplung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":true,"thema":""},{"id":"koo_standwaage","name":"Standwaage und Kerze","phase":"koordination","orte":["halle"],"alter_min":5,"alter_max":10,"dauer_min":5,"dauer_max":10,"beschreibung":"Standwaage als Flugzeug halten und dabei bis fuenf zaehlen, dann die Kerze in Rueckenlage, zum Schluss Standwaage mit geschlossenen Augen.","aufbau":"Matten locker verteilt auslegen, pro Kind eine Matte.","hinweise":"Ruhig atmen, Blick auf einen festen Punkt. Kerze nur bis zur Schulter aufrollen, nicht auf den Nacken druecken.","tags":["koordination","gleichgewicht","turnen","koerperspannung"],"organisation":"einzeln","gruppengroesse":1,"geraete_fix":{},"geraete_pro_gruppe":{"matte":1},"absicherung_fix":{},"absicherung_pro_gruppe":{},"intensitaet":2,"koordination":["gleichgewicht","differenzierung"],"druckbedingungen":["Praezisionsdruck"],"stationsbetrieb":false,"thema":""}],"orte":[{"id":"halle-grundschule","name":"Turnhalle Grundschule","art":"halle","ausstattung":{"matte":12,"weichbodenmatte":3,"niedersprungmatte":1,"kasten_gross":1,"kasten_klein":3,"kastenteil":6,"langbank":6,"sprungbrett":2,"minitrampolin":1,"barren":1,"reck":1,"ringe":1,"tau":2,"sprossenwand":4,"schwebebalken":1,"reifen":16,"springseil":16,"seil_lang":2,"gummiband":2,"softball":12,"kleiner_ball":16,"grosser_ball":6,"luftballon":20,"schwungtuch":1,"jongliertuch":20,"sandsaeckchen":16,"rollbrett":4,"pedalo":2,"teppichfliese":12,"baustein":12,"huetchen":20,"markierungsteller":24,"huerde_klein":6,"koordinationsleiter":1,"gymnastikstab":8,"balancekreisel":2,"bewegungskarten":1,"musikanlage":1,"leibchen":12,"eimer":4,"kleintor":2},"notiz":"Geraeteraum hinten rechts, Schluessel im Lehrerzimmer. Ringe muessen nach der Stunde hochgezogen werden.","flaeche":"Einfachhalle, 15 x 27 m","laenge":27.0,"breite":15.0,"geraeteplaetze":[{"geraet":"sprossenwand","x":0.3,"y":2.0,"laenge":0.4,"breite":2.5,"anzahl":1,"notiz":"linke Laengswand, Feld 1"},{"geraet":"sprossenwand","x":0.3,"y":5.0,"laenge":0.4,"breite":2.5,"anzahl":1,"notiz":"linke Laengswand, Feld 2"},{"geraet":"sprossenwand","x":0.3,"y":8.0,"laenge":0.4,"breite":2.5,"anzahl":1,"notiz":"linke Laengswand, Feld 3"},{"geraet":"sprossenwand","x":0.3,"y":11.0,"laenge":0.4,"breite":2.5,"anzahl":1,"notiz":"linke Laengswand, Feld 4"},{"geraet":"reck","x":18.5,"y":3.0,"laenge":2.4,"breite":0.8,"anzahl":1,"notiz":"Bodenhuelsen im hinteren Hallendrittel"},{"geraet":"barren","x":18.0,"y":9.5,"laenge":3.5,"breite":1.6,"anzahl":1,"notiz":"Barren steht im hinteren Hallendrittel"},{"geraet":"ringe","x":13.0,"y":7.0,"laenge":1.6,"breite":1.6,"anzahl":1,"notiz":"Ringe haengen in der Hallenmitte"},{"geraet":"tau","x":23.5,"y":6.0,"laenge":1.2,"breite":1.2,"anzahl":1,"notiz":"Tau 1 an der Deckenschiene"},{"geraet":"tau","x":23.5,"y":8.5,"laenge":1.2,"breite":1.2,"anzahl":1,"notiz":"Tau 2 an der Deckenschiene"},{"geraet":"schwebebalken","x":8.0,"y":12.5,"laenge":5.0,"breite":0.6,"anzahl":1,"notiz":"Balken laengs an der hinteren Laengswand"}]},{"id":"halle-vereinsheim","name":"Gymnastikraum Vereinsheim","art":"halle","ausstattung":{"matte":8,"weichbodenmatte":2,"langbank":3,"kastenteil":4,"kasten_klein":1,"sprossenwand":3,"reifen":12,"springseil":10,"seil_lang":1,"softball":10,"kleiner_ball":12,"grosser_ball":6,"luftballon":20,"schwungtuch":1,"jongliertuch":16,"sandsaeckchen":12,"rollbrett":2,"teppichfliese":10,"baustein":10,"huetchen":10,"markierungsteller":16,"gymnastikstab":6,"balancekreisel":2,"bewegungskarten":1,"musikanlage":1,"eimer":2,"seifenblasen":2},"notiz":"Keine Grossgeraete ausser Baenken und Sprossenwand - ideal fuer Eltern-Kind-Turnen.","flaeche":"Gymnastikraum, 10 x 18 m","laenge":18.0,"breite":10.0,"geraeteplaetze":[{"geraet":"sprossenwand","x":0.3,"y":2.5,"laenge":0.4,"breite":2.5,"anzahl":1,"notiz":"linke Wand, Feld 1"},{"geraet":"sprossenwand","x":0.3,"y":5.5,"laenge":0.4,"breite":2.5,"anzahl":1,"notiz":"linke Wand, Feld 2"},{"geraet":"sprossenwand","x":0.3,"y":8.0,"laenge":0.4,"breite":1.5,"anzahl":1,"notiz":"linke Wand, Feld 3"}]},{"id":"wiese-vereinsgelaende","name":"Wiese am Vereinsgelaende","art":"freien","ausstattung":{"huetchen":16,"markierungsteller":24,"reifen":10,"springseil":12,"seil_lang":2,"softball":8,"kleiner_ball":12,"sandsaeckchen":12,"jongliertuch":12,"schwungtuch":1,"wurfscheibe":4,"kreide":4,"leibchen":12,"eimer":2,"bewegungskarten":1,"seifenblasen":2},"notiz":"Alles Material muss mitgebracht werden. Schatten unter den Baeumen, Trinkwasser am Vereinsheim.","flaeche":"Rasenflaeche ca. 30 x 40 m mit Baeumen am Rand","laenge":40.0,"breite":30.0,"geraeteplaetze":[]},{"id":"sportplatz-am-wald","name":"Sportplatz Am Wald","art":"sportplatz","ausstattung":{"huetchen":20,"markierungsteller":30,"reifen":12,"springseil":16,"seil_lang":2,"huerde_klein":8,"koordinationsleiter":1,"softball":10,"kleiner_ball":16,"grosser_ball":4,"sandsaeckchen":12,"wurfscheibe":6,"kreide":6,"kleintor":2,"leibchen":16,"eimer":3,"bewegungskarten":1},"notiz":"Geraetecontainer am Eingang. Bei Regen ist der Rasenplatz gesperrt.","flaeche":"Rasenplatz mit Asphaltweg und Spielwiese","laenge":45.0,"breite":30.0,"geraeteplaetze":[]}],"geraetemasse":{"kasten_gross":[1.6,0.8],"kasten_klein":[1.2,0.6],"kastenteil":[1.2,0.6],"langbank":[4.0,0.4],"schwebebalken":[5.0,0.6],"barren":[3.5,1.6],"reck":[2.4,0.8],"ringe":[1.6,1.6],"tau":[1.2,1.2],"sprossenwand":[2.5,0.4],"klettergeruest":[3.0,0.8],"minitrampolin":[1.2,1.2],"sprungbrett":[1.2,0.6],"matte":[2.0,1.0],"weichbodenmatte":[3.0,2.0],"niedersprungmatte":[3.0,2.0],"schwungtuch":[3.5,3.5],"koordinationsleiter":[4.0,0.6],"reifen":[0.9,0.9],"rollbrett":[0.5,0.4],"pedalo":[0.6,0.4],"teppichfliese":[0.5,0.5],"baustein":[0.5,0.3],"eimer":[0.4,0.4],"kleintor":[1.6,0.6],"huerde_klein":[0.6,0.4],"huetchen":[0.3,0.3],"markierungsteller":[0.3,0.3],"seil_lang":[3.0,0.3],"springseil":[0.4,0.4],"gummiband":[2.0,0.3]},"ortsfeste_geraete":["sprossenwand","reck","barren","ringe","tau","klettergeruest","schwebebalken"],"schriftbreiten":{"normal":[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584],"fett":[278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584]}};</script>
+<script>/* Kinderturnen-Stundenplaner - laeuft ohne Installation im Browser.
+ *
+ * Aufbau:
+ *   1. Hilfen            5. Planer
+ *   2. Katalog           6. Zeichnen (Bildschirm und PDF)
+ *   3. Bedarf            7. PDF
+ *   4. Stil              8. Speicher und Oberflaeche
+ *
+ * Die Daten (Geraete, Gruppen, Uebungen, Orte) stehen in DATEN und stammen
+ * aus denselben JSON-Dateien wie das Python-Programm.
+ */
+(function () {
+  "use strict";
+
+  // ==========================================================================
+  // 1. Hilfen
+  // ==========================================================================
+
+  function zufallsfolge(seed) {
+    let a = (seed >>> 0) || 1;
+    return function () {
+      a |= 0;
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const runde = (wert, stellen) => Math.round(wert * 10 ** stellen) / 10 ** stellen;
+
+  function addiere(ziel, quelle) {
+    for (const [schluessel, wert] of Object.entries(quelle || {})) {
+      ziel[schluessel] = (ziel[schluessel] || 0) + wert;
+    }
+    return ziel;
+  }
+
+  function maximum(ziel, quelle) {
+    for (const [schluessel, wert] of Object.entries(quelle || {})) {
+      ziel[schluessel] = Math.max(ziel[schluessel] || 0, wert);
+    }
+    return ziel;
+  }
+
+  const heute = () => new Date().toISOString().slice(0, 10);
+
+  function datumDeutsch(iso) {
+    const teile = String(iso || "").split("-");
+    return teile.length === 3 ? `${teile[2]}.${teile[1]}.${teile[0]}` : iso;
+  }
+
+  // ==========================================================================
+  // 2. Katalog
+  // ==========================================================================
+
+  const GERAETE = {};
+  DATEN.geraete.forEach((g) => (GERAETE[g.id] = g));
+  const SICHERHEITSREGELN = DATEN.sicherheitsregeln;
+  const SICHERHEITSHINWEISE = DATEN.sicherheitshinweise || {};
+  const GRUPPEN = DATEN.altersgruppen;
+  const UEBUNGEN = DATEN.uebungen;
+  const KOORDINATION_AB_ALTER = DATEN.koordination_ab_alter || 6;
+
+  const geraetName = (id) => (GERAETE[id] ? GERAETE[id].name : id);
+  const geraetKurz = (id) => (GERAETE[id] ? GERAETE[id].kurz || GERAETE[id].name : id);
+  const istAbsicherung = (id) => !!GERAETE[id] && GERAETE[id].kategorie === "absicherung";
+
+  const THEMEN = Array.from(
+    new Set(UEBUNGEN.map((u) => u.thema).filter(Boolean))
+  ).sort();
+
+  function brauchtKoordinationsteil(gruppe) {
+    return gruppe.alter_max >= KOORDINATION_AB_ALTER;
+  }
+
+  function passtZuAlter(uebung, gruppe) {
+    return !(uebung.alter_max < gruppe.alter_min || uebung.alter_min > gruppe.alter_max);
+  }
+
+  const dauerVorschlag = (u) => Math.round((u.dauer_min + u.dauer_max) / 2);
+  const proKindUebung = (u) => (u.gruppengroesse || 0) === 1;
+
+  // ==========================================================================
+  // 3. Bedarf (Material inklusive Absicherung)
+  // ==========================================================================
+
+  function sicherheitsbedarf(geraete) {
+    const bedarf = {};
+    for (const [id, anzahl] of Object.entries(geraete)) {
+      const regel = SICHERHEITSREGELN[id];
+      if (!regel) continue;
+      for (const [sicherung, faktor] of Object.entries(regel)) {
+        bedarf[sicherung] = (bedarf[sicherung] || 0) + faktor * anzahl;
+      }
+    }
+    return bedarf;
+  }
+
+  /** Material einer Uebung: fest, je Riege oder "fuer alle" (pro Kind). */
+  function bedarf(uebung, riegen, bestand) {
+    riegen = Math.max(1, riegen || 1);
+    const proKind = proKindUebung(uebung);
+    const gruppen = !uebung.gruppengroesse || proKind ? 1 : riegen;
+
+    const geraete = Object.assign({}, uebung.geraete_fix || {});
+    const fuerAlle = [];
+    for (const [id, anzahl] of Object.entries(uebung.geraete_pro_gruppe || {})) {
+      if (proKind) {
+        fuerAlle.push(id);
+        const vorhanden = (bestand && bestand[id]) || 0;
+        geraete[id] = (geraete[id] || 0) + Math.max(anzahl, vorhanden);
+      } else {
+        geraete[id] = (geraete[id] || 0) + anzahl * gruppen;
+      }
+    }
+
+    const absicherung = Object.assign({}, uebung.absicherung_fix || {});
+    for (const [id, anzahl] of Object.entries(uebung.absicherung_pro_gruppe || {})) {
+      absicherung[id] = (absicherung[id] || 0) + anzahl * (proKind ? 1 : gruppen);
+    }
+    for (const [id, anzahl] of Object.entries(sicherheitsbedarf(geraete))) {
+      absicherung[id] = Math.max(absicherung[id] || 0, anzahl);
+    }
+
+    const sauber = (werte) =>
+      Object.fromEntries(Object.entries(werte).filter(([, v]) => v > 0));
+    return {
+      geraete: sauber(geraete),
+      absicherung: sauber(absicherung),
+      proKind: Array.from(new Set(fuerAlle)).sort(),
+      gruppen,
+    };
+  }
+
+  const gesamtbedarf = (station) =>
+    addiere(Object.assign({}, station.geraete), station.absicherung);
+
+  function materialText(station, kurz) {
+    const bedarfListe = gesamtbedarf(station);
+    const namen = kurz ? geraetKurz : geraetName;
+    const eintraege = Object.entries(bedarfListe).sort((a, b) =>
+      namen(a[0]).localeCompare(namen(b[0]), "de")
+    );
+    if (!eintraege.length) return "kein Material";
+    return eintraege
+      .map(([id, anzahl]) => {
+        if ((station.proKind || []).includes(id)) return `${namen(id)} fuer alle`;
+        return anzahl > 1 ? `${anzahl}x ${namen(id)}` : namen(id);
+      })
+      .join(", ");
+  }
+
+  // ==========================================================================
+  // 4. Stil - gelernt aus eigenen Stunden
+  // ==========================================================================
+
+  const NEUTRALE_ANTEILE = {
+    aufwaermen: 0.2,
+    koordination: 0.13,
+    hauptteil: 0.52,
+    abschluss: 0.15,
+  };
+
+  function basisfrequenz(merkmale) {
+    const zaehler = {};
+    UEBUNGEN.forEach((u) => {
+      new Set(merkmale(u)).forEach((m) => (zaehler[m] = (zaehler[m] || 0) + 1));
+    });
+    const gesamt = Math.max(1, UEBUNGEN.length);
+    return Object.fromEntries(
+      Object.entries(zaehler).map(([k, v]) => [k, v / gesamt])
+    );
+  }
+
+  const BASIS_TAGS = basisfrequenz((u) => u.tags || []);
+
+  /** Tag-Gewichte aus den eigenen Stunden - gegen den Katalog normiert. */
+  function stilprofil(eigeneStunden, gruppenId) {
+    const passend = eigeneStunden.filter(
+      (s) => !gruppenId || s.altersgruppe_id === gruppenId
+    );
+    const stichprobe = passend.length ? passend : eigeneStunden;
+    if (!stichprobe.length) return { tags: {}, lieblinge: {}, stichprobe: 0 };
+
+    const tagZaehler = {};
+    const uebungsZaehler = {};
+    let uebungen = 0;
+    stichprobe.forEach((stunde) => {
+      (stunde.teile || []).forEach((teil) => {
+        (teil.uebungen || []).forEach((u) => {
+          uebungen += 1;
+          new Set(u.tags || []).forEach(
+            (tag) => (tagZaehler[tag] = (tagZaehler[tag] || 0) + 1)
+          );
+          if (u.uebung_id) {
+            uebungsZaehler[u.uebung_id] = (uebungsZaehler[u.uebung_id] || 0) + 1;
+          }
+        });
+      });
+    });
+
+    const gewicht = (anteil, basis) => {
+      const wert = Math.log((anteil + 0.02) / (basis + 0.02));
+      return Math.max(-1.2, Math.min(1.2, wert));
+    };
+    const tags = {};
+    for (const [tag, anzahl] of Object.entries(tagZaehler)) {
+      tags[tag] = gewicht(anzahl / Math.max(1, uebungen), BASIS_TAGS[tag] || 0);
+    }
+    const lieblinge = {};
+    for (const [id, anzahl] of Object.entries(uebungsZaehler)) {
+      lieblinge[id] = anzahl / stichprobe.length;
+    }
+    return { tags, lieblinge, stichprobe: stichprobe.length };
+  }
+
+  // ==========================================================================
+  // 5. Planer
+  // ==========================================================================
+
+  const MIN_STATIONEN = 3;
+  const MAX_STATIONEN = 8;
+  const WANDSTREIFEN = 1.0;
+  const BELEGUNGSFAKTOR = 0.6;
+  const MITTLERE_STATIONSFLAECHE = 22.0;
+  const STANDARD_RIEGEN = 3;
+  const MINDESTDAUER_TEIL = 4;
+
+  const PHASEN_TITEL = {
+    aufwaermen: "Aufwaermen",
+    koordination: "Koordinationsteil",
+    hauptteil: "Hauptteil",
+    abschluss: "Abschluss",
+  };
+
+  function flaechenbudget(ort) {
+    const laenge = Math.max(2, ort.laenge - 2 * WANDSTREIFEN);
+    const breite = Math.max(2, ort.breite - 2 * WANDSTREIFEN);
+    return laenge * breite * BELEGUNGSFAKTOR;
+  }
+
+  function stationszahl(auftrag) {
+    if (auftrag.stationszahl) {
+      return Math.max(1, Math.min(MAX_STATIONEN, auftrag.stationszahl));
+    }
+    const geschaetzt = Math.floor(flaechenbudget(auftrag.ort) / MITTLERE_STATIONSFLAECHE);
+    return Math.max(MIN_STATIONEN, Math.min(MAX_STATIONEN, geschaetzt));
+  }
+
+  function kandidaten(phase, auftrag) {
+    const gruppe = auftrag.gruppe;
+    return UEBUNGEN.filter((u) => {
+      if (u.phase !== phase) return false;
+      if (!(u.orte || []).includes(auftrag.ort.art)) return false;
+      if (!passtZuAlter(u, gruppe)) return false;
+      if ((u.intensitaet || 3) > (gruppe.max_intensitaet || 5)) return false;
+      if (phase === "koordination" && (gruppe.koordination_schwerpunkte || []).length) {
+        const treffer = (u.koordination || []).some((k) =>
+          gruppe.koordination_schwerpunkte.includes(k)
+        );
+        if (!treffer) return false;
+      }
+      return true;
+    });
+  }
+
+  function bewertung(uebung, auftrag, phase, wuerfel, stil) {
+    let punkte = 1.0;
+    (uebung.tags || []).forEach((tag) => (punkte += stil.tags[tag] || 0));
+    punkte += 1.5 * (stil.lieblinge[uebung.id] || 0);
+
+    if (auftrag.schwerpunkt) {
+      const schwerpunkt = auftrag.schwerpunkt.toLowerCase();
+      if ((uebung.tags || []).some((t) => t.toLowerCase() === schwerpunkt)) punkte += 1.6;
+      else if (uebung.name.toLowerCase().includes(schwerpunkt)) punkte += 0.8;
+    }
+    if (auftrag.thema) {
+      if (uebung.thema === auftrag.thema) punkte += 1.2;
+      else if (uebung.thema) punkte -= 0.3;
+    }
+    const gruppe = auftrag.gruppe;
+    if (phase === "koordination") {
+      const treffer = (uebung.koordination || []).filter((k) =>
+        (gruppe.koordination_schwerpunkte || []).includes(k)
+      ).length;
+      punkte += 0.4 * treffer;
+      const druck = (uebung.druckbedingungen || []).filter((d) =>
+        (gruppe.druckbedingungen || []).includes(d)
+      ).length;
+      punkte += 0.2 * druck;
+    }
+    const ueberlappung =
+      Math.min(uebung.alter_max, gruppe.alter_max) -
+      Math.max(uebung.alter_min, gruppe.alter_min);
+    if (ueberlappung >= gruppe.alter_max - gruppe.alter_min) punkte += 0.3;
+    return punkte + wuerfel() * 0.35;
+  }
+
+  function phasendauern(gesamt, phasen) {
+    const roh = {};
+    phasen.forEach((p) => (roh[p] = gesamt * (NEUTRALE_ANTEILE[p] || 0.2)));
+    const summe = phasen.reduce((s, p) => s + roh[p], 0) || 1;
+    const dauern = {};
+    phasen.forEach(
+      (p) => (dauern[p] = Math.max(MINDESTDAUER_TEIL, Math.floor((roh[p] / summe) * gesamt)))
+    );
+    let differenz = gesamt - phasen.reduce((s, p) => s + dauern[p], 0);
+    const reihenfolge = phasen.slice().sort((a, b) => roh[b] - roh[a]);
+    let index = 0;
+    while (differenz !== 0 && reihenfolge.length) {
+      const phase = reihenfolge[index % reihenfolge.length];
+      if (differenz > 0) {
+        dauern[phase] += 1;
+        differenz -= 1;
+      } else if (dauern[phase] > MINDESTDAUER_TEIL) {
+        dauern[phase] -= 1;
+        differenz += 1;
+      } else if (reihenfolge.every((p) => dauern[p] <= MINDESTDAUER_TEIL)) {
+        break;
+      }
+      index += 1;
+    }
+    return dauern;
+  }
+
+  function verteileDauern(uebungen, ziel) {
+    if (!uebungen.length) return [];
+    const dauern = uebungen.map((u) => dauerVorschlag(u));
+    const summe = () => dauern.reduce((s, d) => s + d, 0);
+
+    while (summe() > ziel) {
+      const kandidatenIndex = dauern
+        .map((d, i) => i)
+        .filter((i) => dauern[i] > uebungen[i].dauer_min);
+      if (!kandidatenIndex.length) break;
+      const groesster = kandidatenIndex.reduce((a, b) => (dauern[a] >= dauern[b] ? a : b));
+      dauern[groesster] -= 1;
+    }
+    for (const grenze of [1.0, 1.3]) {
+      while (summe() < ziel) {
+        const frei = dauern
+          .map((d, i) => i)
+          .filter((i) => dauern[i] < Math.floor(uebungen[i].dauer_max * grenze));
+        if (!frei.length) break;
+        const kleinster = frei.reduce((a, b) => (dauern[a] <= dauern[b] ? a : b));
+        dauern[kleinster] += 1;
+      }
+    }
+    let ueberhang = summe() - ziel;
+    while (ueberhang > 0) {
+      let gekuerzt = false;
+      for (let i = dauern.length - 1; i >= 0 && ueberhang > 0; i -= 1) {
+        if (dauern[i] > 3) {
+          dauern[i] -= 1;
+          ueberhang -= 1;
+          gekuerzt = true;
+        }
+      }
+      if (!gekuerzt) break;
+    }
+    return dauern;
+  }
+
+  function alsStation(uebung, dauer, teil) {
+    return {
+      uebung_id: uebung.id,
+      name: uebung.name,
+      dauer,
+      beschreibung: uebung.beschreibung,
+      aufbau: uebung.aufbau || "",
+      hinweise: uebung.hinweise || "",
+      organisation: uebung.organisation || "ganze_gruppe",
+      gruppen: teil.gruppen,
+      tags: (uebung.tags || []).slice(),
+      koordination: (uebung.koordination || []).slice(),
+      intensitaet: uebung.intensitaet || 3,
+      geraete: teil.geraete,
+      absicherung: teil.absicherung,
+      proKind: teil.proKind,
+      x: 0,
+      y: 0,
+      stellLaenge: 0,
+      stellBreite: 0,
+    };
+  }
+
+  function planeTeil(phase, zielDauer, auftrag, rest, wuerfel, stil, optionen) {
+    optionen = optionen || {};
+    const warnungen = [];
+    let auswahl = kandidaten(phase, auftrag);
+    if (optionen.nurStationen !== undefined) {
+      auswahl = auswahl.filter((u) => !!u.stationsbetrieb === optionen.nurStationen);
+    }
+    if (!auswahl.length) {
+      warnungen.push(
+        `Fuer den Teil '${PHASEN_TITEL[phase]}' gibt es keine passende Uebung.`
+      );
+      return { teil: { phase, uebungen: [], parallel: false, notiz: "", puffer: 0 }, warnungen };
+    }
+
+    const bewertet = auswahl
+      .map((u) => ({ u, punkte: bewertung(u, auftrag, phase, wuerfel, stil) }))
+      .sort((a, b) => b.punkte - a.punkte)
+      .map((e) => e.u);
+
+    const zielAnzahl = optionen.zielAnzahl || (phase === "hauptteil" ? 2 : 1);
+    const riegen = optionen.nurStationen ? zielAnzahl : STANDARD_RIEGEN;
+    const gewaehlt = [];
+    const bedarfe = [];
+    let uebersprungen = 0;
+    let budget = optionen.nurStationen ? flaechenbudget(auftrag.ort) : Infinity;
+    let flaecheKnapp = false;
+
+    const zeitGedeckt = () =>
+      gewaehlt.reduce((s, u) => s + u.dauer_max * 1.25, 0) >= zielDauer;
+
+    for (const uebung of bewertet) {
+      if (gewaehlt.length >= zielAnzahl && zeitGedeckt()) break;
+      if (gewaehlt.length >= zielAnzahl + 3) break;
+
+      const teil = bedarf(uebung, riegen, rest);
+      const gesamt = addiere(Object.assign({}, teil.geraete), teil.absicherung);
+      const passt = Object.entries(gesamt).every(
+        ([id, anzahl]) => (rest[id] || 0) >= anzahl
+      );
+      if (!passt) {
+        uebersprungen += 1;
+        continue;
+      }
+
+      let platzbedarf = 0;
+      if (optionen.nurStationen) {
+        const probe = { geraete: teil.geraete, absicherung: teil.absicherung, proKind: [] };
+        const [laenge, breite] = stellflaeche(probe);
+        platzbedarf = laenge * breite * 1.15;
+        if (gewaehlt.length && platzbedarf > budget) {
+          flaecheKnapp = true;
+          continue;
+        }
+      }
+      for (const [id, anzahl] of Object.entries(gesamt)) rest[id] = (rest[id] || 0) - anzahl;
+      budget -= platzbedarf;
+      gewaehlt.push(uebung);
+      bedarfe.push(teil);
+    }
+
+    if (!gewaehlt.length) {
+      warnungen.push(`'${PHASEN_TITEL[phase]}': das Material reicht nicht aus.`);
+      return { teil: { phase, uebungen: [], parallel: false, notiz: "", puffer: 0 }, warnungen };
+    }
+    if (flaecheKnapp) {
+      warnungen.push(
+        `${PHASEN_TITEL[phase]}: mehr Stationen haetten in ${auftrag.ort.name} keinen Platz.`
+      );
+    }
+    if (uebersprungen) {
+      warnungen.push(
+        `${PHASEN_TITEL[phase]}: ${uebersprungen} Uebung(en) ohne passendes Material ausgelassen.`
+      );
+    }
+
+    const dauern = verteileDauern(gewaehlt, zielDauer);
+    const uebungen = gewaehlt.map((u, i) => alsStation(u, Math.max(3, dauern[i]), bedarfe[i]));
+    const parallel = uebungen.length > 1;
+    const puffer = Math.max(0, zielDauer - uebungen.reduce((s, u) => s + u.dauer, 0));
+    return {
+      teil: {
+        phase,
+        uebungen,
+        parallel,
+        notiz: parallel ? "Alle Aufbauten stehen gleichzeitig." : "",
+        puffer,
+      },
+      warnungen,
+    };
+  }
+
+  function planeHauptteil(zielDauer, auftrag, rest, wuerfel, stil) {
+    let stationen = auftrag.stationsbetrieb;
+    if (stationen === null || stationen === undefined) stationen = wuerfel() < 0.75;
+    let letzte = null;
+    for (const versuch of [stationen, !stationen]) {
+      const sicherung = Object.assign({}, rest);
+      const ergebnis = planeTeil("hauptteil", zielDauer, auftrag, rest, wuerfel, stil, {
+        zielAnzahl: versuch ? stationszahl(auftrag) : 1,
+        nurStationen: versuch,
+      });
+      if (ergebnis.teil.uebungen.length) {
+        if (versuch) {
+          ergebnis.teil.parallel = true;
+          ergebnis.teil.notiz = `Bewegungslandschaft mit ${ergebnis.teil.uebungen.length} Stationen - Wechsel im Uhrzeigersinn.`;
+        }
+        return ergebnis;
+      }
+      Object.keys(rest).forEach((k) => delete rest[k]);
+      Object.assign(rest, sicherung);
+      letzte = ergebnis;
+    }
+    return letzte;
+  }
+
+  function plane(auftrag) {
+    const wuerfel = zufallsfolge(auftrag.seed || 1);
+    const stil = auftrag.stil || { tags: {}, lieblinge: {}, stichprobe: 0 };
+    const bestand = Object.assign({}, auftrag.ausstattung || auftrag.ort.ausstattung);
+
+    let phasen = ["aufwaermen"];
+    const mitKoordination =
+      auftrag.koordinationsteil === null || auftrag.koordinationsteil === undefined
+        ? brauchtKoordinationsteil(auftrag.gruppe)
+        : auftrag.koordinationsteil;
+    if (mitKoordination) phasen.push("koordination");
+    phasen = phasen.concat(["hauptteil", "abschluss"]);
+
+    const planeAlle = (liste) => {
+      const dauern = phasendauern(auftrag.dauer, liste);
+      const teile = [];
+      const warnungen = [];
+      liste.forEach((phase) => {
+        const rest = Object.assign({}, bestand); // zwischen den Teilen wird umgebaut
+        const ergebnis =
+          phase === "hauptteil"
+            ? planeHauptteil(dauern[phase], auftrag, rest, wuerfel, stil)
+            : planeTeil(phase, dauern[phase], auftrag, rest, wuerfel, stil, {});
+        teile.push(ergebnis.teil);
+        warnungen.push(...ergebnis.warnungen);
+      });
+      return { teile, warnungen };
+    };
+
+    let { teile, warnungen } = planeAlle(phasen);
+    const gefuellt = teile.filter((t) => t.uebungen.length).map((t) => t.phase);
+    if (gefuellt.length && gefuellt.length < phasen.length) {
+      const leere = teile.filter((t) => !t.uebungen.length);
+      ({ teile, warnungen } = planeAlle(gefuellt));
+      leere.forEach((t) =>
+        warnungen.push(
+          `Der Teil '${PHASEN_TITEL[t.phase]}' liess sich nicht besetzen - die Zeit wurde verteilt.`
+        )
+      );
+    }
+
+    const stunde = {
+      id: "stunde-" + Math.random().toString(36).slice(2, 10),
+      titel: titelFuer(auftrag),
+      ueberschrift: auftrag.ueberschrift || "Ki Tu",
+      ort_id: auftrag.ort.id,
+      ort_name: auftrag.ort.name,
+      ortsart: auftrag.ort.art,
+      altersgruppe_id: auftrag.gruppe.id,
+      altersgruppe_name: auftrag.gruppe.name,
+      dauer: auftrag.dauer,
+      thema: auftrag.thema || "",
+      schwerpunkt: auftrag.schwerpunkt || "",
+      datum: auftrag.datum || heute(),
+      quelle: "geplant",
+      teile,
+      ort_laenge: auftrag.ort.laenge,
+      ort_breite: auftrag.ort.breite,
+    };
+
+    warnungen.push(...platziereStationen(stunde, auftrag.ort));
+    return { stunde, warnungen, bestand };
+  }
+
+  function titelFuer(auftrag) {
+    const teile = ["Kinderturnen", auftrag.gruppe.name.split(" (")[0]];
+    if (auftrag.thema) {
+      teile.push("Motto " + auftrag.thema[0].toUpperCase() + auftrag.thema.slice(1));
+    } else if (auftrag.schwerpunkt) {
+      teile.push("Schwerpunkt " + auftrag.schwerpunkt);
+    }
+    return teile.join(" - ");
+  }
+
+  function hauptteilVon(stunde) {
+    return (stunde.teile || []).find((t) => t.phase === "hauptteil");
+  }
+
+  function stationenVon(stunde) {
+    const teil = hauptteilVon(stunde);
+    if (teil && teil.uebungen.length) return teil.uebungen;
+    const anderer = (stunde.teile || []).find((t) => t.uebungen.length);
+    return anderer ? anderer.uebungen : [];
+  }
+
+  function platziereStationen(stunde, ort) {
+    const teil = hauptteilVon(stunde);
+    if (!teil || !teil.uebungen.length) return [];
+    const zielDauer = teil.uebungen.reduce((s, u) => s + u.dauer, 0) + teil.puffer;
+    let hinweise = [];
+    for (let runde = 0; runde < 4; runde += 1) {
+      hinweise = platziere(teil.uebungen, ort);
+      const streit = konflikte(teil.uebungen, ort);
+      if (!streit.length || teil.uebungen.length <= 1) break;
+      const namen = teil.uebungen.map((u) => u.name);
+      const [erste, zweite] = streit[0];
+      const weg =
+        namen.indexOf(erste) > namen.indexOf(zweite) && namen.includes(erste)
+          ? erste
+          : zweite;
+      const index = namen.indexOf(weg);
+      if (index < 0) break;
+      const entfernt = teil.uebungen.splice(index, 1)[0];
+      hinweise.push(`'${entfernt.name}' hatte keinen Platz mehr und wurde weggelassen.`);
+      const rest = Math.max(0, zielDauer - teil.puffer);
+      const grund = Math.max(3, Math.floor(rest / teil.uebungen.length));
+      teil.uebungen.forEach((u) => (u.dauer = grund));
+      let fehlt = rest - grund * teil.uebungen.length;
+      let i = 0;
+      while (fehlt > 0 && teil.uebungen.length) {
+        teil.uebungen[i % teil.uebungen.length].dauer += 1;
+        fehlt -= 1;
+        i += 1;
+      }
+      if (teil.uebungen.length) {
+        teil.notiz = `Bewegungslandschaft mit ${teil.uebungen.length} Stationen - Wechsel im Uhrzeigersinn.`;
+      }
+    }
+    return hinweise;
+  }
+
+  // ==========================================================================
+  // 6. Platzierung in der Halle
+  // ==========================================================================
+
+  const GERAETEMASSE = DATEN.geraetemasse;
+  const STANDARDMASS = [0.6, 0.6];
+  const ORTSFESTE_GERAETE = DATEN.ortsfeste_geraete;
+  const WANDABSTAND = 0.8;
+  const SICHERHEITSRAND = 0.9;
+  const SICHERHEITSRAND_SPRUNG = 1.4;
+  const RASTER_SUCHE = 0.5;
+  const RASTER_ZIEHEN = 0.25;
+  const MAX_STATIONSLAENGE = 9.0;
+  const MAX_STATIONSBREITE = 7.0;
+
+  const mass = (id) => GERAETEMASSE[id] || STANDARDMASS;
+
+  function ueberlappt(a, b) {
+    return !(
+      a[0] + a[2] <= b[0] ||
+      b[0] + b[2] <= a[0] ||
+      a[1] + a[3] <= b[1] ||
+      b[1] + b[3] <= a[1]
+    );
+  }
+
+  function geraetflaeche(id, anzahl) {
+    const [laenge, breite] = mass(id);
+    const spalten = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, anzahl))));
+    const zeilen = Math.max(1, Math.ceil(Math.max(1, anzahl) / spalten));
+    return [laenge * spalten, breite * zeilen];
+  }
+
+  function ortsfestesGeraet(station) {
+    const bedarfListe = gesamtbedarf(station);
+    return ORTSFESTE_GERAETE.find((id) => bedarfListe[id]) || null;
+  }
+
+  function stellflaeche(station) {
+    const bedarfListe = gesamtbedarf(station);
+    const eintraege = Object.entries(bedarfListe);
+    if (!eintraege.length) return [2.5, 2.5];
+
+    let flaeche = 0;
+    let laengstes = 0;
+    let breitestes = 0;
+    eintraege.forEach(([id, anzahl]) => {
+      const [l, b] = geraetflaeche(id, anzahl);
+      flaeche += l * b;
+      const [el, eb] = mass(id);
+      laengstes = Math.max(laengstes, el);
+      breitestes = Math.max(breitestes, eb);
+    });
+    flaeche *= 1.6;
+    let laenge = Math.max(laengstes, Math.sqrt(flaeche * 1.5));
+    let breite = Math.max(breitestes, flaeche / laenge);
+    const rand =
+      Object.keys(station.absicherung || {}).length || ortsfestesGeraet(station)
+        ? SICHERHEITSRAND_SPRUNG
+        : SICHERHEITSRAND;
+    laenge = Math.min(MAX_STATIONSLAENGE, laenge) + rand;
+    breite = Math.min(MAX_STATIONSBREITE, breite) + rand;
+    return [runde(laenge, 2), runde(breite, 2)];
+  }
+
+  function rasterpunkte(halle, flaeche) {
+    const [hl, hb] = halle;
+    const [laenge, breite] = flaeche;
+    let maxX = hl - WANDABSTAND - laenge;
+    let maxY = hb - WANDABSTAND - breite;
+    if (maxX < WANDABSTAND) maxX = Math.max(0, (hl - laenge) / 2);
+    if (maxY < WANDABSTAND) maxY = Math.max(0, (hb - breite) / 2);
+    const punkte = [];
+    for (let x = Math.min(WANDABSTAND, maxX); x <= maxX + 1e-6; x += RASTER_SUCHE) {
+      for (let y = Math.min(WANDABSTAND, maxY); y <= maxY + 1e-6; y += RASTER_SUCHE) {
+        punkte.push([runde(x, 2), runde(y, 2)]);
+      }
+    }
+    if (!punkte.length) punkte.push([0, 0]);
+    return punkte;
+  }
+
+  function naechsterFreierPlatz(ziel, flaeche, halle, belegt, hoechstabstand) {
+    const [laenge, breite] = flaeche;
+    let beste = null;
+    let besterAbstand = Infinity;
+    for (const [x, y] of rasterpunkte(halle, flaeche)) {
+      const abstand = Math.hypot(x + laenge / 2 - ziel[0], y + breite / 2 - ziel[1]);
+      if (abstand >= besterAbstand) continue;
+      if (hoechstabstand !== undefined && abstand > hoechstabstand) continue;
+      const kandidat = [x, y, laenge, breite];
+      if (belegt.some((anderes) => ueberlappt(kandidat, anderes))) continue;
+      beste = [x, y];
+      besterAbstand = abstand;
+    }
+    return beste;
+  }
+
+  function ringziel(index, anzahl, halle) {
+    const [hl, hb] = halle;
+    const winkel = Math.PI / 2 + (2 * Math.PI * index) / Math.max(1, anzahl);
+    return [hl / 2 + hl * 0.32 * Math.cos(winkel), hb / 2 + hb * 0.3 * Math.sin(winkel)];
+  }
+
+  const platzRechteck = (p) => [p.x, p.y, p.laenge, p.breite];
+
+  function setzePosition(station, x, y, laenge, breite) {
+    station.x = runde(x, 2);
+    station.y = runde(y, 2);
+    station.stellLaenge = runde(laenge, 2);
+    station.stellBreite = runde(breite, 2);
+  }
+
+  function platziere(stationen, ort) {
+    if (!stationen.length) return [];
+    const halle = [ort.laenge, ort.breite];
+    const hinweise = [];
+    const belegt = [];
+    const blockiert = (ort.geraeteplaetze || []).map(platzRechteck);
+    const freie = {};
+    (ort.geraeteplaetze || []).forEach((p) => {
+      (freie[p.geraet] = freie[p.geraet] || []).push(p);
+    });
+
+    const verankert = [];
+    const mobil = [];
+    stationen.forEach((station) => {
+      const geraet = ortsfestesGeraet(station);
+      const plaetze = geraet ? freie[geraet] || [] : [];
+      if (geraet && plaetze.length) verankert.push([station, plaetze.shift()]);
+      else mobil.push(station);
+    });
+
+    verankert.forEach(([station, platz]) => {
+      let [laenge, breite] = stellflaeche(station);
+      laenge = Math.min(laenge, ort.laenge - 0.2);
+      breite = Math.min(breite, ort.breite - 0.2);
+      const mitteX = platz.x + platz.laenge / 2;
+      const mitteY = platz.y + platz.breite / 2;
+      let zielX = Math.min(Math.max(mitteX - laenge / 2, 0.1), ort.laenge - laenge - 0.1);
+      let zielY = Math.min(Math.max(mitteY - breite / 2, 0.1), ort.breite - breite - 0.1);
+      const eigen = platzRechteck(platz);
+      const hindernisse = belegt.concat(
+        blockiert.filter((r) => r.join() !== eigen.join())
+      );
+      if (hindernisse.some((r) => ueberlappt([zielX, zielY, laenge, breite], r))) {
+        let ausweich = null;
+        for (const radius of [2.5, 4.0]) {
+          ausweich = naechsterFreierPlatz(
+            [mitteX, mitteY], [laenge, breite], halle, hindernisse, radius
+          );
+          if (ausweich) break;
+        }
+        if (ausweich) [zielX, zielY] = ausweich;
+        else hinweise.push(`'${station.name}' steht dicht an einer anderen Station.`);
+      }
+      setzePosition(station, zielX, zielY, laenge, breite);
+      belegt.push([zielX, zielY, laenge, breite]);
+    });
+
+    mobil.forEach((station) => {
+      let [laenge, breite] = stellflaeche(station);
+      laenge = Math.min(laenge, Math.max(1, ort.laenge - 2 * WANDABSTAND));
+      breite = Math.min(breite, Math.max(1, ort.breite - 2 * WANDABSTAND));
+      const ziel = ringziel(stationen.indexOf(station), stationen.length, halle);
+      let position = naechsterFreierPlatz(
+        ziel, [laenge, breite], halle, belegt.concat(blockiert)
+      );
+      if (!position) {
+        position = [
+          Math.min(Math.max(ziel[0] - laenge / 2, 0.1), Math.max(0.1, ort.laenge - laenge - 0.1)),
+          Math.min(Math.max(ziel[1] - breite / 2, 0.1), Math.max(0.1, ort.breite - breite - 0.1)),
+        ];
+        hinweise.push(`Fuer '${station.name}' ist die Flaeche knapp.`);
+      }
+      setzePosition(station, position[0], position[1], laenge, breite);
+      belegt.push([position[0], position[1], laenge, breite]);
+    });
+    return hinweise;
+  }
+
+  function kollisionen(stationen) {
+    const treffer = [];
+    const liste = stationen.filter((s) => s.stellLaenge > 0);
+    for (let i = 0; i < liste.length; i += 1) {
+      for (let j = i + 1; j < liste.length; j += 1) {
+        const a = liste[i];
+        const b = liste[j];
+        if (
+          ueberlappt(
+            [a.x, a.y, a.stellLaenge, a.stellBreite],
+            [b.x, b.y, b.stellLaenge, b.stellBreite]
+          )
+        ) {
+          treffer.push([a.name, b.name]);
+        }
+      }
+    }
+    return treffer;
+  }
+
+  function konflikte(stationen, ort) {
+    const treffer = kollisionen(stationen);
+    (ort.geraeteplaetze || []).forEach((platz) => {
+      stationen.forEach((station) => {
+        if (station.stellLaenge <= 0) return;
+        if (ortsfestesGeraet(station) === platz.geraet) return;
+        if (
+          ueberlappt(
+            [station.x, station.y, station.stellLaenge, station.stellBreite],
+            platzRechteck(platz)
+          )
+        ) {
+          treffer.push([platz.geraet, station.name]);
+        }
+      });
+    });
+    return treffer;
+  }
+
+  // ==========================================================================
+  // 7. Zeichnen - gleiche Symbole fuer Bildschirm und PDF
+  // ==========================================================================
+
+  const FARBEN = {
+    plan: [0.09, 0.34, 0.55],
+    raster: [0.87, 0.91, 0.95],
+    geraet: [0.13, 0.4, 0.62],
+    fest: [0.62, 0.67, 0.72],
+    flaeche: [0.95, 0.96, 0.98],
+    text: [0.1, 0.1, 0.12],
+    grau: [0.45, 0.47, 0.52],
+    warn: [0.75, 0.2, 0.15],
+  };
+
+  const SYMBOLE = {
+    matte: (z, x, y, b, h) => {
+      z.rechteck(x, y, b, h, FARBEN.geraet, 0.8);
+      z.linie(x + b * 0.08, y + h * 0.25, x + b * 0.92, y + h * 0.25, FARBEN.geraet, 0.35);
+      z.linie(x + b * 0.08, y + h * 0.75, x + b * 0.92, y + h * 0.75, FARBEN.geraet, 0.35);
+    },
+    weichbodenmatte: (z, x, y, b, h) => {
+      z.rechteck(x, y, b, h, FARBEN.geraet, 1);
+      [0.3, 0.6, 0.9].forEach((a) =>
+        z.linie(x + b * a, y, x + b * Math.max(0, a - 0.25), y + h, FARBEN.geraet, 0.45)
+      );
+    },
+    kasten: (z, x, y, b, h) => {
+      z.rechteck(x, y, b, h, FARBEN.geraet, 0.9);
+      [0.33, 0.66].forEach((a) =>
+        z.linie(x, y + h * a, x + b, y + h * a, FARBEN.geraet, 0.5)
+      );
+    },
+    bank: (z, x, y, b, h) => {
+      z.rechteck(x, y + h * 0.25, b, h * 0.5, FARBEN.geraet, 0.9);
+      [0.1, 0.9].forEach((a) =>
+        z.linie(x + b * a, y + h * 0.25, x + b * a, y, FARBEN.geraet, 0.6)
+      );
+    },
+    reifen: (z, x, y, b, h) => {
+      const r = Math.min(b, h) / 2.2;
+      const spalten = Math.max(1, Math.min(3, Math.floor(b / (r * 2.2))));
+      for (let i = 0; i < spalten; i += 1) {
+        z.kreis(x + r * 1.1 + i * r * 2.2, y + h / 2, r, FARBEN.geraet, 0.8);
+      }
+    },
+    reck: (z, x, y, b, h) => {
+      z.linie(x + b * 0.1, y, x + b * 0.1, y + h, FARBEN.geraet, 0.9);
+      z.linie(x + b * 0.9, y, x + b * 0.9, y + h, FARBEN.geraet, 0.9);
+      z.linie(x, y + h * 0.5, x + b, y + h * 0.5, FARBEN.geraet, 1.2);
+    },
+    barren: (z, x, y, b, h) => {
+      [0.3, 0.7].forEach((a) => z.linie(x, y + h * a, x + b, y + h * a, FARBEN.geraet, 1.1));
+      [0.15, 0.85].forEach((a) =>
+        z.linie(x + b * a, y + h * 0.3, x + b * a, y + h * 0.7, FARBEN.geraet, 0.6)
+      );
+    },
+    ringe: (z, x, y, b, h) => {
+      const r = Math.min(b, h) * 0.18;
+      [0.3, 0.7].forEach((a) => z.kreis(x + b * a, y + h * 0.5, r, FARBEN.geraet, 0.9));
+      z.linie(x + b * 0.3, y + h * 0.5, x + b * 0.7, y + h * 0.5, FARBEN.geraet, 0.4);
+    },
+    tau: (z, x, y, b, h) => {
+      const punkte = [];
+      for (let i = 0; i <= 6; i += 1) {
+        punkte.push([x + b * (0.5 + 0.3 * Math.sin(i * 1.6)), y + (h * i) / 6]);
+      }
+      z.pfad(punkte, FARBEN.geraet, 0.9);
+    },
+    sprossenwand: (z, x, y, b, h) => {
+      z.rechteck(x, y, b, h, FARBEN.geraet, 0.9);
+      const schritte = h >= b ? 5 : 3;
+      for (let i = 1; i < schritte; i += 1) {
+        if (h >= b) z.linie(x, y + (h * i) / schritte, x + b, y + (h * i) / schritte, FARBEN.geraet, 0.45);
+        else z.linie(x + (b * i) / schritte, y, x + (b * i) / schritte, y + h, FARBEN.geraet, 0.45);
+      }
+    },
+    trampolin: (z, x, y, b, h) =>
+      z.pfad(
+        [
+          [x + b * 0.05, y],
+          [x + b * 0.95, y],
+          [x + b * 0.75, y + h],
+          [x + b * 0.25, y + h],
+        ],
+        FARBEN.geraet,
+        0.9,
+        true
+      ),
+    sprungbrett: (z, x, y, b, h) =>
+      z.pfad([[x, y], [x + b, y + h * 0.8], [x + b, y]], FARBEN.geraet, 0.9, true),
+    balken: (z, x, y, b, h) => {
+      z.rechteck(x, y + h * 0.3, b, h * 0.4, FARBEN.geraet, 0.9);
+      [0.2, 0.8].forEach((a) =>
+        z.linie(x + b * a, y + h * 0.3, x + b * a, y, FARBEN.geraet, 0.6)
+      );
+    },
+    schwungtuch: (z, x, y, b, h) => {
+      const r = Math.min(b, h) * 0.45;
+      const mx = x + b / 2;
+      const my = y + h / 2;
+      z.kreis(mx, my, r, FARBEN.geraet, 0.9);
+      for (let i = 0; i < 6; i += 1) {
+        const w = (i * Math.PI) / 3;
+        z.linie(mx, my, mx + r * Math.cos(w), my + r * Math.sin(w), FARBEN.geraet, 0.35);
+      }
+    },
+    rollbrett: (z, x, y, b, h) => {
+      z.rechteck(x, y, b, h, FARBEN.geraet, 0.9);
+      [0.2, 0.8].forEach((ax) =>
+        [0.2, 0.8].forEach((ay) =>
+          z.kreis(x + b * ax, y + h * ay, Math.min(b, h) * 0.1, FARBEN.geraet, 0.5, true)
+        )
+      );
+    },
+    baelle: (z, x, y, b, h) => {
+      const r = Math.min(b / 4.5, h / 2.2);
+      for (let i = 0; i < 3; i += 1) {
+        z.kreis(x + r * 1.2 + i * r * 2.4, y + h / 2, r, FARBEN.geraet, 0.7);
+      }
+    },
+    huetchen: (z, x, y, b, h) => {
+      const breite = b / 3;
+      for (let i = 0; i < 3; i += 1) {
+        const links = x + i * breite;
+        z.pfad(
+          [
+            [links + breite * 0.1, y],
+            [links + breite * 0.5, y + h],
+            [links + breite * 0.9, y],
+          ],
+          FARBEN.geraet,
+          0.7,
+          true
+        );
+      }
+    },
+    leiter: (z, x, y, b, h) => {
+      z.rechteck(x, y, b, h, FARBEN.geraet, 0.8);
+      for (let i = 1; i < 5; i += 1) {
+        z.linie(x + (b * i) / 5, y, x + (b * i) / 5, y + h, FARBEN.geraet, 0.45);
+      }
+    },
+    seil: (z, x, y, b, h) => {
+      const punkte = [];
+      for (let i = 0; i <= 8; i += 1) {
+        punkte.push([x + (b * i) / 8, y + h * (0.5 + 0.4 * Math.sin(i * 1.3))]);
+      }
+      z.pfad(punkte, FARBEN.geraet, 0.8);
+    },
+    eimer: (z, x, y, b, h) =>
+      z.pfad(
+        [
+          [x + b * 0.2, y],
+          [x + b * 0.8, y],
+          [x + b * 0.9, y + h],
+          [x + b * 0.1, y + h],
+        ],
+        FARBEN.geraet,
+        0.8,
+        true
+      ),
+    bausteine: (z, x, y, b, h) => {
+      z.rechteck(x, y, b * 0.45, h * 0.45, FARBEN.geraet, 0.7);
+      z.rechteck(x + b * 0.55, y, b * 0.45, h * 0.45, FARBEN.geraet, 0.7);
+      z.rechteck(x + b * 0.27, y + h * 0.55, b * 0.45, h * 0.45, FARBEN.geraet, 0.7);
+    },
+    tuecher: (z, x, y, b, h) => {
+      for (let i = 0; i < 2; i += 1) {
+        const links = x + i * b * 0.5;
+        z.pfad(
+          [
+            [links + b * 0.05, y],
+            [links + b * 0.2, y + h],
+            [links + b * 0.4, y + h * 0.4],
+          ],
+          FARBEN.geraet,
+          0.7,
+          true
+        );
+      }
+    },
+    saeckchen: (z, x, y, b, h) => {
+      for (let i = 0; i < 3; i += 1) {
+        z.rechteck(x + i * b * 0.34, y + h * 0.25, b * 0.28, h * 0.5, FARBEN.geraet, 0.7);
+      }
+    },
+    tor: (z, x, y, b, h) =>
+      z.pfad([[x, y], [x, y + h], [x + b, y + h], [x + b, y]], FARBEN.geraet, 0.9),
+    scheibe: (z, x, y, b, h) => {
+      const r = Math.min(b, h) * 0.4;
+      z.kreis(x + b / 2, y + h / 2, r, FARBEN.geraet, 0.9);
+      z.kreis(x + b / 2, y + h / 2, r * 0.45, FARBEN.geraet, 0.5);
+    },
+    karten: (z, x, y, b, h) => {
+      for (let i = 0; i < 2; i += 1) {
+        z.rechteck(x + b * i * 0.3, y + h * i * 0.15, b * 0.6, h * 0.7, FARBEN.geraet, 0.7);
+      }
+    },
+    pedalo: (z, x, y, b, h) => {
+      z.rechteck(x, y + h * 0.3, b, h * 0.4, FARBEN.geraet, 0.8);
+      [0.25, 0.75].forEach((a) =>
+        z.kreis(x + b * a, y + h * 0.2, Math.min(b, h) * 0.14, FARBEN.geraet, 0.6)
+      );
+    },
+    kreisel: (z, x, y, b, h) => {
+      const r = Math.min(b, h) * 0.4;
+      z.kreis(x + b / 2, y + h / 2, r, FARBEN.geraet, 0.9);
+      z.kreis(x + b / 2, y + h / 2, r * 0.25, FARBEN.geraet, 0.6, true);
+    },
+  };
+
+  const SYMBOL_FUER = {
+    matte: "matte",
+    weichbodenmatte: "weichbodenmatte",
+    niedersprungmatte: "weichbodenmatte",
+    kasten_gross: "kasten",
+    kasten_klein: "kasten",
+    kastenteil: "kasten",
+    langbank: "bank",
+    schwebebalken: "balken",
+    reifen: "reifen",
+    reck: "reck",
+    barren: "barren",
+    ringe: "ringe",
+    tau: "tau",
+    sprossenwand: "sprossenwand",
+    klettergeruest: "sprossenwand",
+    minitrampolin: "trampolin",
+    sprungbrett: "sprungbrett",
+    schwungtuch: "schwungtuch",
+    rollbrett: "rollbrett",
+    softball: "baelle",
+    kleiner_ball: "baelle",
+    grosser_ball: "baelle",
+    luftballon: "baelle",
+    huetchen: "huetchen",
+    markierungsteller: "huetchen",
+    huerde_klein: "huetchen",
+    koordinationsleiter: "leiter",
+    seil_lang: "seil",
+    springseil: "seil",
+    gummiband: "seil",
+    eimer: "eimer",
+    baustein: "bausteine",
+    teppichfliese: "bausteine",
+    jongliertuch: "tuecher",
+    sandsaeckchen: "saeckchen",
+    kleintor: "tor",
+    wurfscheibe: "scheibe",
+    bewegungskarten: "karten",
+    pedalo: "pedalo",
+    balancekreisel: "kreisel",
+  };
+
+  const KATEGORIE_RANG = {
+    grossgeraet: 0,
+    absicherung: 1,
+    spielfeld: 2,
+    kleingeraet: 3,
+    sonstiges: 4,
+  };
+
+  function wichtigsteGeraete(station, hoechstens) {
+    return Object.entries(gesamtbedarf(station))
+      .sort((a, b) => {
+        const symbolA = SYMBOL_FUER[a[0]] ? 0 : 1;
+        const symbolB = SYMBOL_FUER[b[0]] ? 0 : 1;
+        if (symbolA !== symbolB) return symbolA - symbolB;
+        const katA = KATEGORIE_RANG[(GERAETE[a[0]] || {}).kategorie] ?? 5;
+        const katB = KATEGORIE_RANG[(GERAETE[b[0]] || {}).kategorie] ?? 5;
+        return katA - katB;
+      })
+      .slice(0, hoechstens || 4);
+  }
+
+  /** Rechnet Hallenmeter in Zeichenpunkte um.
+   *
+   * ``gedreht`` stellt die Halle quer - auf hochkant gehaltenen Geraeten
+   * wird der Plan dadurch deutlich groesser.
+   */
+  function massstab(halle, x, y, breite, hoehe, gedreht) {
+    const [planL, planB] = gedreht ? [halle[1], halle[0]] : [halle[0], halle[1]];
+    const faktor = Math.min(breite / planL, hoehe / planB);
+    const planBreite = planL * faktor;
+    const planHoehe = planB * faktor;
+    return {
+      halleLaenge: halle[0],
+      halleBreite: halle[1],
+      gedreht: !!gedreht,
+      faktor,
+      planBreite,
+      planHoehe,
+      x: x + (breite - planBreite) / 2,
+      y: y + (hoehe - planHoehe) / 2,
+      punkt(mx, my) {
+        if (this.gedreht) {
+          return [
+            this.x + (this.halleBreite - my) * this.faktor,
+            this.y + mx * this.faktor,
+          ];
+        }
+        return [this.x + mx * this.faktor, this.y + my * this.faktor];
+      },
+      /** Bildschirmrechteck eines Hallenrechtecks (Ecke links unten, Groesse). */
+      rechteck(mx, my, ml, mb) {
+        if (this.gedreht) {
+          const ecke = this.punkt(mx, my + mb);
+          return [ecke[0], ecke[1], mb * this.faktor, ml * this.faktor];
+        }
+        const ecke = this.punkt(mx, my);
+        return [ecke[0], ecke[1], ml * this.faktor, mb * this.faktor];
+      },
+      laenge(m) {
+        return m * this.faktor;
+      },
+      meter(px, py) {
+        if (this.gedreht) {
+          return [
+            (py - this.y) / this.faktor,
+            this.halleBreite - (px - this.x) / this.faktor,
+          ];
+        }
+        return [(px - this.x) / this.faktor, (py - this.y) / this.faktor];
+      },
+    };
+  }
+
+  function zeichnePlan(z, stunde, ort, x, y, breite, hoehe, optionen) {
+    optionen = optionen || {};
+    const halle = [stunde.ort_laenge || 27, stunde.ort_breite || 15];
+    // Hochkant-Flaeche und querliegende Halle: Plan drehen, dann wird er groesser.
+    const gedreht =
+      optionen.drehen === undefined
+        ? hoehe / Math.max(1, breite) > 1.1 && halle[0] / Math.max(1, halle[1]) > 1.1
+        : optionen.drehen;
+    const ms = massstab(halle, x, y, breite, hoehe, gedreht);
+
+    for (let m = 1; m < halle[0]; m += 1) {
+      const a = ms.punkt(m, 0);
+      const b = ms.punkt(m, halle[1]);
+      z.linie(a[0], a[1], b[0], b[1], FARBEN.raster, 0.3);
+    }
+    for (let m = 1; m < halle[1]; m += 1) {
+      const a = ms.punkt(0, m);
+      const b = ms.punkt(halle[0], m);
+      z.linie(a[0], a[1], b[0], b[1], FARBEN.raster, 0.3);
+    }
+    z.rechteck(ms.x, ms.y, ms.planBreite, ms.planHoehe, FARBEN.plan, 1.6);
+
+    ((ort && ort.geraeteplaetze) || []).forEach((platz) => {
+      const [px, py, pb, ph] = ms.rechteck(platz.x, platz.y, platz.laenge, platz.breite);
+      z.rechteck(px, py, pb, ph, FARBEN.fest, 0.5);
+    });
+    z.text(`${halle[0]} x ${halle[1]} m`, ms.x + 3, ms.y - 9, 6.5, FARBEN.grau);
+
+    const stationen = stationenVon(stunde);
+    stationen.forEach((station, index) => {
+      zeichneStation(z, station, index + 1, ms, optionen);
+    });
+    return ms;
+  }
+
+  function zeichneStation(z, station, nummer, ms, optionen) {
+    if (!station.stellLaenge) return;
+    const [eckeX, eckeY, breite, hoehe] = ms.rechteck(
+      station.x,
+      station.y,
+      station.stellLaenge,
+      station.stellBreite
+    );
+    const ecke = [eckeX, eckeY];
+
+    if (optionen.mitFlaechen) z.flaeche(ecke[0], ecke[1], breite, hoehe, FARBEN.flaeche);
+    if (optionen.markiert && optionen.markiert.includes(station.name)) {
+      z.rechteck(ecke[0], ecke[1], breite, hoehe, FARBEN.warn, 2);
+    }
+
+    const rand = Math.min(0.4, station.stellLaenge * 0.08);
+    let cursorX = station.x + rand;
+    let zeileOben = station.y + station.stellBreite - rand;
+    let zeileHoehe = 0;
+    wichtigsteGeraete(station).forEach(([id, anzahl]) => {
+      let [gl, gb] = mass(id);
+      gl = Math.min(gl, station.stellLaenge - 2 * rand);
+      gb = Math.min(gb, station.stellBreite - 2 * rand);
+      if (cursorX + gl > station.x + station.stellLaenge - rand) {
+        cursorX = station.x + rand;
+        zeileOben -= zeileHoehe + 0.2;
+        zeileHoehe = 0;
+      }
+      if (zeileOben - gb < station.y + rand) return;
+      const [gx, gy, gbreite, ghoehe] = ms.rechteck(cursorX, zeileOben - gb, gl, gb);
+      const zeichner = SYMBOLE[SYMBOL_FUER[id]];
+      if (zeichner) zeichner(z, gx, gy, gbreite, ghoehe);
+      else z.rechteck(gx, gy, gbreite, ghoehe, FARBEN.geraet, 0.6);
+      cursorX += gl + 0.25;
+      zeileHoehe = Math.max(zeileHoehe, gb);
+    });
+
+    const kreisX = ecke[0] + 9;
+    const kreisY = ecke[1] + hoehe - 9;
+    z.kreis(kreisX, kreisY, 8, FARBEN.plan, 1.1);
+    z.text(String(nummer), kreisX, kreisY - 2.8, 8.5, FARBEN.plan, true, true);
+    if (optionen.mitNamen) {
+      z.text(station.name, ecke[0] + breite / 2, ecke[1] + 3, 7, FARBEN.text, false, true);
+    }
+  }
+
+  function stationAnPunkt(stationen, ms, px, py) {
+    const [mx, my] = ms.meter(px, py);
+    for (let i = stationen.length - 1; i >= 0; i -= 1) {
+      const s = stationen[i];
+      if (!s.stellLaenge) continue;
+      if (mx >= s.x && mx <= s.x + s.stellLaenge && my >= s.y && my <= s.y + s.stellBreite) {
+        return s;
+      }
+    }
+    return null;
+  }
+
+  /** Zeichenflaeche fuer das Bild auf dem Schirm (y zeigt nach oben wie im PDF). */
+  function leinwandZeichner(ctx, hoehe, skalierung) {
+    const farbe = (f) =>
+      `rgb(${Math.round(f[0] * 255)},${Math.round(f[1] * 255)},${Math.round(f[2] * 255)})`;
+    const y = (wert) => hoehe - wert;
+    return {
+      rechteck(x, yy, b, h, f, staerke) {
+        ctx.strokeStyle = farbe(f || FARBEN.geraet);
+        ctx.lineWidth = Math.max(0.7, staerke || 0.8) * skalierung;
+        ctx.strokeRect(x, y(yy + h), b, h);
+      },
+      flaeche(x, yy, b, h, f) {
+        ctx.fillStyle = farbe(f || FARBEN.flaeche);
+        ctx.fillRect(x, y(yy + h), b, h);
+      },
+      linie(x1, y1, x2, y2, f, staerke) {
+        ctx.strokeStyle = farbe(f || FARBEN.geraet);
+        ctx.lineWidth = Math.max(0.5, staerke || 0.6) * skalierung;
+        ctx.beginPath();
+        ctx.moveTo(x1, y(y1));
+        ctx.lineTo(x2, y(y2));
+        ctx.stroke();
+      },
+      kreis(x, yy, r, f, staerke, fuellen) {
+        ctx.beginPath();
+        ctx.arc(x, y(yy), r, 0, Math.PI * 2);
+        if (fuellen) {
+          ctx.fillStyle = farbe(f || FARBEN.geraet);
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = farbe(f || FARBEN.geraet);
+          ctx.lineWidth = Math.max(0.7, staerke || 0.8) * skalierung;
+          ctx.stroke();
+        }
+      },
+      pfad(punkte, f, staerke, schliessen, fuellen) {
+        if (punkte.length < 2) return;
+        ctx.beginPath();
+        ctx.moveTo(punkte[0][0], y(punkte[0][1]));
+        punkte.slice(1).forEach((p) => ctx.lineTo(p[0], y(p[1])));
+        if (schliessen) ctx.closePath();
+        if (fuellen) {
+          ctx.fillStyle = farbe(f || FARBEN.geraet);
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = farbe(f || FARBEN.geraet);
+          ctx.lineWidth = Math.max(0.7, staerke || 0.8) * skalierung;
+          ctx.stroke();
+        }
+      },
+      text(inhalt, x, yy, groesse, f, fett, zentriert) {
+        ctx.fillStyle = farbe(f || FARBEN.text);
+        ctx.font = `${fett ? "600 " : ""}${Math.max(9, (groesse || 7) * skalierung)}px system-ui, sans-serif`;
+        ctx.textAlign = zentriert ? "center" : "left";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(inhalt, x, y(yy));
+      },
+    };
+  }
+
+  // ==========================================================================
+  // 8. PDF
+  // ==========================================================================
+
+  const HELVETICA = DATEN.schriftbreiten.normal;
+  const HELVETICA_FETT = DATEN.schriftbreiten.fett;
+  const SONDERZEICHEN = {
+    "ä": "a", "ö": "o", "ü": "u", "Ä": "A", "Ö": "O", "Ü": "U", "ß": "s",
+    "é": "e", "è": "e", "à": "a", "ç": "c", "°": "o", "§": "s", "„": '"',
+    "“": '"', "”": '"', "–": "-", "—": "-", "’": "'",
+  };
+
+  function zeichenbreite(zeichen, fett) {
+    const tabelle = fett ? HELVETICA_FETT : HELVETICA;
+    const code = zeichen.charCodeAt(0);
+    if (code >= 32 && code <= 126) return tabelle[code - 32];
+    const ersatz = SONDERZEICHEN[zeichen];
+    if (ersatz) return tabelle[ersatz.charCodeAt(0) - 32];
+    return tabelle["n".charCodeAt(0) - 32];
+  }
+
+  function textbreite(text, groesse, fett) {
+    let summe = 0;
+    for (const zeichen of String(text)) summe += zeichenbreite(zeichen, fett);
+    return (summe * groesse) / 1000;
+  }
+
+  function umbrechen(text, breite, groesse, fett) {
+    const zeilen = [];
+    String(text)
+      .split("\n")
+      .forEach((absatz) => {
+        const worte = absatz.split(/\s+/).filter(Boolean);
+        if (!worte.length) {
+          zeilen.push("");
+          return;
+        }
+        let aktuell = worte[0];
+        worte.slice(1).forEach((wort) => {
+          const versuch = `${aktuell} ${wort}`;
+          if (textbreite(versuch, groesse, fett) <= breite) aktuell = versuch;
+          else {
+            zeilen.push(aktuell);
+            aktuell = wort;
+          }
+        });
+        zeilen.push(aktuell);
+      });
+    return zeilen;
+  }
+
+  function pdfText(text) {
+    let ausgabe = "";
+    for (const zeichen of String(text)) {
+      const code = zeichen.charCodeAt(0);
+      let ziel = zeichen;
+      if (code > 126) ziel = SONDERZEICHEN[zeichen] || "?";
+      if (ziel === "(" || ziel === ")" || ziel === "\\") ausgabe += "\\";
+      ausgabe += ziel;
+    }
+    return ausgabe;
+  }
+
+  function neuesPdf(fusstext) {
+    const seiten = [];
+    let inhalt = [];
+    const breite = 595.28;
+    const hoehe = 841.89;
+    const rand = 48;
+
+    const pdf = {
+      breite,
+      hoehe,
+      rand,
+      y: hoehe - rand,
+      satzbreite: breite - 2 * rand,
+      neueSeite() {
+        if (inhalt.length) seiten.push(inhalt);
+        inhalt = [];
+        this.y = hoehe - rand;
+      },
+      _befehl(text) {
+        inhalt.push(text);
+      },
+      text(wert, x, y, groesse, farbe, fett, zentriert) {
+        const f = farbe || FARBEN.text;
+        let stelle = x;
+        if (zentriert) stelle = x - textbreite(wert, groesse, fett) / 2;
+        inhalt.push(
+          `BT ${f[0]} ${f[1]} ${f[2]} rg /${fett ? "F2" : "F1"} ${groesse} Tf ` +
+            `1 0 0 1 ${stelle.toFixed(2)} ${y.toFixed(2)} Tm (${pdfText(wert)}) Tj ET`
+        );
+      },
+      rechteck(x, y, b, h, farbe, staerke) {
+        const f = farbe || FARBEN.geraet;
+        inhalt.push(
+          `${f[0]} ${f[1]} ${f[2]} RG ${(staerke || 0.8).toFixed(2)} w ` +
+            `${x.toFixed(2)} ${y.toFixed(2)} ${b.toFixed(2)} ${h.toFixed(2)} re S`
+        );
+      },
+      flaeche(x, y, b, h, farbe) {
+        const f = farbe || FARBEN.flaeche;
+        inhalt.push(
+          `${f[0]} ${f[1]} ${f[2]} rg ${x.toFixed(2)} ${y.toFixed(2)} ` +
+            `${b.toFixed(2)} ${h.toFixed(2)} re f`
+        );
+      },
+      linie(x1, y1, x2, y2, farbe, staerke) {
+        const f = farbe || FARBEN.geraet;
+        inhalt.push(
+          `${f[0]} ${f[1]} ${f[2]} RG ${(staerke || 0.6).toFixed(2)} w ` +
+            `${x1.toFixed(2)} ${y1.toFixed(2)} m ${x2.toFixed(2)} ${y2.toFixed(2)} l S`
+        );
+      },
+      kreis(x, y, r, farbe, staerke, fuellen) {
+        const f = farbe || FARBEN.geraet;
+        const k = r * 0.5523;
+        const teile = [
+          `${(x - r).toFixed(2)} ${y.toFixed(2)} m`,
+          `${(x - r).toFixed(2)} ${(y + k).toFixed(2)} ${(x - k).toFixed(2)} ${(y + r).toFixed(2)} ${x.toFixed(2)} ${(y + r).toFixed(2)} c`,
+          `${(x + k).toFixed(2)} ${(y + r).toFixed(2)} ${(x + r).toFixed(2)} ${(y + k).toFixed(2)} ${(x + r).toFixed(2)} ${y.toFixed(2)} c`,
+          `${(x + r).toFixed(2)} ${(y - k).toFixed(2)} ${(x + k).toFixed(2)} ${(y - r).toFixed(2)} ${x.toFixed(2)} ${(y - r).toFixed(2)} c`,
+          `${(x - k).toFixed(2)} ${(y - r).toFixed(2)} ${(x - r).toFixed(2)} ${(y - k).toFixed(2)} ${(x - r).toFixed(2)} ${y.toFixed(2)} c`,
+        ];
+        teile.push(
+          fuellen
+            ? `${f[0]} ${f[1]} ${f[2]} rg f`
+            : `${f[0]} ${f[1]} ${f[2]} RG ${(staerke || 0.8).toFixed(2)} w S`
+        );
+        inhalt.push(teile.join(" "));
+      },
+      pfad(punkte, farbe, staerke, schliessen, fuellen) {
+        if (punkte.length < 2) return;
+        const f = farbe || FARBEN.geraet;
+        const teile = [`${punkte[0][0].toFixed(2)} ${punkte[0][1].toFixed(2)} m`];
+        punkte.slice(1).forEach((p) => teile.push(`${p[0].toFixed(2)} ${p[1].toFixed(2)} l`));
+        if (schliessen) teile.push("h");
+        if (fuellen) teile.push(`${f[0]} ${f[1]} ${f[2]} rg f`);
+        else {
+          teile.unshift(`${f[0]} ${f[1]} ${f[2]} RG ${(staerke || 0.8).toFixed(2)} w`);
+          teile.push("S");
+        }
+        inhalt.push(teile.join(" "));
+      },
+      absatz(text, groesse, einzug, farbe, fett) {
+        umbrechen(text, this.satzbreite - (einzug || 0), groesse, fett).forEach((zeile) => {
+          if (this.y < rand + 40) this.neueSeite();
+          this.y -= groesse * 1.35;
+          if (zeile) this.text(zeile, rand + (einzug || 0), this.y, groesse, farbe, fett);
+        });
+      },
+      bytes() {
+        if (inhalt.length) seiten.push(inhalt);
+        // Fusszeile auf jede Seite
+        seiten.forEach((seite, nummer) => {
+          const y = rand - 14;
+          seite.push(
+            `0.8 0.83 0.87 RG 0.8 w ${rand} ${y + 12} m ${breite - rand} ${y + 12} l S`
+          );
+          seite.push(
+            `BT 0.45 0.47 0.52 rg /F1 8 Tf 1 0 0 1 ${rand} ${y} Tm (${pdfText(fusstext)}) Tj ET`
+          );
+          const zaehler = `Seite ${nummer + 1} von ${seiten.length}`;
+          seite.push(
+            `BT 0.45 0.47 0.52 rg /F1 8 Tf 1 0 0 1 ` +
+              `${(breite - rand - textbreite(zaehler, 8)).toFixed(2)} ${y} Tm (${zaehler}) Tj ET`
+          );
+        });
+
+        const objekte = [];
+        const hinzu = (daten) => {
+          objekte.push(daten);
+          return objekte.length;
+        };
+        const f1 = hinzu("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+        const f2 = hinzu("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+        const inhaltIds = seiten.map((seite) => {
+          const strom = seite.join("\n");
+          return hinzu(`<< /Length ${strom.length} >>\nstream\n${strom}\nendstream`);
+        });
+        const seitenIds = [];
+        const pagesId = objekte.length + seiten.length + 1;
+        seiten.forEach((_, index) => {
+          seitenIds.push(
+            hinzu(
+              `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${breite} ${hoehe}] ` +
+                `/Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >> >> ` +
+                `/Contents ${inhaltIds[index]} 0 R >>`
+            )
+          );
+        });
+        const pages = hinzu(
+          `<< /Type /Pages /Count ${seitenIds.length} /Kids [${seitenIds
+            .map((id) => `${id} 0 R`)
+            .join(" ")}] >>`
+        );
+        const katalog = hinzu(`<< /Type /Catalog /Pages ${pages} 0 R >>`);
+
+        let ausgabe = "%PDF-1.4\n";
+        const versatz = [];
+        objekte.forEach((daten, index) => {
+          versatz.push(ausgabe.length);
+          ausgabe += `${index + 1} 0 obj\n${daten}\nendobj\n`;
+        });
+        const xref = ausgabe.length;
+        ausgabe += `xref\n0 ${objekte.length + 1}\n0000000000 65535 f \n`;
+        versatz.forEach((stelle) => {
+          ausgabe += `${String(stelle).padStart(10, "0")} 00000 n \n`;
+        });
+        ausgabe += `trailer\n<< /Size ${objekte.length + 1} /Root ${katalog} 0 R >>\n`;
+        ausgabe += `startxref\n${xref}\n%%EOF\n`;
+
+        const bytes = new Uint8Array(ausgabe.length);
+        for (let i = 0; i < ausgabe.length; i += 1) bytes[i] = ausgabe.charCodeAt(i) & 0xff;
+        return bytes;
+      },
+    };
+    return pdf;
+  }
+
+  function stundenPdf(stunde, ort, optionen) {
+    optionen = optionen || {};
+    const pdf = neuesPdf(`Kinderturnen - Stundenbild vom ${datumDeutsch(heute())}`);
+    const akzent = [0.09, 0.34, 0.55];
+
+    // Kopf
+    const oben = pdf.hoehe - 42;
+    pdf.text(stunde.ueberschrift || "Ki Tu", pdf.breite / 2, oben, 20, akzent, true, true);
+    pdf.text(datumDeutsch(stunde.datum), pdf.breite - pdf.rand - 60, oben, 11, FARBEN.text);
+    const kopfzeile = [stunde.altersgruppe_name, stunde.ort_name];
+    if (stunde.thema) {
+      kopfzeile.push("Motto: " + stunde.thema[0].toUpperCase() + stunde.thema.slice(1));
+    }
+    pdf.y = oben - 16;
+    pdf.text(kopfzeile.join("   -   "), pdf.breite / 2, pdf.y, 9, FARBEN.grau, false, true);
+    pdf.y -= 16;
+
+    const eckzeile = (beschriftung, phase) => {
+      const teil = (stunde.teile || []).find((t) => t.phase === phase);
+      if (!teil || !teil.uebungen.length) return;
+      pdf.y -= 14;
+      pdf.text(beschriftung, pdf.rand, pdf.y, 11, akzent, true);
+      const versatz = pdf.rand + 76;
+      teil.uebungen.forEach((uebung, index) => {
+        if (index) pdf.y -= 12;
+        pdf.text(uebung.name, versatz, pdf.y, 10.5, FARBEN.text, true);
+        const material = materialText(uebung, true);
+        if (material !== "kein Material") {
+          umbrechen(material, pdf.breite - pdf.rand - versatz, 8.5).forEach((zeile) => {
+            pdf.y -= 11;
+            pdf.text(zeile, versatz, pdf.y, 8.5, FARBEN.grau);
+          });
+        }
+      });
+      pdf.y -= 4;
+    };
+
+    eckzeile("Anfang:", "aufwaermen");
+    eckzeile("Koordination:", "koordination");
+
+    const hauptteil = hauptteilVon(stunde);
+    const stationen = hauptteil ? hauptteil.uebungen : [];
+    if (hauptteil && hauptteil.parallel && stationen.length) {
+      pdf.y -= 13;
+      pdf.text(
+        `Hauptteil: ${stationen.length} Stationen, Wechsel im Uhrzeigersinn`,
+        pdf.rand,
+        pdf.y,
+        9,
+        FARBEN.grau
+      );
+    }
+
+    const listenHoehe = 15 * Math.max(1, stationen.length) + 24;
+    const verfuegbar = pdf.y - pdf.rand - listenHoehe - 46;
+    const ausForm =
+      (pdf.satzbreite * (stunde.ort_breite || 15)) / Math.max(1, stunde.ort_laenge || 27);
+    const planHoehe = Math.max(140, Math.min(ausForm, verfuegbar));
+    pdf.y -= planHoehe + 12;
+    zeichnePlan(pdf, stunde, ort, pdf.rand, pdf.y, pdf.satzbreite, planHoehe, {});
+    pdf.y -= 4;
+
+    pdf.y -= 8;
+    stationen.forEach((station, index) => {
+      pdf.y -= 14;
+      const kreisX = pdf.rand + 7;
+      pdf.kreis(kreisX, pdf.y + 3, 7, akzent, 0.9);
+      pdf.text(String(index + 1), kreisX, pdf.y, 8, akzent, true, true);
+      const name = `${station.name}:`;
+      pdf.text(name, pdf.rand + 19, pdf.y, 10, FARBEN.text, true);
+      const textX = pdf.rand + 19 + textbreite(name, 10, true) + 5;
+      umbrechen(materialText(station, true), pdf.breite - pdf.rand - textX, 9).forEach(
+        (zeile, stelle) => {
+          if (stelle) pdf.y -= 11;
+          pdf.text(zeile, stelle === 0 ? textX : pdf.rand + 19, pdf.y, 9, FARBEN.text);
+        }
+      );
+    });
+    pdf.y -= 6;
+    eckzeile("Ende:", "abschluss");
+
+    if (optionen.mitDetails) detailseiten(pdf, stunde);
+    return pdf.bytes();
+  }
+
+  function detailseiten(pdf, stunde) {
+    pdf.neueSeite();
+    pdf.y -= 6;
+    pdf.text("Ablauf", pdf.rand, pdf.y, 13, [0.09, 0.34, 0.55], true);
+    pdf.y -= 6;
+    pdf.linie(pdf.rand, pdf.y, pdf.breite - pdf.rand, pdf.y, [0.9, 0.92, 0.95], 1);
+
+    (stunde.teile || []).forEach((teil) => {
+      pdf.y -= 16;
+      if (pdf.y < pdf.rand + 60) pdf.neueSeite();
+      pdf.text(PHASEN_TITEL[teil.phase] || teil.phase, pdf.rand, pdf.y, 10.5, FARBEN.text, true);
+      if (teil.notiz) pdf.absatz(teil.notiz, 8.5, 0, FARBEN.grau);
+      teil.uebungen.forEach((uebung) => {
+        pdf.y -= 12;
+        if (pdf.y < pdf.rand + 60) pdf.neueSeite();
+        pdf.text(uebung.name, pdf.rand + 6, pdf.y, 9.5, FARBEN.text, true);
+        pdf.absatz("Material: " + materialText(uebung, false), 8.5, 12, FARBEN.grau);
+        pdf.absatz(uebung.beschreibung, 9, 12, FARBEN.text);
+        if (uebung.aufbau) pdf.absatz("Aufbau: " + uebung.aufbau, 8.5, 12, FARBEN.grau);
+        if (uebung.hinweise) pdf.absatz("Hinweis: " + uebung.hinweise, 8.5, 12, FARBEN.grau);
+      });
+    });
+
+    // Sicherheit
+    const hinweise = [];
+    stunde.teile.forEach((teil) =>
+      teil.uebungen.forEach((uebung) => {
+        Object.keys(uebung.geraete || {}).forEach((id) => {
+          const hinweis = SICHERHEITSHINWEISE[id];
+          if (hinweis && !hinweise.includes(`${geraetName(id)}: ${hinweis}`)) {
+            hinweise.push(`${geraetName(id)}: ${hinweis}`);
+          }
+        });
+      })
+    );
+    if (hinweise.length) {
+      pdf.y -= 18;
+      if (pdf.y < pdf.rand + 80) pdf.neueSeite();
+      pdf.text("Sicherheit und Absicherung", pdf.rand, pdf.y, 13, [0.09, 0.34, 0.55], true);
+      hinweise.forEach((hinweis) => pdf.absatz("- " + hinweis, 9, 6, FARBEN.text));
+    }
+  }
+
+  // ==========================================================================
+  // 9. Speicher (auf dem Geraet) und Oberflaeche
+  // ==========================================================================
+
+  const SCHLUESSEL_ORTE = "kitu.orte";
+  const SCHLUESSEL_STUNDEN = "kitu.stunden";
+  const SCHLUESSEL_KOPF = "kitu.kopftitel";
+
+  function ladeOrte() {
+    try {
+      const roh = localStorage.getItem(SCHLUESSEL_ORTE);
+      if (roh) {
+        const eigene = JSON.parse(roh);
+        if (Array.isArray(eigene) && eigene.length) return eigene;
+      }
+    } catch (fehler) {
+      /* Kein Speicher verfuegbar - dann eben die Vorlagen. */
+    }
+    return JSON.parse(JSON.stringify(DATEN.orte));
+  }
+
+  function sichereOrte(orte) {
+    try {
+      localStorage.setItem(SCHLUESSEL_ORTE, JSON.stringify(orte));
+    } catch (fehler) {
+      /* privater Modus - Aenderung gilt nur fuer diese Sitzung */
+    }
+  }
+
+  function ladeStunden() {
+    try {
+      return JSON.parse(localStorage.getItem(SCHLUESSEL_STUNDEN) || "[]");
+    } catch (fehler) {
+      return [];
+    }
+  }
+
+  function sichereStunden(stunden) {
+    try {
+      localStorage.setItem(SCHLUESSEL_STUNDEN, JSON.stringify(stunden.slice(-60)));
+    } catch (fehler) {
+      /* nichts zu tun */
+    }
+  }
+
+  const $ = (id) => document.getElementById(id);
+
+  const zustand = {
+    orte: ladeOrte(),
+    stunden: ladeStunden(),
+    ergebnis: null,
+    massstab: null,
+    gezogen: null,
+    versatz: [0, 0],
+    seed: 1,
+  };
+
+  function aktuellerOrt() {
+    return zustand.orte.find((o) => o.id === $("ort").value) || zustand.orte[0];
+  }
+
+  function aktuelleGruppe() {
+    return GRUPPEN.find((g) => g.id === $("gruppe").value) || GRUPPEN[0];
+  }
+
+  function fuelleFelder() {
+    $("ort").innerHTML = zustand.orte
+      .map((o) => `<option value="${o.id}">${o.name}</option>`)
+      .join("");
+    $("gruppe").innerHTML = GRUPPEN.map(
+      (g) => `<option value="${g.id}">${g.name}</option>`
+    ).join("");
+    $("gruppe").value = (GRUPPEN[2] || GRUPPEN[0]).id;
+    $("thema").innerHTML =
+      '<option value="">ohne Motto</option>' +
+      THEMEN.map(
+        (t) => `<option value="${t}">${t[0].toUpperCase() + t.slice(1)}</option>`
+      ).join("");
+    $("datum").value = heute();
+    try {
+      const kopf = localStorage.getItem(SCHLUESSEL_KOPF);
+      if (kopf) $("ueberschrift").value = kopf;
+    } catch (fehler) {
+      /* egal */
+    }
+  }
+
+  function planen(neuerSeed) {
+    const ort = aktuellerOrt();
+    if (!ort) return;
+    if (neuerSeed) zustand.seed = Math.floor(Math.random() * 100000) + 1;
+    const form = $("form").value;
+    const stationszahlFeld = parseInt($("stationszahl").value, 10);
+    const koordination = $("koordination").value;
+
+    const auftrag = {
+      ort,
+      gruppe: aktuelleGruppe(),
+      dauer: Math.max(20, parseInt($("dauer").value, 10) || 60),
+      thema: $("thema").value,
+      schwerpunkt: $("schwerpunkt").value.trim(),
+      ueberschrift: $("ueberschrift").value.trim() || "Ki Tu",
+      datum: $("datum").value || heute(),
+      stationsbetrieb: form === "stationen" ? true : form === "spiel" ? false : null,
+      stationszahl: Number.isFinite(stationszahlFeld) ? stationszahlFeld : null,
+      koordinationsteil: koordination === "ja" ? true : koordination === "nein" ? false : null,
+      seed: zustand.seed,
+      stil: stilprofil(
+        zustand.stunden.filter((s) => s.quelle === "eigene"),
+        aktuelleGruppe().id
+      ),
+    };
+
+    zustand.ergebnis = plane(auftrag);
+    zeichneAlles();
+    aktualisiereListe();
+  }
+
+  function zeichneAlles() {
+    const leinwand = $("plan");
+    const flaeche = $("planflaeche");
+    if (!leinwand || !zustand.ergebnis) return;
+
+    const skalierung = window.devicePixelRatio || 1;
+    const kasten = leinwand.getBoundingClientRect();
+    const breite = kasten.width || flaeche.clientWidth || 320;
+    const hoehe = kasten.height || 240;
+    leinwand.width = Math.max(200, Math.floor(breite * skalierung));
+    leinwand.height = Math.max(150, Math.floor(hoehe * skalierung));
+
+    const ctx = leinwand.getContext("2d");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, leinwand.width, leinwand.height);
+
+    const zeichner = leinwandZeichner(ctx, leinwand.height, skalierung);
+    const stationen = stationenVon(zustand.ergebnis.stunde);
+    const streit = konflikte(stationen, aktuellerOrt())
+      .flat()
+      .filter((name) => stationen.some((s) => s.name === name));
+
+    const rand = 8 * skalierung;
+    zustand.massstab = zeichnePlan(
+      zeichner,
+      zustand.ergebnis.stunde,
+      aktuellerOrt(),
+      rand,
+      rand,
+      leinwand.width - 2 * rand,
+      leinwand.height - 2 * rand,
+      { mitFlaechen: true, mitNamen: true, markiert: streit }
+    );
+    zustand.skalierung = skalierung;
+  }
+
+  function aktualisiereListe() {
+    if (!zustand.ergebnis) return;
+    const stunde = zustand.ergebnis.stunde;
+    const textVon = (phase) => {
+      const teil = (stunde.teile || []).find((t) => t.phase === phase);
+      if (!teil || !teil.uebungen.length) return "-";
+      return teil.uebungen
+        .map((u) => {
+          const material = materialText(u, true);
+          return material === "kein Material" ? u.name : `${u.name} (${material})`;
+        })
+        .join("; ");
+    };
+    $("anfang").textContent = textVon("aufwaermen");
+    const koordination = (stunde.teile || []).find((t) => t.phase === "koordination");
+    $("koordination-zeile").hidden = !koordination || !koordination.uebungen.length;
+    $("koordination-text").textContent = textVon("koordination");
+    $("ende").textContent = textVon("abschluss");
+
+    $("stationsliste").innerHTML = stationenVon(stunde)
+      .map(
+        (station) =>
+          `<li><span><span class="name">${station.name}:</span> ` +
+          `<span class="material">${materialText(station, true)}</span></span></li>`
+      )
+      .join("");
+
+    $("warnungen").textContent = (zustand.ergebnis.warnungen || []).join(" ");
+  }
+
+  // -- Stationen verschieben -------------------------------------------------
+  function zeigerPosition(ereignis) {
+    const leinwand = $("plan");
+    const kasten = leinwand.getBoundingClientRect();
+    const skalierung = zustand.skalierung || window.devicePixelRatio || 1;
+    const x = (ereignis.clientX - kasten.left) * (leinwand.width / kasten.width);
+    const y = (ereignis.clientY - kasten.top) * (leinwand.height / kasten.height);
+    return [x, leinwand.height - y, skalierung];
+  }
+
+  function zeigerStart(ereignis) {
+    if (!zustand.massstab || !zustand.ergebnis) return;
+    const [x, y] = zeigerPosition(ereignis);
+    const station = stationAnPunkt(stationenVon(zustand.ergebnis.stunde), zustand.massstab, x, y);
+    if (!station) return;
+    zustand.gezogen = station;
+    const [mx, my] = zustand.massstab.meter(x, y);
+    zustand.versatz = [mx - station.x, my - station.y];
+    $("plan").setPointerCapture(ereignis.pointerId);
+    ereignis.preventDefault();
+  }
+
+  function zeigerBewegung(ereignis) {
+    if (!zustand.gezogen) return;
+    const [x, y] = zeigerPosition(ereignis);
+    const [mx, my] = zustand.massstab.meter(x, y);
+    const station = zustand.gezogen;
+    // Fangraster - auch die Hallengrenze wird auf das Raster gelegt.
+    const aufRaster = (wert) => Math.round(wert / RASTER_ZIEHEN) * RASTER_ZIEHEN;
+    const maxX =
+      Math.floor((zustand.massstab.halleLaenge - station.stellLaenge) / RASTER_ZIEHEN) *
+      RASTER_ZIEHEN;
+    const maxY =
+      Math.floor((zustand.massstab.halleBreite - station.stellBreite) / RASTER_ZIEHEN) *
+      RASTER_ZIEHEN;
+    const neuX = Math.max(0, Math.min(aufRaster(mx - zustand.versatz[0]), maxX));
+    const neuY = Math.max(0, Math.min(aufRaster(my - zustand.versatz[1]), maxY));
+    station.x = runde(neuX, 2);
+    station.y = runde(neuY, 2);
+    zeichneAlles();
+    ereignis.preventDefault();
+  }
+
+  function zeigerEnde(ereignis) {
+    if (!zustand.gezogen) return;
+    zustand.gezogen = null;
+    try {
+      $("plan").releasePointerCapture(ereignis.pointerId);
+    } catch (fehler) {
+      /* egal */
+    }
+  }
+
+  // -- Geraete des Ortes -----------------------------------------------------
+  function zeigeGeraete() {
+    const ort = aktuellerOrt();
+    if (!ort) return;
+    const bekannt = DATEN.geraete.map((g) => g.id);
+    const ids = Array.from(new Set(Object.keys(ort.ausstattung).concat(bekannt)));
+    ids.sort((a, b) => geraetName(a).localeCompare(geraetName(b), "de"));
+    $("geraete-liste").innerHTML = ids
+      .map(
+        (id) =>
+          `<label>${geraetName(id)}<input type="number" min="0" data-geraet="${id}" ` +
+          `value="${ort.ausstattung[id] || 0}"></label>`
+      )
+      .join("");
+    $("geraete-dialog").showModal();
+  }
+
+  function uebernehmeGeraete() {
+    const ort = aktuellerOrt();
+    $("geraete-liste")
+      .querySelectorAll("input[data-geraet]")
+      .forEach((feld) => {
+        const anzahl = parseInt(feld.value, 10) || 0;
+        if (anzahl > 0) ort.ausstattung[feld.dataset.geraet] = anzahl;
+        else delete ort.ausstattung[feld.dataset.geraet];
+      });
+    sichereOrte(zustand.orte);
+    $("geraete-dialog").close();
+  }
+
+  // -- PDF -------------------------------------------------------------------
+  function dateiname(stunde) {
+    const roh = `${stunde.datum}_${stunde.altersgruppe_id}_${stunde.titel}`;
+    return (
+      roh
+        .replace(/[äÄ]/g, "ae")
+        .replace(/[öÖ]/g, "oe")
+        .replace(/[üÜ]/g, "ue")
+        .replace(/ß/g, "ss")
+        .replace(/[^A-Za-z0-9_-]+/g, "_")
+        .replace(/_+/g, "_")
+        .slice(0, 80) + ".pdf"
+    );
+  }
+
+  function pdfSpeichern() {
+    if (!zustand.ergebnis) return;
+    const stunde = zustand.ergebnis.stunde;
+    stunde.ueberschrift = $("ueberschrift").value.trim() || "Ki Tu";
+    stunde.datum = $("datum").value || stunde.datum;
+    const bytes = stundenPdf(stunde, aktuellerOrt(), { mitDetails: $("details").checked });
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const verweis = document.createElement("a");
+    verweis.href = url;
+    verweis.download = dateiname(stunde);
+    document.body.appendChild(verweis);
+    verweis.click();
+    document.body.removeChild(verweis);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  function merken(alsEigene) {
+    if (!zustand.ergebnis) return;
+    const stunde = JSON.parse(JSON.stringify(zustand.ergebnis.stunde));
+    stunde.quelle = alsEigene ? "eigene" : "geplant";
+    stunde.ueberschrift = $("ueberschrift").value.trim() || "Ki Tu";
+    zustand.stunden = zustand.stunden.filter((s) => s.id !== stunde.id).concat([stunde]);
+    sichereStunden(zustand.stunden);
+    $("warnungen").textContent = alsEigene
+      ? "Als eigene Stunde gemerkt - sie praegt ab jetzt den Stil."
+      : "Stunde auf diesem Geraet gemerkt.";
+  }
+
+  // -- Start -----------------------------------------------------------------
+  function starte() {
+    fuelleFelder();
+
+    $("knopf-planen").addEventListener("click", () => planen(false));
+    $("knopf-wuerfeln").addEventListener("click", () => planen(true));
+    $("knopf-pdf").addEventListener("click", pdfSpeichern);
+    $("knopf-speichern").addEventListener("click", () => merken(false));
+    $("knopf-eigene").addEventListener("click", () => merken(true));
+    $("knopf-geraete").addEventListener("click", zeigeGeraete);
+    $("geraete-fertig").addEventListener("click", uebernehmeGeraete);
+    $("geraete-zuruecksetzen").addEventListener("click", () => {
+      zustand.orte = JSON.parse(JSON.stringify(DATEN.orte));
+      sichereOrte(zustand.orte);
+      fuelleFelder();
+      $("geraete-dialog").close();
+    });
+
+    const einstellungen = $("einstellungen");
+    $("knopf-einstellungen").addEventListener("click", () => {
+      einstellungen.hidden = !einstellungen.hidden;
+      $("knopf-einstellungen").setAttribute("aria-expanded", String(!einstellungen.hidden));
+      requestAnimationFrame(zeichneAlles);
+    });
+    $("knopf-schliessen").addEventListener("click", () => {
+      einstellungen.hidden = true;
+      requestAnimationFrame(zeichneAlles);
+    });
+
+    $("ueberschrift").addEventListener("change", () => {
+      try {
+        localStorage.setItem(SCHLUESSEL_KOPF, $("ueberschrift").value);
+      } catch (fehler) {
+        /* egal */
+      }
+    });
+    ["ort", "gruppe", "dauer", "thema", "form", "stationszahl", "koordination"].forEach(
+      (id) => $(id).addEventListener("change", () => planen(false))
+    );
+
+    const leinwand = $("plan");
+    leinwand.addEventListener("pointerdown", zeigerStart);
+    leinwand.addEventListener("pointermove", zeigerBewegung);
+    leinwand.addEventListener("pointerup", zeigerEnde);
+    leinwand.addEventListener("pointercancel", zeigerEnde);
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => zeichneAlles()).observe($("planflaeche"));
+    }
+    window.addEventListener("resize", zeichneAlles);
+    window.addEventListener("orientationchange", () => setTimeout(zeichneAlles, 200));
+
+    // Auf breiten Schirmen sind die Einstellungen gleich offen.
+    if (window.innerWidth >= 900) einstellungen.hidden = false;
+    planen(false);
+  }
+
+  // Fuer Tests und Erweiterungen zugaenglich machen.
+  window.KiTu = {
+    plane,
+    platziere,
+    stellflaeche,
+    konflikte,
+    kollisionen,
+    bedarf,
+    stundenPdf,
+    stationenVon,
+    zustand,
+    planen,
+    GRUPPEN,
+    THEMEN,
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", starte);
+  } else {
+    starte();
+  }
+})();
+</script>
+</body>
+</html>

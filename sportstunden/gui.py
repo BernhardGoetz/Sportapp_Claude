@@ -183,10 +183,17 @@ class Planerfenster(tk.Tk):
         self.stationen_var = tk.StringVar()
         self._eingabe(links, "Stationen (leer = nach Platz)", self.stationen_var)
 
+        self.details_var = tk.BooleanVar(value=False)
         self.koordination_var = tk.StringVar(value="automatisch")
         self._feld(
             links, "Koordinationsteil", self.koordination_var, ["automatisch", "ja", "nein"]
         )
+
+        ttk.Checkbutton(
+            links,
+            text="PDF mit Detailseiten",
+            variable=self.details_var,
+        ).pack(anchor="w", pady=(8, 0))
 
         knopfleiste = ttk.Frame(links)
         knopfleiste.pack(fill="x", pady=(12, 4))
@@ -460,6 +467,7 @@ class Planerfenster(tk.Tk):
             bestand=self.ergebnis.bestand,
             trainer=str(einstellungen.get("trainer", "")),
             verein=str(einstellungen.get("verein", "")),
+            mit_details=bool(self.details_var.get()),
             ort=self._gewaehlter_ort(),
         )
         messagebox.showinfo("PDF", f"PDF geschrieben:\n{pfad}")

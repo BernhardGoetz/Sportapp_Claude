@@ -1,0 +1,340 @@
+/* Kinderturnen-Stundenplaner - Oberflaeche fuer Handy und Rechner.
+   Der Plan bekommt so viel Platz wie moeglich. */
+
+:root {
+  --akzent: #17568c;
+  --akzent-hell: #e7eef6;
+  --linie: #cfd8e3;
+  --text: #1a1c20;
+  --grau: #6b7280;
+  --warn: #b02a19;
+  --grund: #ffffff;
+  --flaeche: #f5f7fa;
+  --rand: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --akzent: #7fb3e6;
+    --akzent-hell: #1d2836;
+    --linie: #33415a;
+    --text: #eef2f7;
+    --grau: #a6b0be;
+    --grund: #131720;
+    --flaeche: #1a1f2a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* Das hidden-Attribut muss staerker sein als eigene display-Regeln. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--grund);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* -- Kopf ---------------------------------------------------------------- */
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px var(--rand);
+  border-bottom: 1px solid var(--linie);
+  flex: 0 0 auto;
+}
+
+.kopf-titel {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ueberschrift {
+  font-size: clamp(1.1rem, 4vw, 1.6rem);
+  font-weight: 700;
+  color: var(--akzent);
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  min-width: 3ch;
+  width: 8ch;
+  flex: 0 1 auto;
+}
+
+.ueberschrift:focus { outline: 2px solid var(--akzent); border-radius: 6px; }
+
+.datum {
+  border: none;
+  background: transparent;
+  color: var(--grau);
+  font-size: 0.9rem;
+  padding: 2px;
+}
+
+/* -- Einstellungen ------------------------------------------------------- */
+.einstellungen {
+  display: grid;
+  max-height: 46vh;
+  overflow-y: auto;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 12px;
+  padding: 10px var(--rand);
+  background: var(--flaeche);
+  border-bottom: 1px solid var(--linie);
+  flex: 0 0 auto;
+}
+
+.einstellungen label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  color: var(--grau);
+  gap: 3px;
+}
+
+.einstellungen label.haken {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.einstellungen input,
+.einstellungen select {
+  font-size: 0.95rem;
+  padding: 7px 8px;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  background: var(--grund);
+  color: var(--text);
+  min-height: 38px;
+}
+
+.einstellungen-fuss {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+
+/* -- Hauptbereich: Plan gross, Liste daneben oder darunter --------------- */
+.haupt {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+/* Der Plan liegt absolut in seiner Flaeche - so kann die Leinwand nie
+   auf ihre eigene Groesse zurueckwirken und bleibt immer maximal gross. */
+.planflaeche {
+  position: relative;
+  min-height: min(50vh, 420px);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.planrahmen {
+  position: absolute;
+  top: 6px;
+  left: var(--rand);
+  right: var(--rand);
+  bottom: 16px;
+}
+
+#plan {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;   /* Ziehen statt Scrollen */
+  border-radius: 8px;
+}
+
+.planhinweis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 0 2px;
+  font-size: 0.72rem;
+  color: var(--grau);
+  text-align: center;
+}
+
+.seite {
+  padding: 6px var(--rand) 8px;
+  overflow-y: auto;
+  max-height: 24vh;
+  border-top: 1px solid var(--linie);
+  font-size: 0.86rem;
+}
+
+.zeile { display: flex; gap: 8px; padding: 2px 0; }
+.marke { color: var(--akzent); font-weight: 700; min-width: 6.8rem; }
+
+.stationsliste {
+  list-style: none;
+  margin: 6px 0;
+  padding: 0;
+  counter-reset: station;
+}
+
+.stationsliste li {
+  counter-increment: station;
+  display: flex;
+  gap: 8px;
+  padding: 3px 0;
+  align-items: baseline;
+}
+
+.stationsliste li::before {
+  content: counter(station);
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  line-height: 1.3rem;
+  text-align: center;
+  border: 1px solid var(--akzent);
+  border-radius: 50%;
+  color: var(--akzent);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.stationsliste .name { font-weight: 600; }
+.stationsliste .material { color: var(--grau); }
+
+.warnungen { color: var(--warn); font-size: 0.78rem; margin: 6px 0 0; }
+
+/* -- Knopfleiste --------------------------------------------------------- */
+.leiste {
+  display: flex;
+  gap: 8px;
+  padding: 8px var(--rand);
+  border-top: 1px solid var(--linie);
+  background: var(--flaeche);
+  flex: 0 0 auto;
+  overflow-x: auto;
+}
+
+.knopf {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  background: var(--grund);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.knopf:active { background: var(--akzent-hell); }
+.knopf.haupt-knopf { background: var(--akzent); border-color: var(--akzent); color: #fff; font-weight: 600; }
+.knopf.klein { flex: 0 0 auto; min-height: 38px; font-size: 0.82rem; }
+
+/* -- Dialog -------------------------------------------------------------- */
+.dialog {
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  max-width: min(560px, 92vw);
+  max-height: 84vh;
+  background: var(--grund);
+  color: var(--text);
+}
+
+.dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+.dialog h2 { margin: 0 0 4px; font-size: 1.05rem; color: var(--akzent); }
+.hinweis { font-size: 0.8rem; color: var(--grau); margin: 0 0 10px; }
+
+.geraete-liste {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 6px 10px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.geraete-liste label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.geraete-liste input {
+  width: 4.5rem;
+  min-height: 34px;
+  padding: 4px 6px;
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  background: var(--grund);
+  color: var(--text);
+}
+
+.dialog-fuss { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+/* -- Breite Bildschirme: Liste neben den Plan ---------------------------- */
+@media (min-width: 900px) {
+  .haupt {
+    grid-template-columns: minmax(0, 1fr) 330px;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .seite {
+    max-height: none;
+    border-top: none;
+    border-left: 1px solid var(--linie);
+  }
+
+  .leiste .knopf { flex: 0 1 auto; min-width: 130px; }
+}
+
+/* Handy quer: Liste neben den Plan, damit der Plan hoch bleibt */
+@media (max-height: 560px) and (min-width: 600px) and (max-width: 899px) {
+  .haupt {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .seite {
+    max-height: none;
+    border-top: none;
+    border-left: 1px solid var(--linie);
+    font-size: 0.78rem;
+  }
+
+  .planflaeche { min-height: 0; }
+  .planhinweis { display: none; }
+  .kopf, .leiste { padding-top: 4px; padding-bottom: 4px; }
+  .knopf { min-height: 38px; }
+}
+
+/* Sehr flache Fenster ohne Platz daneben */
+@media (max-height: 520px) and (max-width: 599px) {
+  .seite { max-height: 22vh; }
+  .planhinweis { display: none; }
+  .planflaeche { min-height: 0; }
+}
