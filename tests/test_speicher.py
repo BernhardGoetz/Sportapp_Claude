@@ -45,9 +45,9 @@ class SpeicherTest(unittest.TestCase):
 
     def test_stunden_roundtrip_und_eigene(self):
         self.speicher.initialisiere_beispieldaten()
-        ort = self.speicher.ort("halle-schulzentrum")
+        ort = self.speicher.ort("halle-grundschule")
         stunde = eigene_stunde(
-            self.katalog, ort, "d", {"aufwaermen": ["aufw_kettenfangen"]}
+            self.katalog, ort, "grundschule_1", {"aufwaermen": ["aufw_versteinern"]}
         )
         self.speicher.speichere_stunde(stunde)
         geladen = self.speicher.stunde(stunde.id)

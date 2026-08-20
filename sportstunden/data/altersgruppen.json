@@ -1,95 +1,60 @@
 {
-  "koordination_ab_alter": 8,
+  "koordination_ab_alter": 6,
   "altersgruppen": [
     {
-      "id": "bambini",
-      "name": "Bambini (4-5 Jahre)",
-      "alter_min": 4,
-      "alter_max": 5,
+      "id": "eltern_kind",
+      "name": "Eltern-Kind-Turnen (1-3 Jahre)",
+      "alter_min": 1,
+      "alter_max": 3,
+      "koordination_schwerpunkte": ["gleichgewicht", "orientierung"],
+      "druckbedingungen": [],
+      "max_intensitaet": 2,
+      "kinder_pro_station": 3,
+      "hinweis": "Immer mit Begleitperson. Kurze Impulse, viel Wiederholung, alles zum Ausprobieren - kein Vormachen und Nachmachen, keine Wartezeiten."
+    },
+    {
+      "id": "kleinkind",
+      "name": "Kleinkinderturnen (3-4 Jahre)",
+      "alter_min": 3,
+      "alter_max": 4,
       "koordination_schwerpunkte": ["gleichgewicht", "orientierung"],
       "druckbedingungen": [],
       "max_intensitaet": 3,
-      "hinweis": "Bewegungsgrundformen spielerisch, kurze Erklaerungen, viele Wiederholungen, keine Wartezeiten."
+      "kinder_pro_station": 3,
+      "hinweis": "Bewegungsgrundformen spielerisch: krabbeln, klettern, rutschen, schaukeln. Bilder und Geschichten statt Technikansagen."
     },
     {
-      "id": "f",
-      "name": "F-Jugend / Vorschule bis Klasse 1 (6-7 Jahre)",
-      "alter_min": 6,
-      "alter_max": 7,
-      "koordination_schwerpunkte": ["gleichgewicht", "orientierung", "reaktion"],
-      "druckbedingungen": [],
-      "max_intensitaet": 4,
-      "hinweis": "Vielseitiges Bewegen in Spielformen, Koordination laeuft noch im Aufwaermen mit."
-    },
-    {
-      "id": "e",
-      "name": "E-Jugend (8-9 Jahre)",
-      "alter_min": 8,
-      "alter_max": 9,
-      "koordination_schwerpunkte": ["reaktion", "orientierung", "gleichgewicht", "rhythmus"],
-      "druckbedingungen": ["Zeitdruck", "Praezisionsdruck"],
-      "max_intensitaet": 4,
-      "hinweis": "Beginn des guenstigen Lernalters: einfache Koordinationsaufgaben mit klarem Ergebnis, spielerisch verpackt."
-    },
-    {
-      "id": "d",
-      "name": "D-Jugend (10-11 Jahre)",
-      "alter_min": 10,
-      "alter_max": 11,
-      "koordination_schwerpunkte": ["rhythmus", "differenzierung", "kopplung", "orientierung"],
-      "druckbedingungen": ["Zeitdruck", "Praezisionsdruck", "Komplexitaetsdruck"],
-      "max_intensitaet": 4,
-      "hinweis": "Goldenes Lernalter: hohe Bewegungslernfaehigkeit, neue Techniken jetzt einfuehren."
-    },
-    {
-      "id": "c",
-      "name": "C-Jugend (12-13 Jahre)",
-      "alter_min": 12,
-      "alter_max": 13,
-      "koordination_schwerpunkte": ["kopplung", "umstellung", "differenzierung"],
-      "druckbedingungen": ["Zeitdruck", "Komplexitaetsdruck", "Situationsdruck"],
-      "max_intensitaet": 5,
-      "hinweis": "Beginnende Pubertaet: Technik stabilisieren, Wachstumsschuebe beachten, Koordination unter leichtem Druck."
-    },
-    {
-      "id": "b",
-      "name": "B-Jugend (14-15 Jahre)",
-      "alter_min": 14,
-      "alter_max": 15,
-      "koordination_schwerpunkte": ["umstellung", "differenzierung", "kopplung", "reaktion"],
-      "druckbedingungen": ["Zeitdruck", "Belastungsdruck", "Situationsdruck", "Variabilitaetsdruck"],
-      "max_intensitaet": 5,
-      "hinweis": "Koordination unter Belastung und im Wettkampfbezug, Krafttraining mit eigenem Koerpergewicht."
-    },
-    {
-      "id": "a",
-      "name": "A-Jugend (16-18 Jahre)",
-      "alter_min": 16,
-      "alter_max": 18,
-      "koordination_schwerpunkte": ["umstellung", "kopplung", "differenzierung", "reaktion"],
-      "druckbedingungen": ["Zeitdruck", "Belastungsdruck", "Komplexitaetsdruck", "Variabilitaetsdruck"],
-      "max_intensitaet": 5,
-      "hinweis": "Sportartspezifische Koordination unter Wettkampfbedingungen, hohe Belastbarkeit."
-    },
-    {
-      "id": "erwachsene",
-      "name": "Erwachsene (19-59 Jahre)",
-      "alter_min": 19,
-      "alter_max": 59,
-      "koordination_schwerpunkte": ["gleichgewicht", "kopplung", "rhythmus", "differenzierung"],
-      "druckbedingungen": ["Komplexitaetsdruck", "Belastungsdruck"],
-      "max_intensitaet": 5,
-      "hinweis": "Koordination mit Stabilisation koppeln, Belastung individuell steuerbar anbieten."
-    },
-    {
-      "id": "senioren",
-      "name": "Senioren (60+ Jahre)",
-      "alter_min": 60,
-      "alter_max": 99,
-      "koordination_schwerpunkte": ["gleichgewicht", "reaktion", "orientierung"],
+      "id": "vorschule",
+      "name": "Vorschulkinder (5-6 Jahre)",
+      "alter_min": 5,
+      "alter_max": 6,
+      "koordination_schwerpunkte": ["gleichgewicht", "orientierung", "reaktion", "rhythmus"],
       "druckbedingungen": ["Praezisionsdruck"],
       "max_intensitaet": 3,
-      "hinweis": "Sturzprophylaxe, Gleichgewicht mit Festhaltemoeglichkeit, moderate Intensitaet, laengere Pausen."
+      "kinder_pro_station": 4,
+      "hinweis": "Grosse Bewegungsfreude, erste einfache Regeln. Koordination spielerisch verpacken, Erfolgserlebnisse fuer alle einplanen."
+    },
+    {
+      "id": "grundschule_1",
+      "name": "Grundschule 1./2. Klasse (7-8 Jahre)",
+      "alter_min": 7,
+      "alter_max": 8,
+      "koordination_schwerpunkte": ["reaktion", "rhythmus", "gleichgewicht", "orientierung"],
+      "druckbedingungen": ["Zeitdruck", "Praezisionsdruck"],
+      "max_intensitaet": 4,
+      "kinder_pro_station": 4,
+      "hinweis": "Lust auf Bewegungsaufgaben mit klarem Ergebnis. Kleine Wettspiele ja - aber ohne Rangliste, jedes Kind kommt oft dran."
+    },
+    {
+      "id": "grundschule_2",
+      "name": "Grundschule 3./4. Klasse (9-10 Jahre)",
+      "alter_min": 9,
+      "alter_max": 10,
+      "koordination_schwerpunkte": ["rhythmus", "differenzierung", "kopplung", "orientierung", "reaktion"],
+      "druckbedingungen": ["Zeitdruck", "Praezisionsdruck", "Komplexitaetsdruck"],
+      "max_intensitaet": 4,
+      "kinder_pro_station": 5,
+      "hinweis": "Kinder wollen etwas koennen und selbst mitgestalten. Stationen variieren lassen, eigene Ideen der Kinder aufnehmen."
     }
   ]
 }

@@ -1,4 +1,4 @@
-"""Planungslogik: baut aus Katalog, Ort, Altersgruppe und Stil eine Stunde.
+"""Planungslogik: baut aus Katalog, Ort, Gruppe und Stil eine Kinderturnstunde.
 
 Harte Regel: Der gleichzeitige Geraetebedarf einer Stunde darf den Bestand
 des gewaehlten Ortes niemals uebersteigen - die Absicherung (Matten,
@@ -7,6 +7,7 @@ Weichboden, Niedersprungmatten) zaehlt dabei voll mit.
 
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -39,6 +40,8 @@ class Planungsauftrag:
     ausstattung: Optional[Dict[str, int]] = None
     umbau_zwischen_teilen: bool = True
     koordinationsteil: Optional[bool] = None
+    thema: str = ""
+    stationsbetrieb: Optional[bool] = None
     seed: Optional[int] = None
 
     def verfuegbare_ausstattung(self) -> Dict[str, int]:
@@ -103,6 +106,12 @@ class Planer:
                 punkte += 1.6
             elif schwerpunkt in uebung.name.lower():
                 punkte += 0.8
+
+        if auftrag.thema:
+            if uebung.thema == auftrag.thema:
+                punkte += 1.2
+            elif uebung.thema:
+                punkte -= 0.3
 
         gruppe = auftrag.altersgruppe
         if phase == "koordination":
@@ -251,6 +260,7 @@ class Planer:
             teilnehmer=auftrag.teilnehmer,
             teile=teile,
             schwerpunkt=auftrag.schwerpunkt,
+            thema=auftrag.thema,
             datum=auftrag.datum or "",
             quelle="geplant",
         )
@@ -293,18 +303,77 @@ class Planer:
         for phase in phasen:
             # Zwischen den Teilen wird umgebaut - dann steht wieder alles bereit.
             rest = dict(bestand) if auftrag.umbau_zwischen_teilen else gesamt_rest
-            teil, phasen_warnungen = self._plane_teil(
-                phase, ziel_dauern[phase], auftrag, rest, zufall
-            )
+            if phase == "hauptteil":
+                teil, phasen_warnungen = self._plane_hauptteil(
+                    ziel_dauern[phase], auftrag, rest, zufall
+                )
+            else:
+                teil, phasen_warnungen = self._plane_teil(
+                    phase, ziel_dauern[phase], auftrag, rest, zufall
+                )
             if not auftrag.umbau_zwischen_teilen:
                 gesamt_rest = rest
             warnungen.extend(phasen_warnungen)
             teile.append(teil)
         return teile, warnungen
 
+    # -- Hauptteil: Bewegungslandschaft oder grosses Spiel ------------------
+    def stationszahl(self, auftrag: Planungsauftrag) -> int:
+        """Wie viele Stationen die Bewegungslandschaft haben soll."""
+        pro_station = max(2, auftrag.altersgruppe.kinder_pro_station)
+        aus_gruppe = math.ceil(auftrag.teilnehmer / pro_station)
+        if self.stil.stichprobe:
+            gelernt = self.stil.uebungszahl("hauptteil")
+            aus_gruppe = round((aus_gruppe + gelernt) / 2)
+        return max(3, min(8, int(aus_gruppe)))
+
+    def _stationsbetrieb_gewaehlt(
+        self, auftrag: Planungsauftrag, zufall: random.Random
+    ) -> bool:
+        if auftrag.stationsbetrieb is not None:
+            return auftrag.stationsbetrieb
+        return zufall.random() < self.stil.stationsanteil
+
+    def _plane_hauptteil(
+        self,
+        ziel_dauer: int,
+        auftrag: Planungsauftrag,
+        rest: Dict[str, int],
+        zufall: random.Random,
+    ) -> Tuple[Stundenteil, List[str]]:
+        stationen = self._stationsbetrieb_gewaehlt(auftrag, zufall)
+        reihenfolge = [stationen, not stationen]
+        letzte: Tuple[Stundenteil, List[str]] = (Stundenteil(phase="hauptteil"), [])
+        for versuch in reihenfolge:
+            sicherung = dict(rest)
+            teil, warnungen = self._plane_teil(
+                "hauptteil",
+                ziel_dauer,
+                auftrag,
+                rest,
+                zufall,
+                ziel_anzahl=self.stationszahl(auftrag) if versuch else 1,
+                nur_stationen=versuch,
+            )
+            if teil.uebungen:
+                if versuch:
+                    teil.notiz = (
+                        f"Bewegungslandschaft mit {len(teil.uebungen)} Stationen - "
+                        f"je {teil.uebungen[0].dauer} min, dann Wechsel im "
+                        "Uhrzeigersinn. Alle Stationen stehen gleichzeitig."
+                    )
+                    teil.parallel = True
+                return teil, warnungen
+            rest.clear()
+            rest.update(sicherung)
+            letzte = (teil, warnungen)
+        return letzte
+
     def _titel(self, auftrag: Planungsauftrag) -> str:
-        teile = ["Sportstunde", auftrag.altersgruppe.name.split(" (")[0]]
-        if auftrag.schwerpunkt:
+        teile = ["Kinderturnen", auftrag.altersgruppe.name.split(" (")[0]]
+        if auftrag.thema:
+            teile.append(f"Motto {auftrag.thema.capitalize()}")
+        elif auftrag.schwerpunkt:
             teile.append(f"Schwerpunkt {auftrag.schwerpunkt.capitalize()}")
         return " - ".join(teile)
 
@@ -315,9 +384,15 @@ class Planer:
         auftrag: Planungsauftrag,
         rest: Dict[str, int],
         zufall: random.Random,
+        ziel_anzahl: Optional[int] = None,
+        nur_stationen: Optional[bool] = None,
     ) -> Tuple[Stundenteil, List[str]]:
         warnungen: List[str] = []
         kandidaten = self.kandidaten(phase, auftrag)
+        if nur_stationen is not None:
+            kandidaten = [
+                u for u in kandidaten if bool(u.stationsbetrieb) == nur_stationen
+            ]
         if not kandidaten:
             warnungen.append(
                 f"Fuer den Teil '{PHASEN_TITEL.get(phase, phase)}' gibt es im Katalog "
@@ -330,19 +405,27 @@ class Planer:
             key=lambda u: -self._bewertung(u, auftrag, phase, zufall),
         )
 
-        ziel_anzahl = max(1, int(round(self.stil.uebungszahl(phase))))
+        if ziel_anzahl is None:
+            ziel_anzahl = max(1, int(round(self.stil.uebungszahl(phase))))
         gewaehlt: List[Uebung] = []
         bedarfe: List[Tuple[Dict[str, int], Dict[str, int], int]] = []
         uebersprungen_wegen_material = 0
-        restdauer = ziel_dauer
+
+        def zeit_gedeckt() -> bool:
+            """Reicht die Maximaldauer der gewaehlten Uebungen fuer den Teil?
+
+            Eine Uebung darf dabei bis zu ein Viertel laenger laufen als im
+            Katalog vorgesehen - lieber ein Spiel etwas ausdehnen als ein
+            zusaetzliches Spiel in ein kurzes Zeitfenster quetschen.
+            """
+            return sum(u.dauer_max * 1.25 for u in gewaehlt) >= ziel_dauer
 
         for uebung in bewertet:
-            if len(gewaehlt) >= ziel_anzahl and restdauer <= 0:
+            # Genug Uebungen und genug Zeitreserve - fertig.
+            if len(gewaehlt) >= ziel_anzahl and zeit_gedeckt():
                 break
-            if len(gewaehlt) >= ziel_anzahl:
-                # Nur weitermachen, wenn sonst zu viel Zeit uebrig bliebe.
-                if restdauer < uebung.dauer_min:
-                    break
+            if len(gewaehlt) >= ziel_anzahl + 3:
+                break
             geraete, absicherung, gruppen = self.katalog.bedarf(
                 uebung, auftrag.teilnehmer
             )
@@ -357,9 +440,6 @@ class Planer:
             self._buche(gesamt, rest)
             gewaehlt.append(uebung)
             bedarfe.append((geraete, absicherung, gruppen))
-            restdauer -= uebung.dauer_min
-            if restdauer <= 0 and len(gewaehlt) >= ziel_anzahl:
-                break
 
         if not gewaehlt:
             warnungen.append(
@@ -410,6 +490,7 @@ class Planer:
                 "Alle Aufbauten dieses Teils stehen gleichzeitig - der Bedarf ist "
                 "die Summe aller Uebungen."
             )
+
         puffer = max(0, ziel_dauer - sum(u.dauer for u in stunden_uebungen))
         if puffer:
             hinweise.append(

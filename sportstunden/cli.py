@@ -1,4 +1,4 @@
-"""Kommandozeile des Sportstunden-Planers."""
+"""Kommandozeile des Kinderturnen-Stundenplaners."""
 
 from __future__ import annotations
 
@@ -390,7 +390,11 @@ def _ausstattung_auswaehlen(app: Anwendung, ort: Ort) -> Dict[str, int]:
 
 
 def _pdf_schreiben(
-    app: Anwendung, stunde: Stunde, ziel: Optional[str], bestand: Dict[str, int]
+    app: Anwendung,
+    stunde: Stunde,
+    ziel: Optional[str],
+    bestand: Dict[str, int],
+    nur_stundenbild: bool = False,
 ) -> Path:
     einstellungen = app.speicher.einstellungen()
     if ziel:
@@ -406,6 +410,8 @@ def _pdf_schreiben(
         bestand=bestand,
         trainer=einstellungen.get("trainer", ""),
         verein=einstellungen.get("verein", ""),
+        titel=einstellungen.get("kopftitel", "Ki Tu"),
+        nur_stundenbild=nur_stundenbild,
     )
 
 
@@ -511,9 +517,9 @@ def befehl_planen(app: Anwendung, args) -> int:
         return 1
     if not gruppe:
         index = waehle(
-            "Fuer welche Altersgruppe?",
+            "Fuer welche Gruppe?",
             [g.name for g in app.katalog.altersgruppen],
-            standard=4,
+            standard=3,
         )
         gruppe = app.katalog.altersgruppen[index]
 
@@ -522,7 +528,7 @@ def befehl_planen(app: Anwendung, args) -> int:
     teilnehmer = args.teilnehmer or int(einstellungen.get("standard_teilnehmer", 12))
     if interaktiv and interaktiv_moeglich():
         dauer = frage_zahl("Dauer in Minuten", dauer, 20, 240)
-        teilnehmer = frage_zahl("Teilnehmerzahl", teilnehmer, 1, 120)
+        teilnehmer = frage_zahl("Anzahl Kinder", teilnehmer, 1, 60)
         schwerpunkt = args.schwerpunkt or frage("Schwerpunkt (optional, z. B. turnen)")
     else:
         schwerpunkt = args.schwerpunkt or ""
@@ -532,6 +538,31 @@ def befehl_planen(app: Anwendung, args) -> int:
         koordination = True
     elif args.ohne_koordination:
         koordination = False
+
+    stationsbetrieb: Optional[bool] = None
+    if args.stationen:
+        stationsbetrieb = True
+    elif args.spiel:
+        stationsbetrieb = False
+
+    thema = args.thema or ""
+    if interaktiv and interaktiv_moeglich() and not thema:
+        themen = app.katalog.themen()
+        auswahl = waehle(
+            "Motto der Stunde?",
+            ["ohne Motto"] + [t.capitalize() for t in themen] + ["Zufall"],
+        )
+        if auswahl == 0:
+            thema = ""
+        elif auswahl <= len(themen):
+            thema = themen[auswahl - 1]
+        else:
+            thema = "auto"
+    if thema == "auto":
+        import random as _random
+
+        thema = _random.Random(args.seed).choice(app.katalog.themen())
+        print(f"Motto der Stunde: {thema.capitalize()}")
 
     auftrag = Planungsauftrag(
         ort=ort,
@@ -544,6 +575,8 @@ def befehl_planen(app: Anwendung, args) -> int:
         ausstattung=ausstattung,
         umbau_zwischen_teilen=not args.gemeinsames_material,
         koordinationsteil=koordination,
+        thema=thema,
+        stationsbetrieb=stationsbetrieb,
         seed=args.seed,
     )
 
@@ -568,7 +601,13 @@ def befehl_planen(app: Anwendung, args) -> int:
         print(f"\nStunde gespeichert (ID: {ergebnis.stunde.id}).")
 
     if args.pdf is not None:
-        pfad = _pdf_schreiben(app, ergebnis.stunde, args.pdf or None, ergebnis.bestand)
+        pfad = _pdf_schreiben(
+            app,
+            ergebnis.stunde,
+            args.pdf or None,
+            ergebnis.bestand,
+            nur_stundenbild=args.nur_stundenbild,
+        )
         print(f"PDF geschrieben: {pfad}")
 
     if interaktiv and interaktiv_moeglich() and not args.json:
@@ -617,7 +656,9 @@ def befehl_pdf(app: Anwendung, args) -> int:
         return 1
     ort = app.speicher.ort(stunde.ort_id)
     bestand = dict(ort.ausstattung) if ort else {}
-    pfad = _pdf_schreiben(app, stunde, args.datei, bestand)
+    pfad = _pdf_schreiben(
+        app, stunde, args.datei, bestand, nur_stundenbild=args.nur_stundenbild
+    )
     print(f"PDF geschrieben: {pfad}")
     return 0
 
@@ -699,10 +740,10 @@ def befehl_erfassen(app: Anwendung, args) -> int:
     index = waehle("Ort der Stunde", [f"{o.name} ({ORTSARTEN[o.art]})" for o in orte])
     ort = orte[index]
     index = waehle(
-        "Altersgruppe", [g.name for g in app.katalog.altersgruppen], standard=4
+        "Gruppe", [g.name for g in app.katalog.altersgruppen], standard=3
     )
     gruppe = app.katalog.altersgruppen[index]
-    teilnehmer = frage_zahl("Teilnehmerzahl", 12, 1, 120)
+    teilnehmer = frage_zahl("Anzahl Kinder", 12, 1, 60)
     titel = frage("Titel der Stunde", f"Eigene Stunde {gruppe.name.split(' (')[0]}")
     datum = frage("Datum", date.today().isoformat())
 
@@ -886,7 +927,10 @@ def befehl_einstellungen(app: Anwendung, args) -> int:
 def parser_bauen() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sportstunden",
-        description="Automatische Planung von Sportstunden fuer verschiedene Kurse.",
+        description=(
+            "Automatische Planung von Kinderturnstunden (1-10 Jahre) - "
+            "Freizeitsport, mit Stundenbild als PDF."
+        ),
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
@@ -931,19 +975,36 @@ def parser_bauen() -> argparse.ArgumentParser:
     p.add_argument("ort")
     p.set_defaults(funktion=befehl_ort_loeschen)
 
-    p = unter.add_parser("planen", help="Sportstunde planen")
+    p = unter.add_parser("planen", help="Kinderturnstunde planen")
     p.add_argument("--ort", help="Orts-ID oder Namensteil")
     p.add_argument("--art", choices=sorted(ORTSARTEN), help="Halle, Freien, Sportplatz")
     p.add_argument("--altersgruppe", help="ID der Altersgruppe, z. B. 'd'")
-    p.add_argument("--alter", type=int, help="Alter der Gruppe (waehlt die Altersklasse)")
+    p.add_argument("--alter", type=int, help="Alter der Kinder (waehlt die Gruppe)")
     p.add_argument("--dauer", type=int)
-    p.add_argument("--teilnehmer", type=int)
-    p.add_argument("--schwerpunkt", help="z. B. turnen, ballspiel, ausdauer")
+    p.add_argument("--teilnehmer", type=int, help="Anzahl Kinder")
+    p.add_argument("--schwerpunkt", help="z. B. turnen, ballschule, klettern")
     p.add_argument("--titel")
     p.add_argument("--datum")
     p.add_argument("--geraete", help="Nur diese Ausstattung verwenden ('matte=8,...')")
     p.add_argument("--ohne", help="Diese Geraete heute ausschliessen")
     p.add_argument("--seed", type=int, help="Zufallsstartwert fuer reproduzierbare Plaene")
+    p.add_argument("--thema", help="Motto der Stunde (z. B. sommer, dschungel, 'auto')")
+    p.add_argument(
+        "--stationen",
+        action="store_true",
+        help="Hauptteil als Bewegungslandschaft mit Stationen planen",
+    )
+    p.add_argument(
+        "--spiel",
+        action="store_true",
+        help="Hauptteil als grosses Spiel statt Stationen planen",
+    )
+    p.add_argument(
+        "--nur-stundenbild",
+        action="store_true",
+        dest="nur_stundenbild",
+        help="PDF nur als einseitiges Stundenbild (ohne Detailseiten)",
+    )
     p.add_argument("--mit-koordination", action="store_true", dest="mit_koordination")
     p.add_argument("--ohne-koordination", action="store_true", dest="ohne_koordination")
     p.add_argument(
@@ -970,9 +1031,15 @@ def parser_bauen() -> argparse.ArgumentParser:
     p.add_argument("--json", action="store_true")
     p.set_defaults(funktion=befehl_zeigen)
 
-    p = unter.add_parser("pdf", help="Stunde als PDF speichern")
+    p = unter.add_parser("pdf", help="Stunde als PDF-Stundenbild speichern")
     p.add_argument("stunde")
     p.add_argument("--datei", help="Zieldatei oder Zielordner")
+    p.add_argument(
+        "--nur-stundenbild",
+        action="store_true",
+        dest="nur_stundenbild",
+        help="Nur die erste Seite (Stundenbild) ausgeben",
+    )
     p.set_defaults(funktion=befehl_pdf)
 
     p = unter.add_parser("erfassen", help="Eigene Stunde erfassen (Stil-Vorlage)")

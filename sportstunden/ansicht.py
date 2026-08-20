@@ -86,10 +86,11 @@ def stunde_text(
     zeilen.append(
         f"Ort:          {stunde.ort_name} ({ORTSARTEN.get(stunde.ortsart, stunde.ortsart)})"
     )
-    zeilen.append(f"Altersgruppe: {stunde.altersgruppe_name}")
+    zeilen.append(f"Gruppe:       {stunde.altersgruppe_name}")
     zeilen.append(
-        f"Dauer:        {stunde.gesamtdauer} min   Teilnehmende: {stunde.teilnehmer}"
+        f"Dauer:        {stunde.gesamtdauer} min   Kinder: {stunde.teilnehmer}"
         + (f"   Schwerpunkt: {stunde.schwerpunkt}" if stunde.schwerpunkt else "")
+        + (f"   Motto: {stunde.thema.capitalize()}" if stunde.thema else "")
     )
     zeilen.append(f"Datum:        {stunde.datum}   ID: {stunde.id}")
 
@@ -104,6 +105,8 @@ def stunde_text(
         if not teil.uebungen:
             zeilen.append(f"  ! {teil.notiz or 'Keine Uebung geplant.'}")
             continue
+        if teil.notiz:
+            zeilen.append(f"  ({teil.notiz})")
         for uebung in teil.uebungen:
             zeilen.append(f"  {uebung.dauer:>3} min  {uebung.name}")
             zeilen.append(
@@ -179,7 +182,7 @@ def stunden_liste(stunden: Iterable[Stunde]) -> str:
         return "Noch keine Stunden gespeichert."
     zeilen = [titelzeile("Gespeicherte Stunden")]
     zeilen.append(
-        f"  {'ID':<18} {'Datum':<12} {'Altersgruppe':<16} {'Dauer':<7} {'Quelle':<8} Titel"
+        f"  {'ID':<18} {'Datum':<12} {'Gruppe':<16} {'Dauer':<7} {'Quelle':<8} Titel"
     )
     for stunde in sorted(stunden, key=lambda s: s.datum, reverse=True):
         zeilen.append(

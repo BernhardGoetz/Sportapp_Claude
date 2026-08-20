@@ -1,6 +1,63 @@
 {
   "uebungen": [
     {
+      "id": "aufw_karten_laufen",
+      "name": "Karten laufen",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 6,
+      "dauer_max": 12,
+      "tags": [
+        "spielform",
+        "laufen",
+        "reaktion",
+        "fantasie"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "bewegungskarten": 1
+      },
+      "intensitaet": 3,
+      "thema": "",
+      "beschreibung": "Die Kinder laufen frei durch die Halle. Die Uebungsleitung zieht eine Bewegungskarte und zeigt sie: huepfen wie ein Frosch, schleichen wie eine Katze, rennen wie der Wind, schlafen wie ein Baer. Jedes Bild wird sofort nachgemacht.",
+      "aufbau": "Kein Aufbau, freie Flaeche. Bewegungskarten bereitlegen.",
+      "hinweise": "Bilder statt Erklaerungen. Karten nach der Stunde von den Kindern aussuchen lassen - das macht Lust auf die naechste Woche."
+    },
+    {
+      "id": "aufw_sommer_karten",
+      "name": "Sommer-Karten laufen",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle",
+        "freien"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 6,
+      "dauer_max": 12,
+      "tags": [
+        "spielform",
+        "laufen",
+        "fantasie",
+        "reaktion"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "bewegungskarten": 1
+      },
+      "intensitaet": 3,
+      "thema": "sommer",
+      "beschreibung": "Sommergeschichte in Bewegung: durch den Sand stapfen, ins Wasser springen, Wellen ueberhuepfen, Sonnencreme verteilen (Koerper abklopfen), Eis schlecken und wieder losrennen. Jede Karte zeigt ein Sommerbild.",
+      "aufbau": "Kein Aufbau noetig, Sommer-Bewegungskarten bereitlegen.",
+      "hinweise": "Passt als Einstieg zu einer Sommer-Bewegungslandschaft - Bilder in der Stunde wieder aufgreifen."
+    },
+    {
       "id": "aufw_inselspiel",
       "name": "Inselspiel",
       "phase": "aufwaermen",
@@ -9,8 +66,8 @@
         "freien",
         "sportplatz"
       ],
-      "alter_min": 4,
-      "alter_max": 9,
+      "alter_min": 3,
+      "alter_max": 8,
       "dauer_min": 6,
       "dauer_max": 12,
       "tags": [
@@ -24,9 +81,10 @@
         "reifen": 8
       },
       "intensitaet": 3,
-      "beschreibung": "Die Kinder bewegen sich frei als Fische durch die Halle. Auf das Signal 'Hai!' rettet sich jedes Kind auf eine Insel (Reifen). Nach jeder Runde wird eine Insel weggenommen, dann duerfen sich mehrere Kinder eine Insel teilen.",
-      "aufbau": "8 Reifen gleichmaessig ueber die Flaeche verteilt auslegen, Abstand mindestens 2 m.",
-      "hinweise": "Bewegungsart variieren (huepfen, seitlich, rueckwaerts). Kein Schubsen an den Inseln - Regel vorher besprechen."
+      "thema": "wasser",
+      "beschreibung": "Die Kinder schwimmen als Fische durch die Halle. Auf das Signal 'Welle!' rettet sich jedes Kind auf eine Insel (Reifen). Nach jeder Runde verschwindet eine Insel - dann teilen sich mehrere Kinder eine Insel.",
+      "aufbau": "8 Reifen mit mindestens 2 m Abstand ueber die Flaeche verteilen.",
+      "hinweise": "Am Ende passen alle gemeinsam auf wenige Inseln - das feiern statt jemanden ausscheiden zu lassen."
     },
     {
       "id": "aufw_feuer_wasser_sturm",
@@ -36,7 +94,7 @@
         "halle"
       ],
       "alter_min": 5,
-      "alter_max": 11,
+      "alter_max": 10,
       "dauer_min": 6,
       "dauer_max": 10,
       "tags": [
@@ -47,13 +105,39 @@
       ],
       "organisation": "ganze_gruppe",
       "geraete_fix": {
-        "langbank": 4,
-        "matte": 4
+        "langbank": 3,
+        "matte": 3
       },
       "intensitaet": 4,
-      "beschreibung": "Freies Laufen durch die Halle. Bei 'Feuer' auf eine Bank steigen, bei 'Wasser' auf eine Matte legen, bei 'Sturm' an die Sprossenwand oder Wand fassen. Wer zuletzt kommt, macht eine Zusatzaufgabe (z. B. 3 Huepfer).",
-      "aufbau": "4 Langbaenke und 4 Matten verteilt in der Halle aufstellen, freie Laufwege lassen.",
-      "hinweise": "Banklaengsseiten frei halten, nicht von den Baenken springen."
+      "thema": "",
+      "beschreibung": "Freies Laufen. Bei 'Feuer' auf eine Bank steigen, bei 'Wasser' auf eine Matte legen, bei 'Sturm' an die Sprossenwand fassen und festhalten.",
+      "aufbau": "3 Langbaenke und 3 Matten verteilt aufstellen, Laufwege frei lassen.",
+      "hinweise": "Von den Baenken wird abgestiegen, nicht gesprungen. Bei den Kleinen nur zwei Signale nutzen."
+    },
+    {
+      "id": "aufw_tierlauf",
+      "name": "Tierbewegungen",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle",
+        "freien"
+      ],
+      "alter_min": 2,
+      "alter_max": 7,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "fantasie",
+        "kraft",
+        "koordination",
+        "spielform"
+      ],
+      "organisation": "ganze_gruppe",
+      "intensitaet": 3,
+      "thema": "dschungel",
+      "beschreibung": "Alle bewegen sich wie Tiere durch den Dschungel: Baerengang, Krebsgang, Froschhuepfer, Schlange am Boden, Affensprung, Elefantenstampfen.",
+      "aufbau": "Freie Flaeche, kein Material.",
+      "hinweise": "Kraftformen kurz halten und mit lockerem Laufen abwechseln. Kinder duerfen eigene Tiere vorschlagen."
     },
     {
       "id": "aufw_versteinern",
@@ -65,172 +149,175 @@
         "sportplatz"
       ],
       "alter_min": 5,
-      "alter_max": 12,
+      "alter_max": 10,
       "dauer_min": 5,
       "dauer_max": 10,
       "tags": [
         "spielform",
         "fangspiel",
-        "laufen",
-        "ausdauer"
+        "laufen"
       ],
       "organisation": "ganze_gruppe",
       "geraete_fix": {
-        "leibchen": 3
+        "leibchen": 2,
+        "huetchen": 4
       },
       "intensitaet": 4,
-      "beschreibung": "Zwei bis drei Faenger (Leibchen) versuchen, die anderen abzuschlagen. Wer gefangen ist, bleibt breitbeinig stehen und kann durch Hindurchkriechen befreit werden.",
-      "aufbau": "Spielfeld mit Huetchen begrenzen (ca. halbes Hallenfeld), Faenger mit Leibchen kennzeichnen.",
-      "hinweise": "Faenger regelmaessig wechseln. Bei grosser Gruppe Feld vergroessern."
+      "thema": "",
+      "beschreibung": "Zwei Fangkinder (Leibchen) versuchen abzuschlagen. Wer gefangen ist, steht breitbeinig - ein anderes Kind befreit durch Hindurchkriechen.",
+      "aufbau": "Spielfeld mit 4 Huetchen begrenzen, Fangkinder mit Leibchen kennzeichnen.",
+      "hinweise": "Fangkinder oft wechseln, damit jedes Kind einmal drankommt."
     },
     {
-      "id": "aufw_ballschule_laufen",
-      "name": "Balltreiben im Laufen",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle",
-        "sportplatz"
-      ],
-      "alter_min": 7,
-      "alter_max": 16,
-      "dauer_min": 6,
-      "dauer_max": 12,
-      "tags": [
-        "ballschule",
-        "laufen",
-        "technik",
-        "orientierung"
-      ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
-      "geraete_pro_gruppe": {
-        "basketball": 1
-      },
-      "geraete_fix": {
-        "huetchen": 8
-      },
-      "intensitaet": 3,
-      "beschreibung": "Jede Person dribbelt frei durch das Feld. Auf Zuruf folgen Aufgaben: Handwechsel, Rueckwaertsdribbling, Dribbling im Sitzen, Tempowechsel. Zusammenstoesse vermeiden - Blick heben.",
-      "aufbau": "Feld mit 8 Huetchen markieren, pro Person einen Ball bereitlegen.",
-      "hinweise": "Blickkontakt zum Trainer als Regel einbauen (Zahlen zeigen)."
-    },
-    {
-      "id": "aufw_kettenfangen",
-      "name": "Kettenfangen",
+      "id": "aufw_farben_fangen",
+      "name": "Farbenfangen",
       "phase": "aufwaermen",
       "orte": [
         "halle",
         "freien",
         "sportplatz"
       ],
-      "alter_min": 8,
-      "alter_max": 18,
-      "dauer_min": 6,
+      "alter_min": 4,
+      "alter_max": 9,
+      "dauer_min": 5,
       "dauer_max": 10,
       "tags": [
         "spielform",
         "fangspiel",
-        "ausdauer",
-        "teamwork"
-      ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "huetchen": 8,
-        "leibchen": 2
-      },
-      "intensitaet": 5,
-      "beschreibung": "Zwei Faenger starten, jede gefangene Person haengt sich an. Ab vier Personen teilt sich die Kette. Gefangen wird nur mit den aeusseren Haenden.",
-      "aufbau": "Spielfeld mit Huetchen begrenzen.",
-      "hinweise": "Kette darf nicht reissen - sonst zaehlt der Fang nicht. Feldgroesse an Kondition anpassen."
-    },
-    {
-      "id": "aufw_zombieball",
-      "name": "Zombieball",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 9,
-      "alter_max": 18,
-      "dauer_min": 8,
-      "dauer_max": 15,
-      "tags": [
-        "spielform",
-        "wurfspiel",
         "reaktion",
-        "wettkampf"
+        "wahrnehmung"
       ],
       "organisation": "ganze_gruppe",
       "geraete_fix": {
-        "softball": 4
+        "markierungsteller": 12
       },
       "intensitaet": 4,
-      "beschreibung": "Alle gegen alle mit weichen Baellen. Wer getroffen wird, geht in die Hocke. Trifft der eigene Werfer spaeter jemanden, darf man wieder aufstehen.",
-      "aufbau": "Halbes Hallenfeld, 4 Softbaelle ins Feld geben.",
-      "hinweise": "Nur unterhalb der Schulter treffen, keine Kopftreffer - Regel vorher deutlich machen."
+      "thema": "",
+      "beschreibung": "Die Uebungsleitung ruft eine Farbe. Alle Kinder laufen zu einem Teller dieser Farbe und stellen sich darauf oder daneben. Wer zuerst dort ist, darf die naechste Farbe rufen.",
+      "aufbau": "12 Markierungsteller in vier Farben ueber die Flaeche verteilen.",
+      "hinweise": "Farben vorher gemeinsam benennen - fuer die Kleinen sind zwei Farben genug."
     },
     {
-      "id": "aufw_laufabc_einstieg",
-      "name": "Lauf-ABC als Einlaufen",
-      "phase": "aufwaermen",
-      "orte": [
-        "sportplatz",
-        "freien"
-      ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 8,
-      "dauer_max": 15,
-      "tags": [
-        "leichtathletik",
-        "technik",
-        "laufen",
-        "rhythmus"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "huetchen": 2
-      },
-      "intensitaet": 3,
-      "beschreibung": "Nach 5 Minuten lockerem Einlaufen folgen Lauf-ABC-Formen ueber 20 m: Fussgelenkarbeit, Kniehebelauf, Anfersen, Hopserlauf, Steigerungslauf. Rueckweg locker gehend.",
-      "aufbau": "Pro Reihe zwei Huetchen im Abstand von 20 m, Reihen mit 2 m Abstand nebeneinander.",
-      "hinweise": "Qualitaet vor Tempo. Bei nassem Untergrund Steigerungslaeufe reduzieren."
-    },
-    {
-      "id": "aufw_waldlauf_spiel",
-      "name": "Geländelauf mit Aufgaben",
-      "phase": "aufwaermen",
-      "orte": [
-        "freien"
-      ],
-      "alter_min": 8,
-      "alter_max": 99,
-      "dauer_min": 8,
-      "dauer_max": 15,
-      "tags": [
-        "ausdauer",
-        "laufen",
-        "natur"
-      ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "huetchen": 6
-      },
-      "intensitaet": 4,
-      "beschreibung": "Lockerer Dauerlauf im Gelaende. Alle 2 Minuten eine Zusatzaufgabe an einer Station: 10 Huepfer, Slalom um Baeume, seitliches Laufen, Ausfallschritte.",
-      "aufbau": "Rundkurs mit 6 Huetchen markieren, Laenge ca. 400 m.",
-      "hinweise": "Gruppe zusammenhalten, langsamste Person gibt das Tempo vor. Wurzeln und Loecher vorher zeigen."
-    },
-    {
-      "id": "aufw_reifenparcours",
-      "name": "Reifen-Parcours frei",
+      "id": "aufw_seifenblasen",
+      "name": "Seifenblasen fangen",
       "phase": "aufwaermen",
       "orte": [
         "halle",
         "freien"
       ],
-      "alter_min": 4,
+      "alter_min": 1,
+      "alter_max": 4,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "spielform",
+        "wahrnehmung",
+        "fantasie",
+        "eltern_kind"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "seifenblasen": 1
+      },
+      "intensitaet": 2,
+      "thema": "",
+      "beschreibung": "Die Uebungsleitung pustet Seifenblasen, die Kinder laufen, huepfen und strecken sich, um sie zu zerplatzen. Danach das Gleiche mit den Eltern auf dem Arm oder an der Hand.",
+      "aufbau": "Freie Flaeche, Seifenblasen bereithalten.",
+      "hinweise": "Boden wird rutschig - Seifenblasen nur ueber Matten oder in einem Bereich pusten und danach trocknen."
+    },
+    {
+      "id": "aufw_luftballon_hoch",
+      "name": "Luftballon hochhalten",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 8,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "ballschule",
+        "koordination",
+        "spielform",
+        "wahrnehmung"
+      ],
+      "organisation": "einzeln",
+      "gruppengroesse": 1,
+      "geraete_pro_gruppe": {
+        "luftballon": 1
+      },
+      "intensitaet": 3,
+      "thema": "",
+      "beschreibung": "Jedes Kind haelt einen Luftballon in der Luft - mit der Hand, dem Kopf, dem Knie, dem Fuss. Danach zu zweit gemeinsam.",
+      "aufbau": "Pro Kind einen Luftballon aufblasen (einige Ersatzballons bereithalten).",
+      "hinweise": "Geplatzte Ballonreste sofort einsammeln (Verschluckungsgefahr)."
+    },
+    {
+      "id": "aufw_zauberer",
+      "name": "Der Zauberer verwandelt",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle",
+        "freien"
+      ],
+      "alter_min": 3,
+      "alter_max": 7,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "fantasie",
+        "spielform",
+        "laufen",
+        "reaktion"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "gymnastikstab": 1
+      },
+      "intensitaet": 3,
+      "thema": "ritter",
+      "beschreibung": "Der Zauberer (Uebungsleitung, spaeter ein Kind) verwandelt die Gruppe mit dem Zauberstab: in Riesen, Zwerge, Roboter, Schmetterlinge, Steine. Bei 'Abrakadabra' laufen alle wieder frei.",
+      "aufbau": "Freie Flaeche, ein Gymnastikstab als Zauberstab.",
+      "hinweise": "Kinder als Zauberer einsetzen - sie erfinden die besten Verwandlungen."
+    },
+    {
+      "id": "aufw_schwungtuch_wellen",
+      "name": "Schwungtuch-Wellen",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 10,
+      "dauer_min": 6,
+      "dauer_max": 12,
+      "tags": [
+        "teamwork",
+        "spielform",
+        "rhythmus",
+        "kraft"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "schwungtuch": 1,
+        "softball": 2
+      },
+      "intensitaet": 3,
+      "thema": "wasser",
+      "beschreibung": "Alle halten das Schwungtuch: kleine und grosse Wellen, Baelle darauf huepfen lassen, gemeinsam unter das Tuch huschen (Zelt), Namen aufrufen und Platz tauschen.",
+      "aufbau": "Schwungtuch in der Hallenmitte ausbreiten, Baelle bereitlegen.",
+      "hinweise": "Klare Kommandos, alle heben und senken gemeinsam. Nicht am Tuch ziehen oder daran haengen."
+    },
+    {
+      "id": "aufw_reifenparcours",
+      "name": "Reifenweg",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle",
+        "freien"
+      ],
+      "alter_min": 3,
       "alter_max": 8,
       "dauer_min": 6,
       "dauer_max": 12,
@@ -242,271 +329,59 @@
       ],
       "organisation": "ganze_gruppe",
       "geraete_fix": {
-        "reifen": 12,
-        "huetchen": 6
+        "reifen": 10,
+        "huetchen": 4
       },
       "intensitaet": 3,
-      "beschreibung": "Die Reifen liegen als Weg aus. Die Kinder huepfen von Reifen zu Reifen, umlaufen Huetchen und probieren verschiedene Sprungarten aus (beidbeinig, einbeinig, mit Drehung).",
-      "aufbau": "12 Reifen als Weg auslegen, dazwischen 6 Huetchen als Slalom.",
-      "hinweise": "Abstand zwischen den Kindern beachten, Einbahnverkehr festlegen."
+      "thema": "",
+      "beschreibung": "Die Reifen liegen als Weg aus. Die Kinder huepfen von Reifen zu Reifen und umlaufen die Huetchen - beidbeinig, einbeinig, rueckwaerts, ganz langsam, ganz schnell.",
+      "aufbau": "10 Reifen als Weg auslegen, dazwischen 4 Huetchen als Slalom.",
+      "hinweise": "Einbahnrichtung festlegen, damit es kein Gedraenge gibt."
     },
     {
-      "id": "aufw_partner_spiegeln",
-      "name": "Spiegel-Aufwaermen mit Partner",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle",
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 8,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
-      "tags": [
-        "partner",
-        "mobilisation",
-        "koordination"
-      ],
-      "organisation": "partner",
-      "gruppengroesse": 2,
-      "intensitaet": 2,
-      "beschreibung": "Paare stehen sich gegenueber. Person A bewegt sich langsam (Ausfallschritte, Armkreisen, Kniebeugen), Person B spiegelt exakt. Nach 90 Sekunden Wechsel, dann Tempo steigern.",
-      "aufbau": "Kein Aufbau noetig, ausreichend Abstand zwischen den Paaren.",
-      "hinweise": "Gut als ruhiger Einstieg oder in kleinen Raeumen einsetzbar."
-    },
-    {
-      "id": "aufw_mobilisation_musik",
-      "name": "Mobilisation zur Musik",
+      "id": "aufw_musikstopp",
+      "name": "Musikstopp-Tanz",
       "phase": "aufwaermen",
       "orte": [
         "halle"
       ],
-      "alter_min": 16,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
+      "alter_min": 3,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
       "tags": [
-        "mobilisation",
         "rhythmus",
-        "gesundheit"
+        "spielform",
+        "tanz",
+        "reaktion"
       ],
       "organisation": "ganze_gruppe",
       "geraete_fix": {
         "musikanlage": 1
       },
-      "intensitaet": 2,
-      "beschreibung": "Systematische Mobilisation von oben nach unten im Musiktakt: Nacken, Schultern, Arme, Rumpf, Hueften, Knie, Sprunggelenke. Danach zwei Minuten lockeres Gehen mit Armbewegungen.",
-      "aufbau": "Kreisaufstellung, Musikanlage bereitstellen.",
-      "hinweise": "Tempo an die Gruppe anpassen, Bewegungsumfang schmerzfrei halten."
-    },
-    {
-      "id": "aufw_staffel_einlaufen",
-      "name": "Begruessungsstaffel",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle",
-        "sportplatz"
-      ],
-      "alter_min": 7,
-      "alter_max": 14,
-      "dauer_min": 6,
-      "dauer_max": 12,
-      "tags": [
-        "staffel",
-        "wettkampf",
-        "laufen",
-        "teamwork"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "huetchen": 2,
-        "staffelstab": 1
-      },
-      "intensitaet": 4,
-      "beschreibung": "Klassische Pendelstaffel ueber 15 m mit wechselnden Fortbewegungsarten: laufen, seitlich, rueckwaerts, Hopserlauf, auf einem Bein.",
-      "aufbau": "Pro Mannschaft Start- und Wendehuetchen im Abstand von 15 m, Staffelstab bereitlegen.",
-      "hinweise": "Wendehuetchen nicht umlaufen lassen, sondern beruehren - reduziert Sturzgefahr."
-    },
-    {
-      "id": "aufw_zahlen_gruppen",
-      "name": "Zahlengruppen",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle",
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 6,
-      "alter_max": 14,
-      "dauer_min": 5,
-      "dauer_max": 8,
-      "tags": [
-        "spielform",
-        "reaktion",
-        "laufen",
-        "teamwork"
-      ],
-      "organisation": "ganze_gruppe",
       "intensitaet": 3,
-      "beschreibung": "Alle laufen frei. Auf eine gerufene Zahl bilden sich Gruppen dieser Groesse und loesen eine kurze Aufgabe (Sitzkreis, Huepfen im Kreis, gemeinsame Bruecke).",
-      "aufbau": "Kein Aufbau noetig.",
-      "hinweise": "Kinder ohne Gruppe nicht ausscheiden lassen, sondern Aufgabe zu zweit erledigen."
+      "thema": "",
+      "beschreibung": "Solange Musik laeuft, wird getanzt und gelaufen. Bei Stopp erstarren alle in einer Figur - Standbild halten, bis die Musik wieder anfaengt. Spaeter Aufgaben ergaenzen: auf einem Bein, ganz klein, ganz gross.",
+      "aufbau": "Freie Flaeche, Musikanlage aufstellen.",
+      "hinweise": "Niemand scheidet aus. Lieblingslieder der Gruppe mitbringen lassen."
     },
     {
-      "id": "aufw_ball_ueber_schnur_warm",
-      "name": "Einwerfen Ball ueber die Schnur",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 8,
-      "alter_max": 14,
-      "dauer_min": 6,
-      "dauer_max": 12,
-      "tags": [
-        "ballschule",
-        "spielform",
-        "wurfspiel"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "softball": 2
-      },
-      "geraete_fix": {
-        "volleyballnetz": 1
-      },
-      "intensitaet": 3,
-      "beschreibung": "Zwei Teams pro Feld werfen und fangen Baelle ueber das hochgehaengte Netz. Der Ball darf nicht auf den Boden fallen. Steigerung: zwei Baelle gleichzeitig.",
-      "aufbau": "Netz auf ca. 2,20 m einstellen, Feldgrenzen mit Markierungstellern kennzeichnen.",
-      "hinweise": "Fangtechnik kurz zeigen, weiche Baelle nutzen."
-    },
-    {
-      "id": "aufw_seilspringen_warm",
-      "name": "Seilspringen-Einstieg",
+      "id": "aufw_ballkontakte",
+      "name": "Ball-Entdecker",
       "phase": "aufwaermen",
       "orte": [
         "halle",
         "sportplatz",
-        "freien"
-      ],
-      "alter_min": 8,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
-      "tags": [
-        "ausdauer",
-        "rhythmus",
-        "koordination",
-        "sprung"
-      ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
-      "geraete_pro_gruppe": {
-        "springseil": 1
-      },
-      "intensitaet": 4,
-      "beschreibung": "Vier Durchgaenge à 60 Sekunden Seilspringen mit 30 Sekunden Pause: beidbeinig, Wechselsprung, Laufsprung, freie Variante.",
-      "aufbau": "Pro Person ein Springseil in passender Laenge, ausreichend Abstand.",
-      "hinweise": "Seillaenge pruefen (Griffe bis zur Achsel). Auf weichem Untergrund oder Hallenboden springen."
-    },
-    {
-      "id": "aufw_tierlauf",
-      "name": "Tierbewegungen",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle",
         "freien"
       ],
       "alter_min": 4,
-      "alter_max": 8,
-      "dauer_min": 5,
-      "dauer_max": 10,
-      "tags": [
-        "fantasie",
-        "kraft",
-        "koordination",
-        "spielform"
-      ],
-      "organisation": "ganze_gruppe",
-      "intensitaet": 3,
-      "beschreibung": "Die Kinder bewegen sich wie Tiere durch die Halle: Baerengang, Krebsgang, Froschhuepfer, Schlange am Boden, Pferdegalopp. Der Trainer ruft die Tiere.",
-      "aufbau": "Kein Aufbau noetig, Flaeche frei raeumen.",
-      "hinweise": "Kraftbetonte Formen kurz halten, zwischendurch lockeres Laufen."
-    },
-    {
-      "id": "aufw_dreiecklauf",
-      "name": "Dreieckslauf mit Tempowechsel",
-      "phase": "aufwaermen",
-      "orte": [
-        "sportplatz",
-        "freien"
-      ],
-      "alter_min": 12,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
-      "tags": [
-        "ausdauer",
-        "laufen",
-        "wettkampf"
-      ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "huetchen": 3
-      },
-      "intensitaet": 4,
-      "beschreibung": "Dreieck mit 30 m Seitenlaenge. Seite 1 locker traben, Seite 2 zuegig laufen, Seite 3 gehen. Sechs bis acht Runden, Richtungswechsel nach der Haelfte.",
-      "aufbau": "Drei Huetchen als Dreieck mit je 30 m Seitenlaenge stellen.",
-      "hinweise": "Belastung individuell steuern lassen, Wechsel klar ansagen."
-    },
-    {
-      "id": "aufw_bankspiel",
-      "name": "Baenkefangen",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 7,
-      "alter_max": 14,
-      "dauer_min": 6,
-      "dauer_max": 12,
-      "tags": [
-        "spielform",
-        "fangspiel",
-        "koordination",
-        "gleichgewicht"
-      ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "langbank": 6,
-        "matte": 6,
-        "leibchen": 2
-      },
-      "intensitaet": 4,
-      "beschreibung": "Die Baenke sind sichere Inseln, auf denen nicht gefangen werden darf. Zwei Faenger jagen die Gruppe. Auf einer Bank darf man nur 5 Sekunden bleiben.",
-      "aufbau": "6 Langbaenke verteilt aufstellen, an jeder Bank eine Matte laengs an die Absprungseite legen.",
-      "hinweise": "Nicht von den Baenken springen, sondern absteigen. Kein Fangen auf der Bank."
-    },
-    {
-      "id": "aufw_hoch_tief_ballkontakt",
-      "name": "Ballkontakte in Bewegung",
-      "phase": "aufwaermen",
-      "orte": [
-        "halle",
-        "sportplatz",
-        "freien"
-      ],
-      "alter_min": 6,
-      "alter_max": 12,
+      "alter_max": 10,
       "dauer_min": 5,
       "dauer_max": 10,
       "tags": [
         "ballschule",
         "koordination",
-        "technik"
+        "wahrnehmung"
       ],
       "organisation": "einzeln",
       "gruppengroesse": 1,
@@ -514,57 +389,517 @@
         "softball": 1
       },
       "intensitaet": 3,
-      "beschreibung": "Jedes Kind bewegt sich mit einem Ball: hochwerfen und fangen, um den Koerper kreisen, unter dem Bein durchgeben, prellen im Gehen, klatschen vor dem Fangen.",
+      "thema": "",
+      "beschreibung": "Jedes Kind probiert mit einem Ball: hochwerfen und fangen, um den Bauch kreisen, unter dem Bein durchgeben, im Gehen prellen, vor dem Fangen klatschen.",
       "aufbau": "Pro Kind einen weichen Ball verteilen.",
-      "hinweise": "Aufgaben nacheinander ansagen, Erfolgserlebnisse ermoeglichen."
+      "hinweise": "Aufgaben nacheinander ansagen und immer Zeit zum freien Ausprobieren lassen."
     },
     {
-      "id": "aufw_gehen_gelenke_senioren",
-      "name": "Gehen und Gelenke wecken",
+      "id": "aufw_eltern_kind_reise",
+      "name": "Reise mit Mama und Papa",
       "phase": "aufwaermen",
       "orte": [
-        "halle",
-        "freien"
+        "halle"
       ],
-      "alter_min": 60,
-      "alter_max": 99,
+      "alter_min": 1,
+      "alter_max": 3,
       "dauer_min": 6,
       "dauer_max": 12,
       "tags": [
-        "mobilisation",
-        "gesundheit",
-        "gleichgewicht"
+        "eltern_kind",
+        "fantasie",
+        "wahrnehmung",
+        "spielform"
+      ],
+      "organisation": "partner",
+      "gruppengroesse": 2,
+      "geraete_fix": {
+        "musikanlage": 1
+      },
+      "intensitaet": 2,
+      "thema": "",
+      "beschreibung": "Gemeinsame Reise durch die Halle: im Auto fahren (Kind auf dem Schoss schaukeln), im Flugzeug fliegen (Kind auf den Armen), auf dem Pferd reiten, im Boot schaukeln. Zum Schluss krabbeln alle gemeinsam durch die Halle.",
+      "aufbau": "Freie Flaeche, ruhige Musik.",
+      "hinweise": "Alle Bewegungen sind Angebote - jedes Kind entscheidet mit, was es mitmacht."
+    },
+    {
+      "id": "aufw_schatzsuche_start",
+      "name": "Schatzsuche zum Start",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 4,
+      "alter_max": 9,
+      "dauer_min": 6,
+      "dauer_max": 12,
+      "tags": [
+        "spielform",
+        "teamwork",
+        "laufen",
+        "fantasie"
       ],
       "organisation": "ganze_gruppe",
       "geraete_fix": {
-        "langbank": 2
+        "sandsaeckchen": 12,
+        "eimer": 2
       },
-      "intensitaet": 2,
-      "beschreibung": "Zuegiges Gehen in Bahnen mit Armbewegungen, dann im Stand Mobilisation der grossen Gelenke. Abschliessend Zehen- und Fersengang ueber 10 m.",
-      "aufbau": "Zwei Langbaenke als Sitz- und Haltemoeglichkeit an den Rand stellen.",
-      "hinweise": "Haltemoeglichkeit anbieten, Tempo selbst waehlen lassen, ausreichend trinken."
+      "intensitaet": 4,
+      "thema": "ritter",
+      "beschreibung": "Ueberall in der Halle liegen Goldstuecke (Sandsaeckchen). Die Kinder sammeln sie einzeln ein und bringen sie in die Schatztruhe. Zweite Runde: nur mit einer Hand, dann auf dem Handruecken balancierend.",
+      "aufbau": "Sandsaeckchen weit verstreut auslegen, zwei Eimer als Schatztruhen aufstellen.",
+      "hinweise": "Immer nur ein Goldstueck pro Weg - so bleibt die Gruppe in Bewegung."
     },
     {
-      "id": "koo_leiter_grundschritte",
-      "name": "Koordinationsleiter - Grundschritte",
+      "id": "aufw_ampelspiel",
+      "name": "Ampelspiel",
+      "phase": "aufwaermen",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 3,
+      "alter_max": 8,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "spielform",
+        "reaktion",
+        "laufen"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "markierungsteller": 3
+      },
+      "intensitaet": 3,
+      "thema": "baustelle",
+      "beschreibung": "Rot: stehen bleiben. Gelb: auf der Stelle laufen. Gruen: losfahren. Die Kinder sind Autos, Baustellenfahrzeuge oder Feuerwehr - mit passenden Geraeuschen.",
+      "aufbau": "Drei farbige Markierungsteller als Ampel bereithalten.",
+      "hinweise": "Fuer die Kleinsten nur Rot und Gruen verwenden."
+    },
+    {
+      "id": "aufw_wettlauf_wiese",
+      "name": "Laufspiele auf der Wiese",
+      "phase": "aufwaermen",
+      "orte": [
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 6,
+      "dauer_max": 12,
+      "tags": [
+        "spielform",
+        "laufen",
+        "teamwork",
+        "natur"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "huetchen": 8
+      },
+      "intensitaet": 4,
+      "thema": "",
+      "beschreibung": "Drei kurze Laufspiele im Wechsel: Tag und Nacht (auf Zuruf zur eigenen Linie laufen), Huetchen umlaufen im Slalom, Paare finden und gemeinsam zum Huetchen laufen.",
+      "aufbau": "Zwei Linien im Abstand von 15 m mit je vier Huetchen markieren.",
+      "hinweise": "Untergrund vorher auf Loecher und Steine pruefen."
+    },
+    {
+      "id": "koo_bank_balancieren",
+      "name": "Balancieren auf der Bank",
+      "phase": "koordination",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "gleichgewicht",
+        "spielform"
+      ],
+      "organisation": "riegen",
+      "gruppengroesse": 6,
+      "geraete_pro_gruppe": {
+        "langbank": 1
+      },
+      "absicherung_pro_gruppe": {
+        "matte": 1
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "gleichgewicht",
+        "orientierung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Ueber die Bank balancieren: vorwaerts, rueckwaerts, seitlich, mit einem Saeckchen auf dem Kopf, mit einer Drehung in der Mitte.",
+      "aufbau": "Pro Riege eine Langbank aufstellen, am Ende eine Matte auslegen.",
+      "hinweise": "Immer nur ein Kind pro Bankhaelfte. Hand zum Festhalten anbieten, nicht ziehen."
+    },
+    {
+      "id": "koo_reifen_sprungmuster",
+      "name": "Sprungmuster in Reifen",
       "phase": "koordination",
       "orte": [
         "halle",
-        "sportplatz",
         "freien"
       ],
-      "alter_min": 8,
-      "alter_max": 99,
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "sprung",
+        "rhythmus"
+      ],
+      "organisation": "riegen",
+      "gruppengroesse": 6,
+      "geraete_pro_gruppe": {
+        "reifen": 6
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "orientierung",
+        "differenzierung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Reifen liegen mal nebeneinander, mal hintereinander, mal versetzt. Sprungmuster: beidbeinig, einbeinig links, einbeinig rechts, im Wechsel, mit halber Drehung.",
+      "aufbau": "Pro Bahn 6 Reifen im vorgegebenen Muster auslegen, danach 2 m Auslauf.",
+      "hinweise": "Weiche Landung ueber die Fussballen zeigen. Kinder duerfen eigene Muster legen."
+    },
+    {
+      "id": "koo_huepfkaestchen",
+      "name": "Huepfkaestchen",
+      "phase": "koordination",
+      "orte": [
+        "freien",
+        "sportplatz",
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 12,
+      "tags": [
+        "koordination",
+        "sprung",
+        "rhythmus",
+        "spielform"
+      ],
+      "organisation": "riegen",
+      "gruppengroesse": 5,
+      "geraete_pro_gruppe": {
+        "kreide": 1,
+        "sandsaeckchen": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "gleichgewicht",
+        "differenzierung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Klassisches Huepfkaestchen: Saeckchen in ein Feld werfen, die Bahn ein- und beidbeinig durchhuepfen, das Saeckchen im Ruecksprung aufheben.",
+      "aufbau": "Pro Gruppe ein Huepfkaestchen mit Kreide aufmalen (in der Halle mit Teppichfliesen oder Reifen legen).",
+      "hinweise": "Bahn kurz halten, damit alle schnell wieder dran sind."
+    },
+    {
+      "id": "koo_tuch_jonglieren",
+      "name": "Tuecher fangen",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "wahrnehmung",
+        "technik"
+      ],
+      "organisation": "einzeln",
+      "gruppengroesse": 1,
+      "geraete_pro_gruppe": {
+        "jongliertuch": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "differenzierung",
+        "reaktion",
+        "kopplung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "thema": "zirkus",
+      "beschreibung": "Ein Tuch hochwerfen und mit der Hand, dem Kopf, dem Knie oder dem Fuss fangen. Danach mit zwei Tuechern im Wechsel - der Einstieg ins Jonglieren.",
+      "aufbau": "Pro Kind zwei Jongliertuecher, Aufstellung mit Abstand.",
+      "hinweise": "Tuecher schweben langsam - das gelingt fast jedem Kind und macht Mut auf mehr."
+    },
+    {
+      "id": "koo_seilchen_springen",
+      "name": "Seilchen springen",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "rhythmus",
+        "sprung"
+      ],
+      "organisation": "einzeln",
+      "gruppengroesse": 1,
+      "geraete_pro_gruppe": {
+        "springseil": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "kopplung"
+      ],
+      "druckbedingungen": [
+        "Zeitdruck"
+      ],
+      "thema": "",
+      "beschreibung": "Erst das Seil vorwaerts kreisen und darueber steigen, dann beidbeinig springen, dann im Wechselschritt. Wer mag, probiert das Langseil in der Gruppe.",
+      "aufbau": "Pro Kind ein Springseil in passender Laenge (Griffe bis zur Achsel), 2 m Abstand.",
+      "hinweise": "Kurze Serien mit Pausen. Wer noch nicht springt, laesst das Seil erst nur schwingen."
+    },
+    {
+      "id": "koo_langseil_wellen",
+      "name": "Wackelschlange (Langseil)",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "sprung",
+        "spielform",
+        "teamwork"
+      ],
+      "organisation": "gruppen",
+      "gruppengroesse": 8,
+      "geraete_pro_gruppe": {
+        "seil_lang": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "reaktion",
+        "rhythmus",
+        "orientierung"
+      ],
+      "druckbedingungen": [
+        "Zeitdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "dschungel",
+      "beschreibung": "Zwei Kinder bewegen das Langseil als Schlange auf dem Boden - die anderen springen darueber, ohne beruehrt zu werden. Steigerung: Seil pendeln lassen, spaeter langsam drehen.",
+      "aufbau": "Pro Gruppe ein Langseil, ringsum 3 m Platz.",
+      "hinweise": "Seil bleibt am Boden, bis alle sicher springen. Schwungkinder regelmaessig wechseln."
+    },
+    {
+      "id": "koo_rollbrett_fahren",
+      "name": "Rollbrett-Fuehrerschein",
+      "phase": "koordination",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
       "dauer_min": 6,
       "dauer_max": 12,
       "tags": [
         "koordination",
+        "kraft",
+        "spielform"
+      ],
+      "organisation": "gruppen",
+      "gruppengroesse": 4,
+      "geraete_pro_gruppe": {
+        "rollbrett": 1,
+        "huetchen": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "kopplung",
+        "orientierung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "baustelle",
+      "beschreibung": "Im Sitzen und in Bauchlage mit den Haenden vorwaerts ziehen, um Huetchen slalomfahren, punktgenau anhalten. Wer alles schafft, bekommt den Rollbrett-Fuehrerschein.",
+      "aufbau": "Pro Gruppe ein Rollbrett und zwei Huetchen im Abstand von 6 m.",
+      "hinweise": "Nie stehen oder knien, Finger weg von den Rollen, lange Haare zusammenbinden."
+    },
+    {
+      "id": "koo_pedalo",
+      "name": "Pedalo und Wackelbrett",
+      "phase": "koordination",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "gleichgewicht"
+      ],
+      "organisation": "gruppen",
+      "gruppengroesse": 4,
+      "geraete_pro_gruppe": {
+        "pedalo": 1,
+        "balancekreisel": 1
+      },
+      "absicherung_pro_gruppe": {
+        "matte": 1
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "gleichgewicht",
+        "differenzierung",
+        "kopplung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "",
+      "beschreibung": "Mit Partnerhilfe auf das Pedalo steigen und eine kurze Strecke fahren. Am Wackelbrett das Gleichgewicht halten, erst mit Halt, dann frei.",
+      "aufbau": "Pro Gruppe ein Pedalo und ein Balancekreisel, daneben eine Matte auslegen.",
+      "hinweise": "Immer ein Kind zum Festhalten daneben. Barfuss oder mit Turnschuhen, nicht in Socken."
+    },
+    {
+      "id": "koo_farbsignal",
+      "name": "Farbsignal-Reaktion",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "reaktion",
+        "spielform"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "markierungsteller": 8
+      },
+      "intensitaet": 4,
+      "koordination": [
+        "reaktion",
+        "orientierung",
+        "umstellung"
+      ],
+      "druckbedingungen": [
+        "Zeitdruck"
+      ],
+      "thema": "",
+      "beschreibung": "Alle bewegen sich im Feld. Rot hochgehalten: sofort stehen bleiben. Gelb: Richtung wechseln. Gruen: schnell laufen. Spaeter werden die Bedeutungen getauscht.",
+      "aufbau": "8 Markierungsteller im Feld verteilen, drei Farbteller behalten.",
+      "hinweise": "Erst zeigen und ansagen, spaeter nur zeigen - das macht den Reiz aus."
+    },
+    {
+      "id": "koo_ueberkreuz",
+      "name": "Ueberkreuz-Spiel",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 8,
+      "tags": [
+        "koordination",
         "rhythmus",
-        "technik",
+        "wahrnehmung"
+      ],
+      "organisation": "ganze_gruppe",
+      "intensitaet": 2,
+      "koordination": [
+        "kopplung",
+        "rhythmus",
+        "differenzierung"
+      ],
+      "druckbedingungen": [
+        "Komplexitaetsdruck"
+      ],
+      "thema": "",
+      "beschreibung": "Im Stand oder Gehen: rechte Hand ans linke Knie und umgekehrt, dann hinten an die Ferse, dann mit Klatschen dazwischen. Zum Schluss zaehlen alle laut mit.",
+      "aufbau": "Kein Aufbau, lockere Aufstellung im Kreis.",
+      "hinweise": "Langsam beginnen. Fehler gehoeren dazu - gemeinsam lachen und weitermachen."
+    },
+    {
+      "id": "koo_leiter_schritte",
+      "name": "Zauberleiter",
+      "phase": "koordination",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
+      "tags": [
+        "koordination",
+        "rhythmus",
         "fussarbeit"
       ],
       "organisation": "riegen",
-      "gruppengroesse": 8,
+      "gruppengroesse": 6,
       "geraete_pro_gruppe": {
         "koordinationsleiter": 1
       },
@@ -579,106 +914,1245 @@
         "Praezisionsdruck"
       ],
       "stationsbetrieb": true,
-      "beschreibung": "Vier Grundschritte durch die Leiter: 1 Kontakt pro Feld, 2 Kontakte pro Feld, seitlicher Ickey-Shuffle, Ein-Aus-Schritt. Jede Form 3 Durchgaenge, Rueckweg locker.",
-      "aufbau": "Koordinationsleiter flach und straff auslegen, Startmarkierung 2 m davor.",
-      "hinweise": "Erst langsam und sauber, dann Tempo steigern. Blick nach vorn, Arme mitnehmen."
+      "thema": "",
+      "beschreibung": "Durch die Leiter: ein Fuss pro Feld, zwei Fuesse pro Feld, seitlich, ein Feld vor und eins zurueck. Erst ganz langsam, dann schneller.",
+      "aufbau": "Koordinationsleiter flach auslegen, Startmarkierung 2 m davor.",
+      "hinweise": "Nicht auf die Sprossen treten. Lieber sauber und langsam als schnell und ungenau."
     },
     {
-      "id": "koo_leiter_kopplung_ball",
-      "name": "Leiter plus Ballaufgabe",
+      "id": "koo_ball_prellen",
+      "name": "Ball-Zauberer",
       "phase": "koordination",
       "orte": [
         "halle",
         "sportplatz"
       ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 5,
+      "dauer_max": 10,
       "tags": [
         "koordination",
         "ballschule",
         "technik"
       ],
-      "organisation": "riegen",
-      "gruppengroesse": 8,
+      "organisation": "einzeln",
+      "gruppengroesse": 1,
       "geraete_pro_gruppe": {
-        "koordinationsleiter": 1,
-        "softball": 2
+        "softball": 1
       },
-      "intensitaet": 4,
+      "intensitaet": 3,
       "koordination": [
+        "differenzierung",
         "kopplung",
-        "rhythmus",
-        "differenzierung"
+        "reaktion"
       ],
       "druckbedingungen": [
-        "Komplexitaetsdruck",
-        "Zeitdruck"
+        "Praezisionsdruck",
+        "Komplexitaetsdruck"
       ],
-      "stationsbetrieb": true,
-      "beschreibung": "Fussarbeit durch die Leiter, dabei gleichzeitig einen Ball prellen oder mit dem Partner zuwerfen. Anschliessend Sprint ueber 5 m.",
-      "aufbau": "Leiter auslegen, Partner mit Ball seitlich in 3 m Abstand postieren.",
-      "hinweise": "Erst Fussarbeit sicher beherrschen, dann Ball dazunehmen (Methodik vom Einfachen zum Komplexen)."
+      "thema": "zirkus",
+      "beschreibung": "Ball prellen im Stand, im Gehen, mit Handwechsel, um den Koerper herum, im Sitzen. Zum Schluss: prellen und dabei die Zahl zeigen, die die Uebungsleitung in die Luft haelt.",
+      "aufbau": "Pro Kind ein Ball, gut aufgepumpt, freie Flaeche.",
+      "hinweise": "Blick heben statt auf den Ball schauen - daraus wird ein Spiel."
     },
     {
-      "id": "koo_reaktion_farbsignal",
-      "name": "Farbsignal-Reaktion",
+      "id": "koo_partner_spiegel",
+      "name": "Spiegelbild",
       "phase": "koordination",
       "orte": [
         "halle",
-        "sportplatz",
-        "freien"
+        "freien",
+        "sportplatz"
       ],
-      "alter_min": 8,
-      "alter_max": 99,
+      "alter_min": 5,
+      "alter_max": 10,
       "dauer_min": 5,
-      "dauer_max": 10,
+      "dauer_max": 8,
       "tags": [
         "koordination",
-        "reaktion",
-        "spielform"
+        "partner",
+        "wahrnehmung"
       ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "markierungsteller": 12
-      },
-      "intensitaet": 4,
+      "organisation": "partner",
+      "gruppengroesse": 2,
+      "intensitaet": 2,
       "koordination": [
-        "reaktion",
         "orientierung",
-        "umstellung"
+        "reaktion",
+        "differenzierung"
       ],
       "druckbedingungen": [
-        "Zeitdruck",
-        "Situationsdruck"
+        "Praezisionsdruck"
       ],
-      "beschreibung": "Alle bewegen sich im Feld. Der Trainer hebt einen farbigen Teller: rot = sofort stoppen, gelb = Richtungswechsel, blau = Sprint zur naechsten Linie. Spaeter Signale vertauschen (Umstellungsfaehigkeit).",
-      "aufbau": "12 Markierungsteller verteilt auslegen, vier Farbteller beim Trainer behalten.",
-      "hinweise": "Signale zunaechst ansagen und zeigen, spaeter nur zeigen."
+      "thema": "",
+      "beschreibung": "Zwei Kinder stehen sich gegenueber. Eines bewegt sich langsam, das andere macht alles spiegelbildlich nach. Nach einer Minute wird gewechselt.",
+      "aufbau": "Kein Aufbau, Paare mit genug Abstand verteilen.",
+      "hinweise": "Ganz langsam ist am schwersten - das gemeinsam ausprobieren."
     },
     {
-      "id": "koo_gleichgewicht_bank",
-      "name": "Balancieren auf der Langbank",
+      "id": "koo_bausteine_stapeln",
+      "name": "Turmbauer",
       "phase": "koordination",
       "orte": [
         "halle"
       ],
-      "alter_min": 6,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
+      "alter_min": 4,
+      "alter_max": 9,
+      "dauer_min": 5,
+      "dauer_max": 10,
       "tags": [
         "koordination",
-        "gleichgewicht",
-        "technik"
+        "teamwork",
+        "wahrnehmung",
+        "spielform"
       ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
+      "organisation": "gruppen",
+      "gruppengroesse": 5,
       "geraete_pro_gruppe": {
+        "baustein": 6,
+        "teppichfliese": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "differenzierung",
+        "gleichgewicht",
+        "kopplung"
+      ],
+      "druckbedingungen": [
+        "Praezisionsdruck"
+      ],
+      "stationsbetrieb": true,
+      "thema": "baustelle",
+      "beschreibung": "Bausteine einzeln auf der Teppichfliese durch die Halle transportieren und am Ziel zu einem moeglichst hohen Turm stapeln - ohne dass er umfaellt.",
+      "aufbau": "Pro Gruppe 6 Bausteine, 2 Teppichfliesen, Start und Ziel im Abstand von 8 m.",
+      "hinweise": "Umgefallene Tuerme sind Teil des Spiels - einfach neu bauen."
+    },
+    {
+      "id": "st_gummibaerenstrasse",
+      "name": "Gummibaerenstrasse",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "gleichgewicht",
+        "klettern",
+        "koordination"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kasten_klein": 2,
+        "barren": 1,
+        "springseil": 2
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "kopplung"
+      ],
+      "thema": "",
+      "beschreibung": "Ueber die kleinen Kaesten steigen, am Barren entlanghangeln und ueber die ausgelegten Seilchen balancieren - ohne den Boden zu beruehren, sonst naschen die Gummibaeren alles auf.",
+      "aufbau": "Zwei kleine Kaesten hintereinander, dahinter der Barren (niedrig), zwischen den Geraeten zwei Seilchen als Weg auslegen, zwei blaue Matten an die Absprungseiten.",
+      "hinweise": "Barren auf Kindhoehe arretieren, Matten unter dem Hangelbereich."
+    },
+    {
+      "id": "st_schiffchen",
+      "name": "Schiffchen",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 9,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "huepfen",
+        "koordination",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "reifen": 6
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "orientierung",
+        "rhythmus"
+      ],
+      "thema": "wasser",
+      "beschreibung": "Von Schiffchen zu Schiffchen springen, ohne ins Wasser zu fallen. Wer moechte, faehrt rueckwaerts oder mit geschlossenen Augen und Handhalten des naechsten Kindes.",
+      "aufbau": "6 Reifen als Schiffchen im Zickzack auslegen, zwei blaue Matten als Hafen an Anfang und Ende.",
+      "hinweise": "Reifen bleiben liegen - nicht als Sprungring hochhalten."
+    },
+    {
+      "id": "st_wackelberg",
+      "name": "Wackelberg",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "mut",
+        "gleichgewicht",
+        "kraft"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "weichbodenmatte": 3,
+        "reck": 1,
+        "ringe": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "orientierung"
+      ],
+      "thema": "",
+      "beschreibung": "Ueber den weichen Berg krabbeln, an der Reckstange hochziehen und mit den Ringen ueber das Tal schwingen und weich landen.",
+      "aufbau": "Drei Weichbodenmatten zum Berg stapeln bzw. aneinanderlegen, Reckstange in Brusthoehe daneben, Ringe darueber haengen lassen.",
+      "hinweise": "Ringe nur bis Schulterhoehe, Landung immer auf dem Weichboden. Eine Person sichert am Ring."
+    },
+    {
+      "id": "st_gebuesch",
+      "name": "Gebuesch",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "kriechen",
+        "wahrnehmung",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kastenteil": 2,
+        "reifen": 3,
+        "jongliertuch": 6
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "orientierung"
+      ],
+      "thema": "dschungel",
+      "beschreibung": "Durch das Gebuesch kriechen: unter den Kastenteilen hindurch, durch die aufgestellten Reifen schluepfen, zwischen den haengenden Tuechern hindurchtauchen.",
+      "aufbau": "Zwei Kastenteile als Tunnel auf zwei Matten stellen, drei Reifen dahinter aufstellen oder halten lassen, Tuecher ueber Reifen und Kastenteile haengen.",
+      "hinweise": "Tunnel standfest bauen, nichts darf auf die Kinder fallen."
+    },
+    {
+      "id": "st_brunnen",
+      "name": "Brunnen",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 9,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "sprung",
+        "mut"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kasten_klein": 2,
         "langbank": 1
       },
-      "absicherung_pro_gruppe": {
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "differenzierung"
+      ],
+      "thema": "wasser",
+      "beschreibung": "Ueber die Bank zum Brunnenrand balancieren, auf den kleinen Kasten steigen und in den Brunnen (Matte) springen - erst klein, dann mit Strecksprung.",
+      "aufbau": "Langbank zu zwei kleinen Kaesten fuehren, davor eine blaue Matte als Wasser, zweite Matte als Landeflaeche.",
+      "hinweise": "Nur ein Kind auf dem Kasten. Landen mit weichen Knien, nicht mit gestreckten Beinen."
+    },
+    {
+      "id": "st_pfuetzenspringen",
+      "name": "Pfuetzenspringen",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "sprung",
+        "koordination",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "langbank": 2,
+        "reifen": 5
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "gleichgewicht"
+      ],
+      "thema": "wasser",
+      "beschreibung": "Auf der Bank entlangbalancieren und von dort in die bunten Pfuetzen springen: mal mit beiden Beinen, mal auf einem, mal ganz weit.",
+      "aufbau": "Zwei Langbaenke hintereinander, daneben und dahinter 5 bunte Reifen als Pfuetzen auslegen.",
+      "hinweise": "Absprunghoehe niedrig halten, Landeflaeche frei und trocken."
+    },
+    {
+      "id": "st_lianen",
+      "name": "Lianenschwingen",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "kraft",
+        "mut",
+        "schwingen"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "tau": 1,
+        "kasten_klein": 1
+      },
+      "absicherung_fix": {
+        "weichbodenmatte": 1,
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "orientierung"
+      ],
+      "thema": "dschungel",
+      "beschreibung": "Vom kleinen Kasten mit dem Tau ueber den Fluss schwingen und auf dem Weichboden landen. Wer mag, klettert am Tau bis zur Markierung.",
+      "aufbau": "Kleinen Kasten neben das Tau stellen, Weichbodenmatte in den Schwungbereich legen, zwei blaue Matten unter das Tau.",
+      "hinweise": "Nur ein Kind am Tau, Haende nicht rutschen lassen, Uebungsleitung sichert am Absprung."
+    },
+    {
+      "id": "st_wackelbruecke",
+      "name": "Wackelbruecke",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "gleichgewicht",
+        "mut"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "langbank": 1,
+        "kasten_klein": 1
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "gleichgewicht",
+        "differenzierung"
+      ],
+      "thema": "dschungel",
+      "beschreibung": "Ueber die umgedrehte Bank balancieren, am Ende auf den kleinen Kasten steigen und herunterspringen.",
+      "aufbau": "Langbank umdrehen (schmale Seite oben) und am Kasten enden lassen, links und rechts je eine Matte.",
+      "hinweise": "Umgedrehte Bank erst ab sicherem Balancieren. Hand zum Festhalten anbieten."
+    },
+    {
+      "id": "st_krokodilsumpf",
+      "name": "Krokodilsumpf",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 9,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "kraft",
+        "fantasie",
+        "kriechen"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "weichbodenmatte": 1,
+        "teppichfliese": 4
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "kopplung"
+      ],
+      "thema": "dschungel",
+      "beschreibung": "Durch den Sumpf: nur auf den Teppichfliesen darf getreten werden, dazwischen robbt man ueber den Weichboden. Wer eine Fliese verliert, holt sie sich zurueck.",
+      "aufbau": "Weichbodenmatte auslegen, vier Teppichfliesen als Trittsteine darauf und davor verteilen.",
+      "hinweise": "Teppichfliesen rutschen auf glattem Boden - nur auf der Matte oder auf griffigem Belag nutzen."
+    },
+    {
+      "id": "st_affenfelsen",
+      "name": "Affenfelsen",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "klettern",
+        "kraft",
+        "mut"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "sprossenwand": 1,
+        "langbank": 1
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "orientierung"
+      ],
+      "thema": "dschungel",
+      "beschreibung": "Die schraege Bank hinaufkriechen, an der Sprossenwand seitwaerts wandern und wieder herunterklettern - wie die Affen im Felsen.",
+      "aufbau": "Langbank in die Sprossenwand einhaengen (flacher Winkel), zwei Matten unter Bank und Kletterbereich.",
+      "hinweise": "Bankhaken vor jeder Stunde pruefen. Maximale Kletterhoehe markieren und mit den Kindern besprechen."
+    },
+    {
+      "id": "st_burgmauer",
+      "name": "Burgmauer",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "sprung",
+        "mut",
+        "kraft"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kasten_gross": 1,
+        "sprungbrett": 1
+      },
+      "absicherung_fix": {
+        "weichbodenmatte": 1,
+        "matte": 2
+      },
+      "intensitaet": 4,
+      "koordination": [
+        "kopplung",
+        "orientierung"
+      ],
+      "thema": "ritter",
+      "beschreibung": "Anlauf, Absprung vom Brett, auf die Burgmauer klettern und mutig auf die weiche Wiese springen.",
+      "aufbau": "Grossen Kasten quer (3-4 Teile) aufstellen, Sprungbrett davor, Weichbodenmatte an der Landeseite, zwei Matten seitlich.",
+      "hinweise": "Kastenhoehe an die Gruppe anpassen. Uebungsleitung steht seitlich am Kasten und sichert."
+    },
+    {
+      "id": "st_drachenhoehle",
+      "name": "Drachenhoehle",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 7,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "kriechen",
+        "fantasie",
+        "wahrnehmung"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kastenteil": 3,
+        "schwungtuch": 1
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "orientierung"
+      ],
+      "thema": "ritter",
+      "beschreibung": "Durch die dunkle Hoehle kriechen: unter dem Schwungtuch hindurch, durch die Kastenteile und am Ende leise wieder heraus - der Drache schlaeft.",
+      "aufbau": "Drei Kastenteile als Tunnel auf Matten stellen, Schwungtuch darueber legen und an den Seiten beschweren.",
+      "hinweise": "Kein voelliges Dunkel, Ausgang immer sichtbar lassen. Kinder duerfen auch aussen herumgehen."
+    },
+    {
+      "id": "st_seiltaenzer",
+      "name": "Seiltaenzer",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "gleichgewicht",
+        "koordination",
+        "mut",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "schwebebalken": 1,
+        "sandsaeckchen": 2
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "gleichgewicht",
+        "differenzierung"
+      ],
+      "thema": "zirkus",
+      "beschreibung": "Wie im Zirkus ueber das Seil balancieren: vorwaerts, seitlich, mit dem Saeckchen auf dem Kopf, in der Mitte einmal drehen.",
+      "aufbau": "Schwebebalken niedrig einstellen, links und rechts auf ganzer Laenge Matten auslegen, Saeckchen bereitlegen.",
+      "hinweise": "Immer nur ein Kind auf dem Balken. Zum Absteigen die Hand anbieten."
+    },
+    {
+      "id": "st_jonglier_zirkus",
+      "name": "Jongleur-Station",
+      "phase": "hauptteil",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "koordination",
+        "wahrnehmung",
+        "technik",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "jongliertuch": 6,
+        "sandsaeckchen": 4,
+        "gymnastikstab": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "differenzierung",
+        "kopplung",
+        "reaktion"
+      ],
+      "thema": "zirkus",
+      "beschreibung": "Tuecher werfen und fangen, Saeckchen auf dem Kopf balancieren, den Stab auf der Handflaeche stehen lassen - jede Nummer wird geuebt und am Ende vorgefuehrt.",
+      "aufbau": "Material auf einer Matte oder Bank bereitlegen, ringsum genug Platz.",
+      "hinweise": "Staebe nur senkrecht balancieren, nicht schwingen oder werfen."
+    },
+    {
+      "id": "st_trampolin_artist",
+      "name": "Trampolin-Artist",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "sprung",
+        "mut"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "minitrampolin": 1
+      },
+      "absicherung_fix": {
+        "niedersprungmatte": 1,
+        "matte": 1
+      },
+      "intensitaet": 4,
+      "koordination": [
+        "kopplung",
+        "orientierung"
+      ],
+      "thema": "zirkus",
+      "beschreibung": "Kurzer Anlauf, ein Absprung auf dem Trampolin, Strecksprung und weich im Stand landen. Wer mag, macht eine halbe Drehung.",
+      "aufbau": "Minitrampolin mit 3-4 m Anlauf aufstellen, Niedersprungmatte direkt anschliessen (kein Spalt), Matte seitlich fuer die Uebungsleitung.",
+      "hinweise": "Immer nur ein Sprung pro Anlauf, immer eine Person zum Sichern daneben."
+    },
+    {
+      "id": "st_raketenstart",
+      "name": "Raketenstart",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "sprung",
+        "fantasie",
+        "mut"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kasten_klein": 1,
+        "sprungbrett": 1
+      },
+      "absicherung_fix": {
+        "weichbodenmatte": 1,
+        "matte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung"
+      ],
+      "thema": "weltraum",
+      "beschreibung": "Countdown zaehlen, ueber das Sprungbrett auf den Kasten steigen und als Rakete mit gestreckten Armen abheben - Landung auf dem Mond (Weichboden).",
+      "aufbau": "Kleinen Kasten mit Sprungbrett davor aufstellen, Weichbodenmatte als Mond an der Landeseite, Matte unter dem Brett.",
+      "hinweise": "Landung immer im Stand ueben. Absprunghoehe klein halten."
+    },
+    {
+      "id": "st_mondkrater",
+      "name": "Mondkrater",
+      "phase": "hauptteil",
+      "orte": [
+        "halle",
+        "freien"
+      ],
+      "alter_min": 3,
+      "alter_max": 9,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "sprung",
+        "koordination",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "reifen": 6,
+        "teppichfliese": 4
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "orientierung",
+        "differenzierung"
+      ],
+      "thema": "weltraum",
+      "beschreibung": "In Zeitlupe wie im Weltall von Krater zu Krater huepfen - erst gross, dann winzig klein, dann rueckwaerts.",
+      "aufbau": "6 Reifen und 4 Teppichfliesen als Krater in unterschiedlichen Abstaenden auslegen.",
+      "hinweise": "Abstaende so waehlen, dass auch die kleinsten Kinder von Krater zu Krater kommen."
+    },
+    {
+      "id": "st_kran",
+      "name": "Kran",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "kraft",
+        "schwingen",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "ringe": 1,
+        "eimer": 1,
+        "baustein": 4
+      },
+      "absicherung_fix": {
+        "weichbodenmatte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "gleichgewicht"
+      ],
+      "thema": "baustelle",
+      "beschreibung": "An den Ringen schwingen wie ein Kran und dabei mit den Fuessen einen Baustein von einer Seite zur anderen transportieren.",
+      "aufbau": "Ringe auf Schulterhoehe der Kinder einstellen, Weichbodenmatte darunter, Eimer mit Bausteinen an beiden Seiten.",
+      "hinweise": "Nur bis Schulterhoehe einhaengen, immer eine Person sichert. Nicht ueber der Matte loslassen."
+    },
+    {
+      "id": "st_baustelle",
+      "name": "Baustelle",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "teamwork",
+        "kraft",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "baustein": 8,
+        "rollbrett": 1,
+        "eimer": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "differenzierung"
+      ],
+      "thema": "baustelle",
+      "beschreibung": "Bausteine mit dem Rollbrett zur Baustelle transportieren und dort eine Mauer bauen. Am Ende wird gemeinsam abgerissen und neu gebaut.",
+      "aufbau": "Bausteine und zwei Eimer an einer Seite, Baustelle (freie Flaeche) 6 m entfernt, Rollbrett dazwischen.",
+      "hinweise": "Rollbrett nur sitzend oder liegend nutzen, nie stehen."
+    },
+    {
+      "id": "st_heuhaufen",
+      "name": "Heuhaufen",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 1,
+      "alter_max": 6,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "mut",
+        "wahrnehmung",
+        "eltern_kind"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "weichbodenmatte": 2,
+        "kasten_klein": 1
+      },
+      "absicherung_fix": {
+        "matte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "orientierung"
+      ],
+      "thema": "bauernhof",
+      "beschreibung": "Auf den Heuhaufen klettern, sich hineinfallen lassen, herunterkugeln und wieder hinaufkrabbeln - mit Begleitung der Eltern.",
+      "aufbau": "Zwei Weichbodenmatten nebeneinander legen, kleinen Kasten als Aufstiegshilfe daneben, blaue Matte davor.",
+      "hinweise": "Immer nur so viele Kinder auf dem Haufen, wie Platz haben. Sprunghoehe klein halten."
+    },
+    {
+      "id": "st_pferdestall",
+      "name": "Pferdestall",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "fantasie",
+        "koordination",
+        "kraft"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "langbank": 1,
+        "reifen": 4,
+        "seil_lang": 1
+      },
+      "absicherung_fix": {
+        "matte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "rhythmus",
+        "kopplung"
+      ],
+      "thema": "bauernhof",
+      "beschreibung": "Im Galopp durch die Reifen springen, ueber die Bank als Huerde steigen und am Ende am Langseil im Stall anbinden - dann wechseln Pferd und Reiter.",
+      "aufbau": "4 Reifen als Sprungfeld, Langbank quer als Huerde mit Matte dahinter, Langseil am Ende auslegen.",
+      "hinweise": "Ueber die Bank steigen statt springen, wenn die Kinder klein sind."
+    },
+    {
+      "id": "st_huehnerleiter",
+      "name": "Huehnerleiter",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "klettern",
+        "kraft",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "langbank": 1,
+        "sprossenwand": 1,
+        "kastenteil": 1
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "gleichgewicht"
+      ],
+      "thema": "bauernhof",
+      "beschreibung": "Die schraege Bank hinaufkrabbeln wie die Huehner auf die Stange, oben ueber das Kastenteil steigen und auf der Matte wieder herunter.",
+      "aufbau": "Langbank flach in die Sprossenwand einhaengen, Kastenteil am oberen Ende danebenstellen, zwei Matten in den Absprungbereich.",
+      "hinweise": "Bankhaken kontrollieren, Neigung flach halten, Aufstieg nur von einer Seite."
+    },
+    {
+      "id": "st_purzelbaum",
+      "name": "Purzelbaum-Wiese",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "technik",
+        "koordination"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "langbank": 1
+      },
+      "absicherung_fix": {
+        "matte": 3
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "orientierung",
+        "gleichgewicht"
+      ],
+      "thema": "",
+      "beschreibung": "Im Paket wiegen, dann die Rolle vorwaerts von der schiefen Ebene, danach auf der ebenen Matte. Wer mag, rollt aus dem Gehen.",
+      "aufbau": "Zwei Matten in einer Bahn auslegen, eine dritte Matte ueber die Langbank als schiefe Ebene legen.",
+      "hinweise": "Kinn zur Brust - der Nacken muss frei bleiben. Hilfestellung an Nacken und Oberschenkel."
+    },
+    {
+      "id": "st_schaukelringe",
+      "name": "Schaukelinsel",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "schwingen",
+        "mut",
+        "kraft"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "ringe": 1,
+        "kasten_klein": 1
+      },
+      "absicherung_fix": {
+        "weichbodenmatte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "orientierung",
+        "gleichgewicht"
+      ],
+      "thema": "wasser",
+      "beschreibung": "Vom kleinen Kasten in die Ringe einhaengen, sanft schwingen und auf der weichen Insel landen. Fuer die Kleinen: im Sitz schaukeln lassen.",
+      "aufbau": "Ringe auf Brust- bis Schulterhoehe der Kinder, kleinen Kasten als Aufstieg danebenstellen, Weichbodenmatte darunter.",
+      "hinweise": "Nur ein Kind an den Ringen, immer eine Person sichert. Ringe nach der Stunde hochziehen."
+    },
+    {
+      "id": "st_barren_wandern",
+      "name": "Barren-Wanderung",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "kraft",
+        "technik"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "barren": 1
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "differenzierung"
+      ],
+      "thema": "",
+      "beschreibung": "Im Stuetz an den Holmen entlangwandern, zwischendurch die Beine anziehen und am Ende vorsichtig absteigen. Fuer Kleinere: unten durchhangeln.",
+      "aufbau": "Barren auf Brusthoehe der Kinder einstellen und arretieren, zwei Matten unter beiden Holmen.",
+      "hinweise": "Holmhoehe und Verriegelung vor jeder Nutzung pruefen, Hilfestellung an Huefte und Oberarm."
+    },
+    {
+      "id": "st_reck_schwingen",
+      "name": "Reck-Station",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "kraft",
+        "technik",
+        "mut"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "reck": 1
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "orientierung"
+      ],
+      "thema": "",
+      "beschreibung": "An der Stange haengen wie eine Fledermaus, im Sturzhang schaukeln und mit Hilfe den Huefaufzug probieren.",
+      "aufbau": "Reckstange in Brusthoehe der Kinder einstellen, Spannseile pruefen, zwei Matten unter die Stange legen.",
+      "hinweise": "Immer Hilfestellung geben. Kinder mit Kopf ueber der Stange nie allein lassen."
+    },
+    {
+      "id": "st_kletterberg",
+      "name": "Kletterberg",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "klettern",
+        "kraft",
+        "mut"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "klettergeruest": 1
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "orientierung"
+      ],
+      "thema": "",
+      "beschreibung": "Am Klettergeruest bis zur vereinbarten Markierung hochklettern, seitwaerts wandern und wieder herunterklettern.",
+      "aufbau": "Kletterbereich mit zwei Matten auslegen, Kletterhoehe mit einem Band markieren.",
+      "hinweise": "Nie springen, immer abklettern. Maximale Hoehe vorher gemeinsam festlegen."
+    },
+    {
+      "id": "st_eisscholle",
+      "name": "Eisschollen-Wanderung",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 9,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "teamwork",
+        "koordination",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "teppichfliese": 6
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "orientierung"
+      ],
+      "thema": "winter",
+      "beschreibung": "Nur auf den Eisschollen darf getreten werden. Zu zweit umsetzen und weiterwandern, bis das andere Ufer erreicht ist.",
+      "aufbau": "6 Teppichfliesen auf griffigem Boden verteilen, an Start und Ziel je eine Matte als Ufer.",
+      "hinweise": "Fliesen nicht auf glattem Parkett verschieben lassen - sonst Matten oder Reifen nutzen."
+    },
+    {
+      "id": "st_schlittenfahrt",
+      "name": "Schlittenfahrt",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 2,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "teamwork",
+        "kraft",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "seil_lang": 1
+      },
+      "absicherung_fix": {
+        "matte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung"
+      ],
+      "thema": "winter",
+      "beschreibung": "Ein Kind sitzt auf der Matte, zwei ziehen den Schlitten am Langseil ueber die Strecke. Danach wird gewechselt.",
+      "aufbau": "Blaue Matte als Schlitten, Langseil daran befestigen bzw. durchfaedeln, Strecke von 8 m markieren.",
+      "hinweise": "Nur sitzend transportieren, Seil nicht um die Hand wickeln, langsam anziehen."
+    },
+    {
+      "id": "st_zielwurf_eimer",
+      "name": "Zielwerfen",
+      "phase": "hauptteil",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 3,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "ballschule",
+        "wurfspiel",
+        "koordination",
+        "praezision"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "eimer": 2,
+        "kleiner_ball": 6,
+        "sandsaeckchen": 4,
+        "huetchen": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "differenzierung",
+        "orientierung"
+      ],
+      "thema": "",
+      "beschreibung": "Baelle und Saeckchen in die Eimer werfen - aus zwei Entfernungen, mit rechts und links, im Stand und aus der Hocke.",
+      "aufbau": "Zwei Eimer aufstellen, Wurflinien mit zwei Huetchen in 2 m und 4 m markieren, Wurfmaterial bereitlegen.",
+      "hinweise": "Immer erst alle werfen, dann gemeinsam holen."
+    },
+    {
+      "id": "st_tunnelkriechen",
+      "name": "Maeusetunnel",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 1,
+      "alter_max": 6,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "kriechen",
+        "eltern_kind",
+        "wahrnehmung"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kastenteil": 2,
+        "langbank": 1,
+        "jongliertuch": 4
+      },
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "orientierung"
+      ],
+      "thema": "bauernhof",
+      "beschreibung": "Unter der Bank und durch die Kastenteile kriechen, dabei die Tuecher als Vorhang zur Seite schieben. Die Eltern warten am Ausgang.",
+      "aufbau": "Langbank und zwei Kastenteile als Tunnel auf zwei Matten stellen, Tuecher an den Oeffnungen befestigen.",
+      "hinweise": "Tunnel kurz halten, Ausgang muss immer sichtbar sein."
+    },
+    {
+      "id": "st_rutschbahn",
+      "name": "Rutschbahn",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 1,
+      "alter_max": 6,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "mut",
+        "eltern_kind",
+        "wahrnehmung"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "langbank": 1,
+        "kasten_klein": 1
+      },
+      "absicherung_fix": {
+        "weichbodenmatte": 1,
         "matte": 1
       },
       "intensitaet": 2,
@@ -686,1596 +2160,903 @@
         "gleichgewicht",
         "orientierung"
       ],
-      "druckbedingungen": [
-        "Praezisionsdruck"
-      ],
-      "stationsbetrieb": true,
-      "beschreibung": "Balancieren vorwaerts, rueckwaerts und seitlich ueber die Bank. Steigerung: Ball weitergeben, Gegenstand auf dem Kopf, Augen kurz schliessen, Partnerbegegnung mit Ausweichen.",
-      "aufbau": "Langbank stabil aufstellen, an das Bankende eine Matte legen.",
-      "hinweise": "Nur eine Person pro Bankhaelfte, Absteigen nach vorn. Umgedrehte Bank erst bei sicherem Stand."
+      "thema": "",
+      "beschreibung": "Auf den kleinen Kasten klettern und die schraege Bank hinunterrutschen - im Sitzen, spaeter auf dem Bauch mit den Fuessen voran.",
+      "aufbau": "Langbank am kleinen Kasten einhaengen oder auflegen und sichern, Weichbodenmatte an das Bankende, Matte am Aufstieg.",
+      "hinweise": "Bank gegen Verrutschen sichern. Immer nur ein Kind auf der Rutsche, unten muss frei sein."
     },
     {
-      "id": "koo_einbein_balance",
-      "name": "Einbeinstand mit Stoerreizen",
-      "phase": "koordination",
+      "id": "st_wackelmatte",
+      "name": "Wackelmatte",
+      "phase": "hauptteil",
       "orte": [
-        "halle",
+        "halle"
+      ],
+      "alter_min": 1,
+      "alter_max": 5,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "gleichgewicht",
+        "eltern_kind",
+        "wahrnehmung"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "weichbodenmatte": 1,
+        "grosser_ball": 2
+      },
+      "intensitaet": 2,
+      "koordination": [
+        "gleichgewicht"
+      ],
+      "thema": "",
+      "beschreibung": "Ueber die weiche Matte laufen, krabbeln und huepfen, waehrend die Erwachsenen an einer Seite leicht wippen. Danach auf dem grossen Ball wippen mit Halt.",
+      "aufbau": "Weichbodenmatte frei auslegen, zwei grosse Baelle bereitlegen.",
+      "hinweise": "Nur so stark bewegen, wie das Kind es mag - immer eine Hand zum Festhalten."
+    },
+    {
+      "id": "st_slalomwald",
+      "name": "Slalomwald",
+      "phase": "hauptteil",
+      "orte": [
+        "freien",
+        "sportplatz",
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "spielform",
+        "laufen",
+        "koordination",
+        "natur"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "huetchen": 6
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "orientierung",
+        "differenzierung"
+      ],
+      "thema": "dschungel",
+      "beschreibung": "Im Slalom um die Baeume laufen - vorwaerts, rueckwaerts, seitlich, ganz langsam wie ein Faultier und ganz schnell wie ein Affe.",
+      "aufbau": "6 Huetchen im Abstand von 2 m als Slalom aufstellen (draussen auch Baeume nutzen).",
+      "hinweise": "Nur eine Laufrichtung, damit sich niemand entgegenkommt."
+    },
+    {
+      "id": "st_seilbruecke_draussen",
+      "name": "Seilbruecke",
+      "phase": "hauptteil",
+      "orte": [
         "freien",
         "sportplatz"
       ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
-        "koordination",
         "gleichgewicht",
-        "stabilisation",
-        "gesundheit"
+        "koordination",
+        "natur",
+        "mut"
       ],
-      "organisation": "partner",
-      "gruppengroesse": 2,
-      "geraete_pro_gruppe": {
-        "softball": 1
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "seil_lang": 1,
+        "huetchen": 2
       },
       "intensitaet": 2,
       "koordination": [
         "gleichgewicht",
-        "differenzierung",
-        "reaktion"
-      ],
-      "druckbedingungen": [
-        "Praezisionsdruck",
-        "Situationsdruck"
-      ],
-      "beschreibung": "Einbeinstand, der Partner wirft leichte Baelle in wechselnde Richtungen zu. Varianten: Augen zu, Kopf drehen, leichter Schubs am Becken, Standbein leicht gebeugt. 4 x 30 Sekunden je Bein.",
-      "aufbau": "Paare mit 3 m Abstand aufstellen, pro Paar ein weicher Ball.",
-      "hinweise": "Bei Senioren Festhaltemoeglichkeit (Sprossenwand, Bank) anbieten."
-    },
-    {
-      "id": "koo_balancekissen",
-      "name": "Balancekissen-Zirkel",
-      "phase": "koordination",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 12,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
-      "tags": [
-        "koordination",
-        "gleichgewicht",
-        "stabilisation",
-        "gesundheit"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 4,
-      "geraete_pro_gruppe": {
-        "balancekissen": 1
-      },
-      "intensitaet": 3,
-      "koordination": [
-        "gleichgewicht",
         "differenzierung"
       ],
-      "druckbedingungen": [
-        "Praezisionsdruck",
-        "Belastungsdruck"
-      ],
-      "stationsbetrieb": true,
-      "beschreibung": "Auf dem Balancekissen: beidbeiniger Stand, Einbeinstand, Kniebeuge, Ballfangen. Je 30 Sekunden, danach Wechsel innerhalb der Kleingruppe.",
-      "aufbau": "Pro Kleingruppe ein Balancekissen auf ebenem Boden, ringsum 1,5 m Platz.",
-      "hinweise": "Barfuss oder in Hallenschuhen, nicht auf glattem Untergrund. Sicherungsperson daneben."
+      "thema": "dschungel",
+      "beschreibung": "Auf dem am Boden liegenden Langseil balancieren wie auf einer Haengebruecke - vorwaerts, rueckwaerts, mit Partnerhand.",
+      "aufbau": "Langseil in einer Kurve auf dem Rasen auslegen, Anfang und Ende mit Huetchen markieren.",
+      "hinweise": "Untergrund vorher auf Steine und Loecher pruefen."
     },
     {
-      "id": "koo_rhythmus_klatschen",
-      "name": "Rhythmuswechsel im Laufen",
-      "phase": "koordination",
+      "id": "st_kreidewelt",
+      "name": "Kreidewelt",
+      "phase": "hauptteil",
       "orte": [
-        "halle",
         "freien",
         "sportplatz"
       ],
-      "alter_min": 8,
-      "alter_max": 14,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
+        "spielform",
+        "sprung",
         "koordination",
-        "rhythmus",
-        "laufen"
+        "kreativitaet"
       ],
-      "organisation": "ganze_gruppe",
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kreide": 2
+      },
       "intensitaet": 3,
       "koordination": [
         "rhythmus",
-        "kopplung"
-      ],
-      "druckbedingungen": [
-        "Zeitdruck"
-      ],
-      "beschreibung": "Die Gruppe laeuft im vorgegebenen Klatschrhythmus: langsam, schnell, Dreierrhythmus. Zusatz: bei jedem dritten Klatschen ein Sprung, spaeter zusaetzlich Armbewegung.",
-      "aufbau": "Kein Aufbau noetig, Laufkreis absprechen.",
-      "hinweise": "Statt Klatschen kann Musik mit klarem Beat genutzt werden."
-    },
-    {
-      "id": "koo_huerdenlauf_rhythmus",
-      "name": "Minihuerden im Dreierrhythmus",
-      "phase": "koordination",
-      "orte": [
-        "sportplatz",
-        "halle",
-        "freien"
-      ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
-      "tags": [
-        "koordination",
-        "rhythmus",
-        "leichtathletik",
-        "technik"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "huerde_klein": 5
-      },
-      "intensitaet": 4,
-      "koordination": [
-        "rhythmus",
-        "differenzierung",
+        "gleichgewicht",
         "orientierung"
       ],
-      "druckbedingungen": [
-        "Zeitdruck",
-        "Praezisionsdruck"
-      ],
-      "stationsbetrieb": true,
-      "beschreibung": "Fuenf Minihuerden im gleichen Abstand ueberlaufen - erst im Dreierrhythmus, dann im Einerrhythmus, dann mit veraendertem Abstand (Differenzierung).",
-      "aufbau": "Pro Bahn 5 Minihuerden im Abstand von ca. 1,5 m aufstellen, danach 5 m Auslauf.",
-      "hinweise": "Huerden muessen umkippbar sein. Bei kleineren Kindern Abstaende verkleinern."
+      "thema": "",
+      "beschreibung": "Die Kinder malen selbst einen Bewegungsparcours auf den Boden: Linien zum Balancieren, Felder zum Huepfen, Kreise zum Drehen - und probieren ihn dann gegenseitig aus.",
+      "aufbau": "Asphaltflaeche und Strassenkreide bereitstellen, Bereich abgrenzen.",
+      "hinweise": "Nur auf ausgewiesenen Flaechen malen. Bei Naesse durch Reifen und Seile ersetzen."
     },
     {
-      "id": "koo_jonglieren",
-      "name": "Jonglieren lernen",
-      "phase": "koordination",
+      "id": "st_frisbee_ziel",
+      "name": "Frisbee-Ziel",
+      "phase": "hauptteil",
       "orte": [
-        "halle",
         "freien",
         "sportplatz"
       ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
+        "wurfspiel",
         "koordination",
         "technik",
-        "geduld"
+        "praezision"
       ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
-      "geraete_pro_gruppe": {
-        "sandsaeckchen": 3
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "wurfscheibe": 2,
+        "huetchen": 3
       },
       "intensitaet": 2,
       "koordination": [
         "differenzierung",
-        "kopplung",
-        "rhythmus"
+        "orientierung"
       ],
-      "druckbedingungen": [
-        "Praezisionsdruck",
-        "Komplexitaetsdruck"
-      ],
-      "beschreibung": "Methodische Reihe: ein Saeckchen von Hand zu Hand, zwei Saeckchen im Wechsel, drei Saeckchen in der Kaskade. Jede Stufe erst sicher beherrschen.",
-      "aufbau": "Pro Person drei Sandsaeckchen, Aufstellung in Reihen mit 2 m Abstand.",
-      "hinweise": "Sandsaeckchen rollen nicht weg - deutlich weniger Wartezeit als mit Baellen."
+      "thema": "",
+      "beschreibung": "Die Scheibe auf die Huetchen werfen - aus kurzer und aus grosser Entfernung. Wer trifft, geht einen Schritt zurueck.",
+      "aufbau": "Drei Huetchen als Ziele in 5, 8 und 12 m aufstellen, Wurfrichtung von anderen Gruppen wegdrehen.",
+      "hinweise": "Nur werfen, wenn die Bahn frei ist. Nie in Richtung anderer Kinder werfen."
     },
     {
-      "id": "koo_partner_spiegel_komplex",
-      "name": "Spiegelduell mit Zusatzaufgabe",
-      "phase": "koordination",
+      "id": "st_hindernisweg_draussen",
+      "name": "Waldhindernisweg",
+      "phase": "hauptteil",
       "orte": [
-        "halle",
-        "freien",
-        "sportplatz"
+        "freien"
       ],
-      "alter_min": 12,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
+        "natur",
         "koordination",
-        "partner",
-        "reaktion",
+        "kraft",
         "spielform"
       ],
-      "organisation": "partner",
-      "gruppengroesse": 2,
-      "geraete_pro_gruppe": {
-        "markierungsteller": 2
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "huetchen": 2,
+        "seil_lang": 1
       },
-      "intensitaet": 4,
+      "intensitaet": 3,
       "koordination": [
-        "reaktion",
-        "umstellung",
-        "orientierung"
+        "gleichgewicht",
+        "orientierung",
+        "kopplung"
       ],
-      "druckbedingungen": [
-        "Situationsdruck",
-        "Zeitdruck",
-        "Variabilitaetsdruck"
-      ],
-      "beschreibung": "Person A bewegt sich seitlich zwischen zwei Markierungen, B spiegelt. Auf Signal Rollentausch im Laufen. Steigerung: gegengleich statt spiegelbildlich bewegen.",
-      "aufbau": "Pro Paar zwei Markierungsteller im Abstand von 4 m.",
-      "hinweise": "Kurze Intervalle (20-30 s) mit Pause, sonst sinkt die Bewegungsqualitaet."
+      "thema": "",
+      "beschreibung": "Ueber Baumstaemme steigen, unter Aesten durchkriechen, um Baeume laufen und am Seil einen kleinen Hang hinauf - das Gelaende gibt den Parcours vor.",
+      "aufbau": "Start und Ziel mit Huetchen markieren, Langseil als Aufstiegshilfe befestigen, Strecke vorher ablaufen.",
+      "hinweise": "Gelaende vorher auf morsche Aeste, Loecher und Muell pruefen. Kletterhoehe maximal huefthoch."
     },
     {
-      "id": "koo_ueberkreuz",
-      "name": "Ueberkreuz-Koordination",
-      "phase": "koordination",
+      "id": "st_ballstation_klein",
+      "name": "Ball-Station",
+      "phase": "hauptteil",
       "orte": [
         "halle",
         "freien",
         "sportplatz"
       ],
-      "alter_min": 8,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 2,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
+        "ballschule",
         "koordination",
-        "kopplung",
-        "gehirnjogging"
+        "spielform"
       ],
-      "organisation": "ganze_gruppe",
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "softball": 4,
+        "reifen": 2,
+        "kleintor": 1
+      },
       "intensitaet": 2,
       "koordination": [
-        "kopplung",
-        "rhythmus",
-        "differenzierung"
+        "differenzierung",
+        "kopplung"
       ],
-      "druckbedingungen": [
-        "Komplexitaetsdruck"
-      ],
-      "beschreibung": "Im Stand oder Gehen: rechte Hand zum linken Knie und umgekehrt, dann Ferse hinten anfassen, dann gegengleiche Arm-Bein-Bewegung. Zum Schluss mit Zaehlaufgabe kombinieren.",
-      "aufbau": "Kein Aufbau, lockere Aufstellung im Raum.",
-      "hinweise": "Bei Senioren im Stand mit Halt, bei Kindern im Gehen und mit Musik."
+      "thema": "",
+      "beschreibung": "Baelle in den Reifen rollen, ins Tor schiessen, hochwerfen und fangen - jedes Kind probiert in seinem Tempo.",
+      "aufbau": "Zwei Reifen als Ziele auslegen, Kleintor aufstellen, vier weiche Baelle bereitlegen.",
+      "hinweise": "Tor gegen Umkippen sichern. Grosse, weiche Baelle nehmen."
     },
     {
-      "id": "koo_reifen_sprungmuster",
-      "name": "Sprungmuster in Reifen",
-      "phase": "koordination",
+      "id": "st_schwungtuch_station",
+      "name": "Schwungtuch-Station",
+      "phase": "hauptteil",
       "orte": [
         "halle",
         "freien"
       ],
-      "alter_min": 8,
-      "alter_max": 16,
-      "dauer_min": 6,
-      "dauer_max": 12,
+      "alter_min": 2,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
-        "koordination",
-        "sprung",
+        "teamwork",
+        "spielform",
         "rhythmus"
       ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "reifen": 6
-      },
-      "intensitaet": 4,
-      "koordination": [
-        "rhythmus",
-        "orientierung",
-        "differenzierung"
-      ],
-      "druckbedingungen": [
-        "Zeitdruck",
-        "Praezisionsdruck"
-      ],
+      "organisation": "stationen",
       "stationsbetrieb": true,
-      "beschreibung": "Reifen in wechselnder Anordnung (nebeneinander, versetzt, in Reihe). Sprungmuster: beidbeinig, einbeinig links, einbeinig rechts, Wechselsprung, mit halber Drehung.",
-      "aufbau": "Pro Bahn 6 Reifen in vorgegebenem Muster auslegen, danach 3 m Auslauf.",
-      "hinweise": "Weiche Landung ueber Fussballen und Knie betonen, Sprungzahl begrenzen."
-    },
-    {
-      "id": "koo_zahlensprint",
-      "name": "Zahlensprint mit Orientierung",
-      "phase": "koordination",
-      "orte": [
-        "halle",
-        "sportplatz",
-        "freien"
-      ],
-      "alter_min": 10,
-      "alter_max": 18,
-      "dauer_min": 5,
-      "dauer_max": 10,
-      "tags": [
-        "koordination",
-        "reaktion",
-        "wettkampf",
-        "sprint"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "huetchen": 5
-      },
-      "intensitaet": 5,
-      "koordination": [
-        "reaktion",
-        "orientierung",
-        "umstellung"
-      ],
-      "druckbedingungen": [
-        "Zeitdruck",
-        "Situationsdruck"
-      ],
-      "stationsbetrieb": true,
-      "beschreibung": "Fuenf nummerierte Huetchen im Halbkreis. Auf Zuruf einer Zahl sprintet die vorderste Person zum Huetchen und zurueck. Steigerung: zwei Zahlen merken, Reihenfolge umkehren.",
-      "aufbau": "Pro Gruppe 5 nummerierte Huetchen im Halbkreis mit 6 m Radius, Startlinie in der Mitte.",
-      "hinweise": "Ausreichend Abstand zwischen den Gruppen, Auslaufzone frei halten."
-    },
-    {
-      "id": "koo_slackline",
-      "name": "Slackline-Balance",
-      "phase": "koordination",
-      "orte": [
-        "freien"
-      ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 8,
-      "dauer_max": 15,
-      "tags": [
-        "koordination",
-        "gleichgewicht",
-        "natur"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "slackline": 1
+      "geraete_fix": {
+        "schwungtuch": 1,
+        "softball": 2
       },
       "intensitaet": 3,
       "koordination": [
-        "gleichgewicht",
-        "differenzierung"
+        "kopplung",
+        "rhythmus",
+        "reaktion"
       ],
-      "druckbedingungen": [
-        "Praezisionsdruck"
-      ],
-      "stationsbetrieb": true,
-      "beschreibung": "Aufsteigen mit Hilfestellung, Stand halten, erste Schritte, spaeter frei balancieren. Partner geben die Schulter als Stuetze.",
-      "aufbau": "Slackline zwischen zwei kraeftigen Baeumen in Kniehoehe (max. 40 cm) spannen, Untergrund frei von Steinen.",
-      "hinweise": "Baumschutz verwenden, Hoehe niedrig halten, immer nur eine Person auf der Line."
+      "thema": "",
+      "beschreibung": "Gemeinsam Wellen machen, Baelle huepfen lassen, unter das Tuch krabbeln und das Zelt bauen.",
+      "aufbau": "Schwungtuch flach ausbreiten, ringsum 1 m Platz, zwei weiche Baelle bereitlegen.",
+      "hinweise": "Alle heben gleichzeitig, niemand haengt sich an das Tuch."
     },
     {
-      "id": "koo_ballwand_reaktion",
-      "name": "Reaktion an der Wand",
-      "phase": "koordination",
+      "id": "st_sandburg",
+      "name": "Sandburg bauen",
+      "phase": "hauptteil",
       "orte": [
         "halle"
       ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 3,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
-        "koordination",
-        "reaktion",
-        "ballschule"
+        "teamwork",
+        "kraft",
+        "fantasie",
+        "spielform"
       ],
-      "organisation": "partner",
-      "gruppengroesse": 2,
-      "geraete_pro_gruppe": {
-        "softball": 1
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "kastenteil": 3,
+        "baustein": 4
       },
-      "intensitaet": 4,
+      "absicherung_fix": {
+        "matte": 1
+      },
+      "intensitaet": 3,
       "koordination": [
-        "reaktion",
+        "kopplung",
         "differenzierung"
       ],
-      "druckbedingungen": [
-        "Zeitdruck",
-        "Praezisionsdruck"
-      ],
-      "beschreibung": "Person A steht mit dem Ruecken zur Wand, B wirft den Ball an die Wand. A dreht sich auf das Signal um und faengt den abprallenden Ball. Varianten: einhaendig, nach Zusatzaufgabe (Hocke, Drehung).",
-      "aufbau": "Freie Wandflaeche waehlen, Paare mit 3 m Abstand zur Wand verteilen.",
-      "hinweise": "Nur weiche Baelle. Ausreichend Abstand zwischen den Paaren, keine Fensterflaechen."
+      "thema": "sommer",
+      "beschreibung": "Aus Kastenteilen und Bausteinen gemeinsam eine Sandburg bauen, hinaufsteigen und wieder abbauen - die Kinder bestimmen, wie die Burg aussieht.",
+      "aufbau": "Kastenteile und Bausteine auf einer Matte bereitlegen, ringsum genug Platz.",
+      "hinweise": "Maximal zwei Kastenteile hoch stapeln, immer eine Person daneben. Nicht von der Burg springen."
     },
     {
-      "id": "koo_stabfangen",
-      "name": "Stabfangen im Kreis",
-      "phase": "koordination",
+      "id": "st_wasserfall",
+      "name": "Wasserfall",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "turnen",
+        "mut",
+        "sprung",
+        "fantasie"
+      ],
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "sprossenwand": 1,
+        "langbank": 1,
+        "jongliertuch": 6
+      },
+      "absicherung_fix": {
+        "weichbodenmatte": 1,
+        "matte": 1
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "kopplung",
+        "orientierung"
+      ],
+      "thema": "wasser",
+      "beschreibung": "An der Sprossenwand hinaufklettern, durch den Wasserfall aus Tuechern greifen und ueber die Bank wieder herunter zum weichen Becken.",
+      "aufbau": "Tuecher an der Sprossenwand einhaengen, Bank flach einhaengen, Weichbodenmatte unten, blaue Matte am Aufstieg.",
+      "hinweise": "Kletterhoehe markieren, kein Springen von der Sprossenwand."
+    },
+    {
+      "id": "st_leiterweg",
+      "name": "Leiterweg",
+      "phase": "hauptteil",
       "orte": [
         "halle",
         "freien",
         "sportplatz"
       ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
         "koordination",
-        "reaktion",
-        "gruppenspiel"
+        "rhythmus",
+        "fussarbeit"
       ],
-      "organisation": "gruppen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "gymnastikstab": 8
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "koordinationsleiter": 1,
+        "huerde_klein": 3
       },
       "intensitaet": 3,
       "koordination": [
-        "reaktion",
-        "orientierung",
-        "umstellung"
+        "rhythmus",
+        "differenzierung",
+        "orientierung"
       ],
-      "druckbedingungen": [
-        "Zeitdruck",
-        "Situationsdruck"
-      ],
-      "stationsbetrieb": true,
-      "beschreibung": "Alle stehen im Kreis, jede Person haelt einen Stab senkrecht auf dem Boden. Auf Signal wird der Stab losgelassen und der Stab des Nachbarn gefangen, bevor er faellt. Abstand schrittweise vergroessern.",
-      "aufbau": "Pro Gruppe Kreis mit ca. 1,5 m Abstand, pro Person ein Gymnastikstab.",
-      "hinweise": "Staebe nur senkrecht halten, nicht schwingen. Richtungswechsel ansagen."
+      "thema": "",
+      "beschreibung": "Durch die Leiter mit schnellen Fuessen, danach ueber die kleinen Huerden - erst gehen, dann laufen, dann huepfen.",
+      "aufbau": "Koordinationsleiter auslegen, dahinter drei Minihuerden im Abstand von 1,5 m aufstellen.",
+      "hinweise": "Huerden muessen umkippbar sein, Abstaende an die Kindergroesse anpassen."
     },
     {
-      "id": "koo_seil_rhythmus",
-      "name": "Seilsprung-Rhythmusreihe",
-      "phase": "koordination",
+      "id": "st_gummiband_huepfen",
+      "name": "Gummitwist-Station",
+      "phase": "hauptteil",
       "orte": [
         "halle",
-        "sportplatz",
-        "freien"
+        "freien",
+        "sportplatz"
       ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
+      "alter_min": 6,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
         "koordination",
         "rhythmus",
         "sprung",
-        "ausdauer"
+        "spielform"
       ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
-      "geraete_pro_gruppe": {
-        "springseil": 1
+      "organisation": "stationen",
+      "stationsbetrieb": true,
+      "geraete_fix": {
+        "gummiband": 1,
+        "huetchen": 2
       },
-      "intensitaet": 4,
+      "intensitaet": 3,
       "koordination": [
         "rhythmus",
-        "kopplung",
-        "differenzierung"
+        "differenzierung",
+        "kopplung"
       ],
-      "druckbedingungen": [
-        "Zeitdruck",
-        "Belastungsdruck"
-      ],
-      "beschreibung": "Sprungfolgen: 8 beidbeinig, 8 Wechselsprung, 8 Laufsprung, 8 mit Armkreuzen. Danach freie Kombination der Formen zu einer eigenen Reihe.",
-      "aufbau": "Pro Person ein Springseil, Abstand 2 m in Reihen.",
-      "hinweise": "Auf federnde Landung achten, Serien kurz halten."
+      "thema": "",
+      "beschreibung": "Gummitwist auf Knoechelhoehe: hinein, hinaus, darauf. Danach die Hoehe steigern und eigene Sprungfolgen erfinden.",
+      "aufbau": "Gummiband zwischen zwei Huetchen (oder zwei Kindern) auf Knoechelhoehe spannen.",
+      "hinweise": "Band locker spannen, damit es beim Haengenbleiben nachgibt."
     },
     {
-      "id": "koo_orientierung_nummernlauf",
-      "name": "Orientierungslauf im Gelaende",
-      "phase": "koordination",
-      "orte": [
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 8,
-      "dauer_max": 15,
-      "tags": [
-        "koordination",
-        "orientierung",
-        "teamwork",
-        "natur"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 4,
-      "geraete_fix": {
-        "huetchen": 12
-      },
-      "intensitaet": 4,
-      "koordination": [
-        "orientierung",
-        "umstellung"
-      ],
-      "druckbedingungen": [
-        "Komplexitaetsdruck",
-        "Zeitdruck"
-      ],
-      "beschreibung": "Zwoelf nummerierte Huetchen sind im Gelaende verteilt. Jede Kleingruppe erhaelt eine Reihenfolge und muss die Punkte in dieser Reihenfolge anlaufen und sich ein Kennwort merken.",
-      "aufbau": "12 nummerierte Huetchen im Gelaende verteilen, an jedem ein Kennwort hinterlegen, Grenzen des Gebietes klar zeigen.",
-      "hinweise": "Gebietsgrenzen und Rueckkehrzeit klar vereinbaren, Gruppen bleiben zusammen."
-    },
-    {
-      "id": "koo_umstellung_spielformen",
-      "name": "Regelwechsel-Spiel",
-      "phase": "koordination",
-      "orte": [
-        "halle",
-        "sportplatz"
-      ],
-      "alter_min": 12,
-      "alter_max": 99,
-      "dauer_min": 8,
-      "dauer_max": 15,
-      "tags": [
-        "koordination",
-        "spielform",
-        "teamwork",
-        "taktik"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 10,
-      "geraete_pro_gruppe": {
-        "softball": 1,
-        "leibchen": 5
-      },
-      "geraete_fix": {
-        "markierungsteller": 8
-      },
-      "intensitaet": 5,
-      "koordination": [
-        "umstellung",
-        "orientierung",
-        "reaktion"
-      ],
-      "druckbedingungen": [
-        "Situationsdruck",
-        "Variabilitaetsdruck",
-        "Belastungsdruck"
-      ],
-      "beschreibung": "Kleines Passspiel 5 gegen 5. Alle 90 Sekunden aendert der Trainer eine Regel: nur Rueckhandpaesse, nur mit schwacher Hand, Pass nur nach Blickkontakt, zwei Baelle gleichzeitig.",
-      "aufbau": "Feld ca. 20 x 15 m mit Markierungstellern abstecken, Leibchen fuer ein Team.",
-      "hinweise": "Regelwechsel deutlich ansagen und kurz erklaeren - Umstellungsfaehigkeit ist das Ziel, nicht Verwirrung."
-    },
-    {
-      "id": "koo_sturzprophylaxe",
-      "name": "Sicher stehen und aufstehen",
-      "phase": "koordination",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 60,
-      "alter_max": 99,
-      "dauer_min": 8,
-      "dauer_max": 15,
-      "tags": [
-        "koordination",
-        "gleichgewicht",
-        "gesundheit",
-        "sturzprophylaxe"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "langbank": 1
-      },
-      "absicherung_pro_gruppe": {
-        "matte": 2
-      },
-      "intensitaet": 2,
-      "koordination": [
-        "gleichgewicht",
-        "reaktion",
-        "orientierung"
-      ],
-      "druckbedingungen": [
-        "Praezisionsdruck"
-      ],
-      "stationsbetrieb": true,
-      "beschreibung": "Tandemstand und Einbeinstand mit Halt an der Bank, Gewichtsverlagerung, Schritt in verschiedene Richtungen auf Zuruf, kontrolliertes Hinsetzen und Aufstehen ohne Haende.",
-      "aufbau": "Pro Gruppe eine Langbank als Halt, davor zwei Matten auslegen.",
-      "hinweise": "Immer Festhaltemoeglichkeit in Reichweite, Tempo individuell. Bei Schwindel sofort abbrechen."
-    },
-    {
-      "id": "haupt_geraeteparcours_klein",
-      "name": "Geraeteparcours Bewegungslandschaft",
+      "id": "spiel_feuerwehr",
+      "name": "Feuerwehrspiel",
       "phase": "hauptteil",
       "orte": [
         "halle"
       ],
       "alter_min": 4,
       "alter_max": 9,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "turnen",
-        "stationen",
-        "koordination",
-        "kraft",
-        "spielform"
-      ],
-      "organisation": "stationen",
-      "gruppengroesse": 5,
-      "geraete_pro_gruppe": {
-        "langbank": 1,
-        "kasten_klein": 1,
-        "reifen": 2
-      },
-      "absicherung_pro_gruppe": {
-        "matte": 2
-      },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Pro Kleingruppe eine Station: schraege Bank hinaufkriechen, ueber den Kasten klettern, durch Reifen springen, auf der Matte rollen. Alle 3 Minuten Stationswechsel im Uhrzeigersinn.",
-      "aufbau": "Pro Station: Langbank an die Sprossenwand einhaengen oder flach legen, Kasten (3 Teile) daneben, 2 Reifen als Sprungfeld, 2 Matten an Landeseiten von Bank und Kasten.",
-      "hinweise": "Kein Springen vom Kasten ohne Matte. Kastenteile verriegeln, Bankhaken kontrollieren."
-    },
-    {
-      "id": "haupt_turnen_rolle",
-      "name": "Rolle vorwaerts methodisch",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 6,
-      "alter_max": 12,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "turnen",
-        "technik",
-        "koordination"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "langbank": 1
-      },
-      "absicherung_pro_gruppe": {
-        "matte": 3
-      },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Methodische Reihe: Wiegen im Paket, Rolle von der schiefen Ebene, Rolle auf der Matte, Rolle mit Aufstehen ohne Hand, Rolle aus dem Gehen.",
-      "aufbau": "Pro Riege 3 Matten in einer Bahn auslegen, eine Matte als schiefe Ebene ueber die Langbank legen.",
-      "hinweise": "Kinn zur Brust, Nacken schuetzen. Hilfestellung an Nacken und Oberschenkel. Keine Rolle rueckwaerts ohne Vorbereitung."
-    },
-    {
-      "id": "haupt_sprung_kasten",
-      "name": "Springen und Landen am Kasten",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 8,
-      "alter_max": 16,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "turnen",
-        "sprung",
-        "technik",
-        "mut"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "kasten_gross": 1,
-        "sprungbrett": 1
-      },
-      "absicherung_pro_gruppe": {
-        "weichbodenmatte": 1,
-        "matte": 1
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Anlauf, beidbeiniger Absprung vom Brett, Aufhocken auf den Kasten, Strecksprung in den Stand auf der Weichbodenmatte. Steigerung: halbe Drehung im Flug.",
-      "aufbau": "Kasten quer (4 Teile), Sprungbrett davor, Weichbodenmatte an der Landeseite, eine Matte seitlich fuer die Hilfestellung.",
-      "hinweise": "Immer nur eine Person auf dem Kasten, Landung sicher stehen. Trainer steht seitlich als Sicherung."
-    },
-    {
-      "id": "haupt_minitramp_sprung",
-      "name": "Minitrampolin - Strecksprung",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 9,
-      "alter_max": 18,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "turnen",
-        "sprung",
-        "mut",
-        "technik"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "minitrampolin": 1
-      },
-      "absicherung_pro_gruppe": {
-        "niedersprungmatte": 1,
-        "matte": 1
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Kurzer Anlauf, beidbeiniger Absprung auf dem Minitrampolin, Strecksprung, sichere Landung im Stand. Steigerung: Hocksprung, Grosse-Arm-Bewegung, halbe Drehung.",
-      "aufbau": "Minitrampolin mit 4 m Anlauf aufstellen, Niedersprungmatte direkt anschliessen (kein Spalt), Matte seitlich fuer den Trainerstand.",
-      "hinweise": "Nur ein Sprung pro Anlauf, Landung immer auf der Niedersprungmatte. Trainer sichert seitlich am Landepunkt."
-    },
-    {
-      "id": "haupt_barren_stuetz",
-      "name": "Stuetzen und Schwingen am Barren",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 10,
-      "alter_max": 18,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "turnen",
-        "kraft",
-        "technik"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "barren": 1
-      },
-      "absicherung_pro_gruppe": {
-        "matte": 2
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Stuetzen mit gestreckten Armen, Wandern im Stuetz, Schwingen im Stuetz mit kleiner Amplitude, Abgang ueber den Holm mit Hilfestellung.",
-      "aufbau": "Barren auf Brusthoehe der Turnenden einstellen und arretieren, zwei Matten unter der gesamten Holmlaenge.",
-      "hinweise": "Holmhoehe und Arretierung vor jeder Nutzung pruefen. Hilfestellung an Oberarm und Huefte."
-    },
-    {
-      "id": "haupt_reck_huefaufschwung",
-      "name": "Reck - Huefaufschwung",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 9,
-      "alter_max": 18,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "turnen",
-        "technik",
-        "kraft"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "reck": 1
-      },
-      "absicherung_pro_gruppe": {
-        "matte": 2
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Vorbereitung mit Sturzhang und Huefaufzug, dann Huefaufschwung mit Schwungbein und Hilfestellung, abschliessend Abgang aus dem Stuetz.",
-      "aufbau": "Reck auf Hueft- bis Brusthoehe einstellen, Spannseile pruefen, zwei Matten unter die Stange legen.",
-      "hinweise": "Immer Hilfestellung an Ruecken und Oberschenkel geben. Nur eine Person an der Stange."
-    },
-    {
-      "id": "haupt_klettern_tau",
-      "name": "Klettern am Tau",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 8,
-      "alter_max": 18,
-      "dauer_min": 12,
+      "dauer_min": 10,
       "dauer_max": 20,
       "tags": [
-        "turnen",
-        "kraft",
-        "mut"
+        "spielform",
+        "teamwork",
+        "laufen",
+        "fantasie",
+        "klettern"
       ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "tau": 1
+      "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
+      "geraete_fix": {
+        "langbank": 2,
+        "sprossenwand": 1,
+        "eimer": 2,
+        "softball": 6
       },
-      "absicherung_pro_gruppe": {
+      "absicherung_fix": {
         "matte": 2
       },
       "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Klettertechnik mit Beinklemme, Klettern bis zur vereinbarten Markierung, kontrolliertes Abklettern. Zusatz: Schaukeln im Sitz mit Bodenkontaktziel.",
-      "aufbau": "Pro Tau zwei Matten direkt unter das Seil legen, Kletterhoehe markieren (z. B. mit Band).",
-      "hinweise": "Niemals rutschend abwaerts (Verbrennungsgefahr). Nur eine Person pro Tau, Abklettern ist Pflicht."
+      "koordination": [
+        "orientierung",
+        "reaktion"
+      ],
+      "thema": "baustelle",
+      "beschreibung": "Die Feuerwehr rueckt aus: ueber die Baenke zur Sprossenwand klettern, das Feuer (Baelle) loeschen und in den Eimer bringen. Auf 'Alarm!' rennen alle zum Feuerwehrhaus zurueck.",
+      "aufbau": "Zwei Baenke als Weg, Sprossenwand mit zwei Matten davor, Eimer und Baelle als Feuer verteilen.",
+      "hinweise": "Kletterhoehe festlegen. Laufwege so legen, dass sich niemand entgegenkommt."
     },
     {
-      "id": "haupt_basketball_korbleger",
-      "name": "Basketball - Korbleger",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "ballspiel",
-        "technik",
-        "basketball",
-        "wettkampf"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "basketballkorb": 1,
-        "basketball": 3,
-        "huetchen": 2
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Schrittfolge des Korblegers ohne Ball, dann aus dem Stand, dann aus dem Dribbling. Abschluss: Korbleger-Wettbewerb in zwei Reihen mit Rebound.",
-      "aufbau": "Pro Korb zwei Huetchen als Startpunkte im 45-Grad-Winkel, drei Baelle bereitlegen.",
-      "hinweise": "Rechts- und linksseitig ueben. Auslaufzone hinter dem Korb frei halten."
-    },
-    {
-      "id": "haupt_handball_torwurf",
-      "name": "Handball - Schlagwurf und Torabschluss",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "ballspiel",
-        "technik",
-        "handball",
-        "wurfspiel"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "handballtor": 1,
-        "handball": 4,
-        "huetchen": 4
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Schlagwurftechnik im Stand, dann mit Dreischrittrhythmus, danach Torabschluss nach Pass. Abschliessend Wurfwettbewerb auf markierte Torecken.",
-      "aufbau": "Pro Tor vier Huetchen als Anlaufmarken im Halbkreis (9 m), Baelle in einer Kiste bereitstellen.",
-      "hinweise": "Torwart nur mit Erfahrung und Schutzausruestung einsetzen, sonst auf leeres Tor werfen."
-    },
-    {
-      "id": "haupt_volleyball_pritschen",
-      "name": "Volleyball - Pritschen und Baggern",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 11,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "ballspiel",
-        "technik",
-        "volleyball",
-        "partner"
-      ],
-      "organisation": "partner",
-      "gruppengroesse": 2,
-      "geraete_pro_gruppe": {
-        "volleyball": 1
-      },
-      "geraete_fix": {
-        "volleyballnetz": 1
-      },
-      "intensitaet": 3,
-      "beschreibung": "Pritschen gegen die Wand, Pritschen im Paar, Baggern im Paar, dann Spiel 2 gegen 2 ueber das Netz mit Fangen-Pritschen-Regel.",
-      "aufbau": "Netz auf 2,10 m einstellen, Paare mit einem Ball ueber die Flaeche verteilen.",
-      "hinweise": "Weiche Baelle fuer Einsteiger nutzen, Fingerstellung vorab zeigen."
-    },
-    {
-      "id": "haupt_fussball_passspiel",
-      "name": "Fussball - Passen und Torschuss",
-      "phase": "hauptteil",
-      "orte": [
-        "sportplatz",
-        "freien"
-      ],
-      "alter_min": 8,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "ballspiel",
-        "technik",
-        "fussball",
-        "teamwork"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "fussball": 2,
-        "huetchen": 6
-      },
-      "geraete_fix": {
-        "kleintor": 2
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Passen im Dreieck mit Ballannahme, dann Doppelpass mit Torabschluss auf Kleintore. Abschluss: 3 gegen 3 auf zwei Tore.",
-      "aufbau": "Pro Gruppe Dreieck mit 6 Huetchen (Seitenlaenge 8 m), zwei Kleintore an den Enden aufstellen.",
-      "hinweise": "Tore gegen Umkippen sichern. Schienbeinschoner empfehlen."
-    },
-    {
-      "id": "haupt_kleine_spiele_ball",
-      "name": "Voelkerball-Varianten",
+      "id": "spiel_fischer",
+      "name": "Fischer, Fischer, wie tief ist das Wasser?",
       "phase": "hauptteil",
       "orte": [
         "halle",
+        "freien",
         "sportplatz"
       ],
-      "alter_min": 8,
-      "alter_max": 16,
-      "dauer_min": 15,
-      "dauer_max": 25,
+      "alter_min": 4,
+      "alter_max": 9,
+      "dauer_min": 10,
+      "dauer_max": 18,
       "tags": [
         "spielform",
-        "wurfspiel",
-        "wettkampf",
-        "teamwork"
+        "fangspiel",
+        "laufen",
+        "fantasie"
       ],
       "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
       "geraete_fix": {
-        "softball": 3,
-        "leibchen": 10,
         "markierungsteller": 8
       },
       "intensitaet": 4,
-      "beschreibung": "Klassisches Voelkerball, danach Varianten: mit zwei Baellen, mit Koenig, oder als Rettungsvariante mit Wiedereinstieg durch Fangen.",
-      "aufbau": "Spielfeld mit Markierungstellern in zwei Haelften teilen, Aussenfeldzonen markieren.",
-      "hinweise": "Nur weiche Baelle, keine Kopftreffer - Treffer zaehlt dann nicht."
+      "koordination": [
+        "reaktion",
+        "orientierung"
+      ],
+      "thema": "wasser",
+      "beschreibung": "Die Kinder fragen den Fischer, wie tief das Wasser ist. Der Fischer nennt Tiefe und Fortbewegungsart (schwimmen, huepfen, krabbeln) - so muss die Gruppe hinueber, ohne gefangen zu werden.",
+      "aufbau": "Zwei Ufer mit Markierungstellern im Abstand von 12 m markieren.",
+      "hinweise": "Gefangene Kinder werden Helfer des Fischers - so ist niemand raus."
     },
     {
-      "id": "haupt_zirkeltraining_kraft",
-      "name": "Zirkeltraining Kraft und Stabilisation",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 14,
-      "alter_max": 99,
-      "dauer_min": 18,
-      "dauer_max": 30,
-      "tags": [
-        "kraft",
-        "stationen",
-        "stabilisation",
-        "fitness"
-      ],
-      "organisation": "stationen",
-      "gruppengroesse": 3,
-      "geraete_pro_gruppe": {
-        "matte": 1,
-        "theraband": 2,
-        "medizinball": 1
-      },
-      "intensitaet": 5,
-      "stationsbetrieb": true,
-      "beschreibung": "Sechs Stationen à 40 Sekunden Belastung / 20 Sekunden Wechsel, zwei Durchgaenge: Unterarmstuetz, Ausfallschritte, Rudern mit Theraband, Medizinball-Rotation, Seitstuetz, Strecksprung.",
-      "aufbau": "Pro Station eine Matte, Theraband und Medizinball bereitlegen. Stationen im Kreis anordnen, Laufweg frei halten.",
-      "hinweise": "Technik vor Wiederholungszahl, Ausweichbewegungen korrigieren. Pausenzeiten einhalten."
-    },
-    {
-      "id": "haupt_zirkel_kindgerecht",
-      "name": "Kraftzirkel mit dem eigenen Koerpergewicht",
+      "id": "spiel_katz_maus_reifen",
+      "name": "Katz und Maus mit Reifen",
       "phase": "hauptteil",
       "orte": [
         "halle",
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 10,
-      "alter_max": 16,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "kraft",
-        "stationen",
-        "fitness",
-        "teamwork"
-      ],
-      "organisation": "stationen",
-      "gruppengroesse": 4,
-      "geraete_pro_gruppe": {
-        "matte": 1,
-        "huetchen": 2
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Fuenf Stationen à 30 Sekunden: Baerengang, Unterarmstuetz, Hampelmann, Kniebeugen mit Partnerklatsch, Sprint zwischen zwei Huetchen. Zwei Durchgaenge mit 1 Minute Pause.",
-      "aufbau": "Pro Station eine Matte und zwei Huetchen (Abstand 8 m) verteilen.",
-      "hinweise": "Kindgerechte Belastung: kurze Intervalle, keine Zusatzlasten, Ausfuehrung korrigieren."
-    },
-    {
-      "id": "haupt_leichtathletik_weitsprung",
-      "name": "Weitsprung - Anlauf und Absprung",
-      "phase": "hauptteil",
-      "orte": [
-        "sportplatz"
-      ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 20,
-      "dauer_max": 30,
-      "tags": [
-        "leichtathletik",
-        "sprung",
-        "technik",
-        "wettkampf"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "huetchen": 3,
-        "markierungsteller": 4
-      },
-      "geraete_fix": {
-        "weitsprunggrube": 1
-      },
-      "intensitaet": 4,
-      "beschreibung": "Absprungrhythmus aus 5 Schritten, Anlauflaenge ermitteln, Sprunge in die Grube mit Landung im Sitzen. Abschluss: Wettbewerb mit Zonenwertung.",
-      "aufbau": "Anlaufbahn mit Huetchen markieren, Absprungzone mit Markierungstellern kennzeichnen, Sand vorher auflockern.",
-      "hinweise": "Sandgrube vor jedem Durchgang harken, nur eine Person im Anlauf. Landung nie auf gestreckten Beinen."
-    },
-    {
-      "id": "haupt_leichtathletik_sprint",
-      "name": "Sprint und Starttraining",
-      "phase": "hauptteil",
-      "orte": [
-        "sportplatz",
         "freien"
       ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 25,
+      "alter_min": 4,
+      "alter_max": 9,
+      "dauer_min": 10,
+      "dauer_max": 18,
       "tags": [
-        "leichtathletik",
-        "sprint",
-        "technik",
-        "wettkampf"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "huetchen": 2
-      },
-      "geraete_fix": {
-        "stoppuhr": 1,
-        "laufbahn": 1
-      },
-      "intensitaet": 5,
-      "beschreibung": "Startvarianten aus verschiedenen Positionen (Stand, Hocke, Bauchlage), Reaktionsstarts auf Signal, 4 x 30 m Sprint mit vollstaendiger Pause, abschliessend Staffelwettbewerb.",
-      "aufbau": "Pro Bahn Start- und Zielhuetchen im Abstand von 30 m, Auslaufzone von 20 m frei halten.",
-      "hinweise": "Vollstaendige Pausen zwischen den Sprints (Verhaeltnis 1:6). Nur auf trockener Bahn sprinten."
-    },
-    {
-      "id": "haupt_leichtathletik_wurf",
-      "name": "Werfen - Schlagballwurf",
-      "phase": "hauptteil",
-      "orte": [
-        "sportplatz",
-        "freien"
-      ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "leichtathletik",
-        "wurfspiel",
-        "technik"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "wurfball": 2,
-        "huetchen": 3
-      },
-      "intensitaet": 3,
-      "beschreibung": "Wurfauslage, Wurf aus dem Stand, Impulsschritt, dann Wurf mit 3-Schritt-Anlauf. Zielwerfen in markierte Zonen.",
-      "aufbau": "Wurflinie mit Huetchen markieren, Zielzonen in 10/20/30 m mit Huetchen kennzeichnen, Wurfbereich absperren.",
-      "hinweise": "Es wird nur auf Kommando geworfen und nur gemeinsam geholt. Wurfsektor frei halten."
-    },
-    {
-      "id": "haupt_ausdauer_intervall",
-      "name": "Intervalltraining im Gelaende",
-      "phase": "hauptteil",
-      "orte": [
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 14,
-      "alter_max": 99,
-      "dauer_min": 18,
-      "dauer_max": 30,
-      "tags": [
-        "ausdauer",
+        "spielform",
+        "fangspiel",
         "laufen",
-        "fitness"
+        "reaktion"
       ],
       "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
       "geraete_fix": {
-        "huetchen": 4,
-        "stoppuhr": 1
+        "reifen": 8,
+        "leibchen": 2
       },
-      "intensitaet": 5,
-      "beschreibung": "6 x 2 Minuten zuegiger Lauf mit 90 Sekunden Trabpause. Tempo so waehlen, dass alle Intervalle gleich schnell gelaufen werden koennen.",
-      "aufbau": "Rundkurs mit 4 Huetchen (ca. 300 m) markieren.",
-      "hinweise": "Belastung individuell steuern, Abbruchkriterien nennen. Bei Hitze Umfang reduzieren und Trinkpausen einbauen."
+      "intensitaet": 4,
+      "koordination": [
+        "reaktion",
+        "orientierung",
+        "umstellung"
+      ],
+      "thema": "",
+      "beschreibung": "Die Katze jagt die Maeuse. In einem Reifen ist die Maus sicher - aber nur, solange sie allein darin steht. Kommt eine zweite Maus, muss die erste weiterlaufen.",
+      "aufbau": "8 Reifen verteilt auslegen, Katze und Helfer mit Leibchen kennzeichnen.",
+      "hinweise": "Bei vielen Kindern zwei Katzen einsetzen und Rollen oft wechseln."
     },
     {
-      "id": "haupt_staffelolympiade",
-      "name": "Staffelolympiade",
+      "id": "spiel_schwungtuch_spiele",
+      "name": "Schwungtuch-Spiele",
       "phase": "hauptteil",
       "orte": [
         "halle",
-        "sportplatz",
         "freien"
       ],
-      "alter_min": 7,
-      "alter_max": 14,
-      "dauer_min": 15,
-      "dauer_max": 30,
+      "alter_min": 2,
+      "alter_max": 10,
+      "dauer_min": 10,
+      "dauer_max": 20,
       "tags": [
-        "staffel",
-        "wettkampf",
         "teamwork",
-        "spielform"
-      ],
-      "organisation": "riegen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "huetchen": 2,
-        "reifen": 1,
-        "softball": 1,
-        "staffelstab": 1
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Vier Staffelvarianten: Laufstaffel, Balltransport im Reifen, Slalom mit Ball, Transportstaffel zu zweit. Punkte pro Durchgang, Gesamtwertung am Ende.",
-      "aufbau": "Pro Team Startlinie und Wendehuetchen im Abstand von 15 m, Material je Team bereitlegen.",
-      "hinweise": "Teams gleich stark einteilen. Wechselzone deutlich markieren, kein Startsprint aus der Reihe."
-    },
-    {
-      "id": "haupt_bewegungslandschaft_klettern",
-      "name": "Kletter- und Balancierlandschaft",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 6,
-      "alter_max": 12,
-      "dauer_min": 18,
-      "dauer_max": 30,
-      "tags": [
-        "turnen",
-        "stationen",
-        "gleichgewicht",
-        "mut",
-        "kraft"
-      ],
-      "organisation": "stationen",
-      "gruppengroesse": 5,
-      "geraete_pro_gruppe": {
-        "langbank": 1,
-        "sprossenwand": 1,
-        "kasten_klein": 1
-      },
-      "absicherung_pro_gruppe": {
-        "matte": 2
-      },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Stationen: schraege Bank an der Sprossenwand hinauf, seitliches Wandern an der Sprossenwand, Balancieren ueber die umgedrehte Bank, Auf- und Absteigen am Kasten.",
-      "aufbau": "Pro Station Bank in die Sprossenwand einhaengen, Kasten daneben, zwei Matten unter Absprung- und Balancierbereich.",
-      "hinweise": "Maximale Kletterhoehe festlegen. Bankhaken und Kastenverriegelung vor Beginn kontrollieren."
-    },
-    {
-      "id": "haupt_partnerakrobatik",
-      "name": "Partnerakrobatik - einfache Figuren",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 10,
-      "alter_max": 65,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "turnen",
-        "partner",
-        "kraft",
-        "vertrauen",
-        "gleichgewicht"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 3,
-      "geraete_pro_gruppe": {},
-      "absicherung_pro_gruppe": {
-        "matte": 1
-      },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Dreiergruppen bauen Figuren: Bank und Sitz, Flieger in Bodennaehe, Pyramide zu dritt. Immer eine Person sichert. Auf- und Abbau der Figuren langsam und angesagt.",
-      "aufbau": "Pro Dreiergruppe eine Matte auslegen, ringsum 1 m Abstand.",
-      "hinweise": "Belastung nur auf Schultern und Becken, nie auf die Wirbelsaeule. Sicherungsperson steht immer bereit, Kommandos vereinbaren."
-    },
-    {
-      "id": "haupt_tanz_choreo",
-      "name": "Kleine Choreografie zur Musik",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 8,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
+        "spielform",
         "rhythmus",
-        "tanz",
-        "teamwork",
-        "koordination"
+        "fantasie"
       ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
+      "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
       "geraete_fix": {
+        "schwungtuch": 1,
+        "softball": 4,
         "musikanlage": 1
       },
       "intensitaet": 3,
-      "beschreibung": "Vier Grundschritte lernen (Step-Touch, Grapevine, Kniehebelauf, Sprungkombination), zu einer 32er-Sequenz verbinden, in Kleingruppen eine eigene Variante entwickeln und vorstellen.",
-      "aufbau": "Freie Flaeche, Aufstellung in Reihen mit Blick zum Trainer, Musikanlage bereit.",
-      "hinweise": "Schritt fuer Schritt vormachen und mitzaehlen. Praesentation freiwillig halten."
+      "koordination": [
+        "kopplung",
+        "rhythmus",
+        "reaktion"
+      ],
+      "thema": "",
+      "beschreibung": "Wellen und Sturm, Popcorn mit Baellen, Platzwechsel unter dem Tuch, Zelt bauen und darunter sitzen, Karussell im Kreis.",
+      "aufbau": "Schwungtuch in der Mitte ausbreiten, Baelle bereitlegen, ruhige und schnelle Musik vorbereiten.",
+      "hinweise": "Bei 'Zelt' erst zaehlen, dann gemeinsam senken - so bekommt niemand das Tuch ins Gesicht."
     },
     {
-      "id": "haupt_spiel_ultimate",
-      "name": "Ultimate Frisbee",
-      "phase": "hauptteil",
-      "orte": [
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 12,
-      "alter_max": 99,
-      "dauer_min": 20,
-      "dauer_max": 30,
-      "tags": [
-        "spielform",
-        "teamwork",
-        "ausdauer",
-        "taktik",
-        "fairplay"
-      ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "wurfscheibe": 2,
-        "huetchen": 8,
-        "leibchen": 8
-      },
-      "intensitaet": 5,
-      "beschreibung": "Wurf- und Fangtechnik (Backhand, Forehand), dann Spiel 5 gegen 5. Mit Scheibe in der Hand nicht laufen, Punkt durch Fangen in der Endzone.",
-      "aufbau": "Feld ca. 30 x 20 m mit Huetchen abstecken, Endzonen mit je zwei Huetchen markieren.",
-      "hinweise": "Kein Koerperkontakt (Spirit of the Game), Schiedsrichterfreies Spiel mit Selbstregelung."
-    },
-    {
-      "id": "haupt_spiel_brennball",
-      "name": "Brennball",
+      "id": "spiel_voelkerball_soft",
+      "name": "Weichball-Voelkerball",
       "phase": "hauptteil",
       "orte": [
         "halle",
         "sportplatz"
       ],
       "alter_min": 7,
-      "alter_max": 14,
-      "dauer_min": 15,
-      "dauer_max": 30,
+      "alter_max": 10,
+      "dauer_min": 12,
+      "dauer_max": 20,
       "tags": [
         "spielform",
-        "wettkampf",
-        "teamwork",
-        "laufen"
+        "wurfspiel",
+        "teamwork"
       ],
       "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
       "geraete_fix": {
-        "softball": 2,
+        "softball": 3,
+        "markierungsteller": 10,
+        "leibchen": 8
+      },
+      "intensitaet": 4,
+      "koordination": [
+        "reaktion",
+        "orientierung",
+        "differenzierung"
+      ],
+      "thema": "",
+      "beschreibung": "Voelkerball mit weichen Baellen. Getroffene Kinder gehen ins Aussenfeld und koennen sich durch einen eigenen Treffer zurueckholen.",
+      "aufbau": "Spielfeld mit Markierungstellern in zwei Haelften teilen, Aussenfelder markieren.",
+      "hinweise": "Nur weiche Baelle, nur unterhalb der Schulter werfen. Kopftreffer zaehlen nicht."
+    },
+    {
+      "id": "spiel_brennball_klein",
+      "name": "Kleines Brennball",
+      "phase": "hauptteil",
+      "orte": [
+        "halle",
+        "sportplatz"
+      ],
+      "alter_min": 7,
+      "alter_max": 10,
+      "dauer_min": 12,
+      "dauer_max": 20,
+      "tags": [
+        "spielform",
+        "teamwork",
+        "laufen",
+        "wurfspiel"
+      ],
+      "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
+      "geraete_fix": {
         "langbank": 3,
         "reifen": 1,
-        "kasten_klein": 1
+        "softball": 2,
+        "kastenteil": 1
       },
       "absicherung_fix": {
         "matte": 1
       },
       "intensitaet": 4,
-      "beschreibung": "Team A wirft den Ball ins Feld und laeuft die Bahn ab, Team B holt den Ball und bringt ihn in den Brennkorb. Laeufer sammeln Punkte fuer vollstaendige Runden.",
-      "aufbau": "Drei Langbaenke als Laufmarkierungen aufstellen, Reifen als Brennstelle, Kasten (2 Teile) als Wurfstation mit Matte an der Absprungseite.",
-      "hinweise": "Laufwege eindeutig markieren, keine Abkuerzungen ueber Baenke. Baenke nicht als Sprunggeraet nutzen."
+      "koordination": [
+        "orientierung",
+        "reaktion"
+      ],
+      "thema": "",
+      "beschreibung": "Ein Kind wirft den Ball ins Feld und laeuft die Bahn entlang. Das andere Team holt den Ball und legt ihn in den Reifen - dann brennt es. Punkte gibt es fuer jede geschaffte Runde.",
+      "aufbau": "Drei Baenke als Laufmarkierung, Reifen als Brennstelle, Kastenteil mit Matte als Wurfstation.",
+      "hinweise": "Laufweg eindeutig markieren, nicht auf die Baenke steigen."
     },
     {
-      "id": "haupt_hockey_klein",
-      "name": "Kleinfeld-Torschussspiel",
+      "id": "spiel_bewegungsgeschichte",
+      "name": "Bewegungsgeschichte",
       "phase": "hauptteil",
       "orte": [
         "halle",
-        "sportplatz"
+        "freien"
       ],
-      "alter_min": 9,
-      "alter_max": 18,
-      "dauer_min": 15,
-      "dauer_max": 30,
+      "alter_min": 1,
+      "alter_max": 7,
+      "dauer_min": 10,
+      "dauer_max": 20,
       "tags": [
-        "ballspiel",
+        "fantasie",
         "spielform",
-        "teamwork",
-        "taktik"
+        "wahrnehmung",
+        "koordination"
       ],
-      "organisation": "gruppen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "softball": 1,
-        "leibchen": 4,
-        "kleintor": 2
-      },
+      "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
       "geraete_fix": {
-        "markierungsteller": 12
+        "langbank": 2,
+        "reifen": 6
       },
-      "intensitaet": 5,
-      "stationsbetrieb": true,
-      "beschreibung": "4 gegen 4 auf zwei Kleintore mit Handpass-Regel: Tore nur nach mindestens drei Paessen. Rotation der Teams alle 5 Minuten.",
-      "aufbau": "Pro Feld zwei Kleintore, Felder mit Markierungstellern (20 x 12 m) abstecken.",
-      "hinweise": "Feldgroesse an Teilnehmerzahl anpassen, ausreichend Abstand zwischen den Feldern."
+      "absicherung_fix": {
+        "matte": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "gleichgewicht",
+        "orientierung"
+      ],
+      "thema": "",
+      "beschreibung": "Eine Geschichte gibt die Bewegungen vor: ueber den Bach balancieren (Bank), von Stein zu Stein springen (Reifen), durch das hohe Gras schleichen, vor dem Regen davonlaufen und im Zelt ausruhen.",
+      "aufbau": "Zwei Baenke als Bruecken mit Matten am Ende, sechs Reifen als Steine auslegen.",
+      "hinweise": "Alle Kinder sind gleichzeitig in Bewegung - keine Wartereihen bilden."
     },
     {
-      "id": "haupt_functional_erwachsene",
-      "name": "Functional Workout in Paaren",
+      "id": "spiel_schatzsuche",
+      "name": "Schatzsuche",
       "phase": "hauptteil",
       "orte": [
-        "halle",
         "freien",
-        "sportplatz"
-      ],
-      "alter_min": 18,
-      "alter_max": 65,
-      "dauer_min": 18,
-      "dauer_max": 30,
-      "tags": [
-        "kraft",
-        "fitness",
-        "partner",
-        "stabilisation"
-      ],
-      "organisation": "partner",
-      "gruppengroesse": 2,
-      "geraete_pro_gruppe": {
-        "matte": 1,
-        "medizinball": 1
-      },
-      "intensitaet": 5,
-      "beschreibung": "Partnerworkout: waehrend A eine Kraftuebung ausfuehrt (Kniebeugen, Liegestuetz, Ausfallschritt, Crunch), haelt B eine Stabilisationsposition. Wechsel alle 40 Sekunden, 3 Runden.",
-      "aufbau": "Pro Paar eine Matte und ein Medizinball, ausreichend Abstand zwischen den Paaren.",
-      "hinweise": "Zwei Schwierigkeitsstufen pro Uebung anbieten. Auf neutrale Wirbelsaeule achten."
-    },
-    {
-      "id": "haupt_gesundheit_ruecken",
-      "name": "Rueckenschule mit Kleingeraeten",
-      "phase": "hauptteil",
-      "orte": [
+        "sportplatz",
         "halle"
       ],
-      "alter_min": 30,
-      "alter_max": 99,
-      "dauer_min": 18,
-      "dauer_max": 30,
-      "tags": [
-        "gesundheit",
-        "kraft",
-        "stabilisation",
-        "mobilisation"
-      ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
-      "geraete_pro_gruppe": {
-        "matte": 1,
-        "theraband": 1
-      },
-      "intensitaet": 3,
-      "beschreibung": "Kraeftigung der Rumpfmuskulatur: Unterarmstuetz mit Variationen, Vierfuesslerstand diagonal, Rudern und Aussenrotation mit dem Theraband, Beckenheben. Je 3 x 12 Wiederholungen.",
-      "aufbau": "Pro Person Matte und Theraband, Mattenreihen mit 1 m Abstand.",
-      "hinweise": "Bewegung langsam und kontrolliert, Atmung nicht pressen. Alternativen bei Knieproblemen anbieten."
-    },
-    {
-      "id": "haupt_senioren_kraft",
-      "name": "Kraft und Alltagsbewegungen",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 60,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "gesundheit",
-        "kraft",
-        "alltag",
-        "stabilisation"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "langbank": 1,
-        "theraband": 6
-      },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Aufstehen und Hinsetzen von der Bank, Wadenheben mit Halt, Rudern mit Theraband, Treppensteigen simuliert am Bankrand, Schulterkreisen. Je 2 x 10 Wiederholungen.",
-      "aufbau": "Pro Gruppe eine Langbank stabil aufstellen, Therabaender bereitlegen.",
-      "hinweise": "Immer Festhaltemoeglichkeit anbieten, Pausen grosszuegig. Keine Uebungen in Bauchlage bei Einschraenkungen."
-    },
-    {
-      "id": "haupt_spiel_mattenrutschen",
-      "name": "Mattenrutschen und Transportspiele",
-      "phase": "hauptteil",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 5,
+      "alter_min": 4,
       "alter_max": 10,
       "dauer_min": 12,
       "dauer_max": 20,
       "tags": [
         "spielform",
-        "kraft",
         "teamwork",
-        "spass"
+        "laufen",
+        "fantasie",
+        "natur"
       ],
-      "organisation": "gruppen",
-      "gruppengroesse": 4,
-      "geraete_pro_gruppe": {
-        "matte": 1,
-        "seil_lang": 1
+      "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
+      "geraete_fix": {
+        "sandsaeckchen": 12,
+        "huetchen": 6,
+        "eimer": 2
       },
       "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Ein Kind sitzt auf der Matte, die Gruppe zieht die Matte am Seil ueber eine markierte Strecke. Danach Wettfahrt und Transportaufgaben mit Ballfracht.",
-      "aufbau": "Pro Gruppe eine Matte mit Zugseil, Start- und Ziellinie im Abstand von 10 m markieren.",
-      "hinweise": "Nur sitzend transportieren, nicht stehend. Ziehen mit gebeugten Knien, Seil nicht um die Hand wickeln."
+      "koordination": [
+        "orientierung",
+        "reaktion"
+      ],
+      "thema": "ritter",
+      "beschreibung": "Der Schatz ist im Gelaende verteilt. In kleinen Gruppen suchen die Kinder die Goldstuecke und bringen sie zur Truhe - unterwegs warten Aufgaben an den Huetchen (huepfen, drehen, balancieren).",
+      "aufbau": "Sandsaeckchen im Gebiet verstecken, sechs Huetchen als Aufgabenpunkte aufstellen, zwei Eimer als Truhen.",
+      "hinweise": "Gebietsgrenzen deutlich zeigen, Gruppen bleiben zusammen. Draussen Treffpunkt und Signal vereinbaren."
     },
     {
-      "id": "haupt_ballschule_vielseitig",
-      "name": "Ballschule Stationen",
+      "id": "spiel_tunnelball",
+      "name": "Tunnelball und Ballstaffel",
       "phase": "hauptteil",
       "orte": [
         "halle",
+        "freien",
         "sportplatz"
       ],
-      "alter_min": 6,
-      "alter_max": 11,
-      "dauer_min": 15,
-      "dauer_max": 25,
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 10,
+      "dauer_max": 18,
       "tags": [
+        "spielform",
+        "teamwork",
         "ballschule",
-        "stationen",
-        "koordination",
-        "technik"
+        "koordination"
       ],
-      "organisation": "stationen",
-      "gruppengroesse": 4,
+      "organisation": "gruppen",
+      "gruppengroesse": 6,
+      "stationsbetrieb": false,
       "geraete_pro_gruppe": {
-        "softball": 2,
-        "reifen": 2,
+        "softball": 1,
         "huetchen": 2
       },
       "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Vier Stationen: Zielwurf in den Reifen, Prellen im Slalom, Zuspiel mit dem Fuss, Ball hochhalten mit verschiedenen Koerperteilen. Wechsel alle 3 Minuten.",
-      "aufbau": "Pro Station zwei Reifen als Ziele, zwei Huetchen als Slalom, zwei Baelle bereitlegen.",
-      "hinweise": "Erfolgsorientierte Abstaende waehlen und individuell anpassen."
+      "koordination": [
+        "kopplung",
+        "rhythmus"
+      ],
+      "thema": "",
+      "beschreibung": "Der Ball wandert durch den Tunnel aus gegraetschten Beinen, ueber die Koepfe, im Zickzack. Danach als Staffel um das Huetchen und zurueck.",
+      "aufbau": "Pro Gruppe eine Reihe bilden, Wendehuetchen in 8 m Entfernung, ein Ball je Gruppe.",
+      "hinweise": "Nicht auf Schnelligkeit trimmen - der Spass am gemeinsamen Rhythmus zaehlt."
     },
     {
-      "id": "abs_dehnen_klassisch",
-      "name": "Dehnprogramm im Stand",
+      "id": "spiel_luftballon_rally",
+      "name": "Luftballon-Rallye",
+      "phase": "hauptteil",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 9,
+      "dauer_min": 10,
+      "dauer_max": 18,
+      "tags": [
+        "spielform",
+        "teamwork",
+        "koordination",
+        "ballschule"
+      ],
+      "organisation": "ganze_gruppe",
+      "stationsbetrieb": false,
+      "geraete_fix": {
+        "luftballon": 12,
+        "reifen": 4,
+        "langbank": 2
+      },
+      "intensitaet": 3,
+      "koordination": [
+        "differenzierung",
+        "kopplung",
+        "reaktion"
+      ],
+      "thema": "",
+      "beschreibung": "Luftballons duerfen nicht auf den Boden fallen: allein hochhalten, zu zweit, ueber die Bank transportieren, in den Reifen ablegen. Zum Schluss halten alle gemeinsam so viele Ballons wie moeglich in der Luft.",
+      "aufbau": "Zwei Baenke als Strecke, vier Reifen als Ablagen, Ballons aufblasen (Ersatz bereithalten).",
+      "hinweise": "Geplatzte Ballonreste sofort aufsammeln."
+    },
+    {
+      "id": "abs_kleine_baelle",
+      "name": "Kleine Baelle im Kreis",
       "phase": "abschluss",
       "orte": [
         "halle",
         "freien",
         "sportplatz"
       ],
-      "alter_min": 12,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 12,
+      "alter_min": 3,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 10,
       "tags": [
-        "dehnen",
-        "regeneration",
-        "gesundheit"
+        "ruhespiel",
+        "abschlusskreis",
+        "ballschule",
+        "wahrnehmung"
       ],
       "organisation": "ganze_gruppe",
-      "intensitaet": 1,
-      "beschreibung": "Statisches Dehnen der Hauptmuskelgruppen: Wade, hintere und vordere Oberschenkelmuskulatur, Huefte, Brust, Nacken. Jede Position 20-30 Sekunden halten, ruhig weiteratmen.",
-      "aufbau": "Kreisaufstellung, kein Material noetig.",
-      "hinweise": "Nur bis zum leichten Ziehen dehnen, nicht wippen. Nach intensiver Belastung erst 3 Minuten auslaufen."
+      "geraete_fix": {
+        "kleiner_ball": 4
+      },
+      "intensitaet": 2,
+      "thema": "",
+      "beschreibung": "Im Sitzkreis werden kleine Baelle mit Namensnennung zugerollt. Danach zwei Baelle gleichzeitig, zum Schluss ganz langsam und leise.",
+      "aufbau": "Sitzkreis in der Hallenmitte, vier kleine Baelle bereitlegen.",
+      "hinweise": "Guter Uebergang von Bewegung zu Ruhe - Tempo bewusst herausnehmen."
     },
     {
-      "id": "abs_dehnen_matte",
-      "name": "Dehnen und Ausrollen am Boden",
+      "id": "abs_schwungtuch_ruhe",
+      "name": "Schwungtuch-Wolke",
       "phase": "abschluss",
       "orte": [
         "halle"
       ],
-      "alter_min": 12,
-      "alter_max": 99,
-      "dauer_min": 6,
-      "dauer_max": 12,
+      "alter_min": 2,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 10,
       "tags": [
-        "dehnen",
-        "regeneration",
-        "gesundheit",
-        "mobilisation"
+        "entspannung",
+        "teamwork",
+        "wahrnehmung",
+        "abschlusskreis"
+      ],
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "schwungtuch": 1
+      },
+      "intensitaet": 1,
+      "thema": "",
+      "beschreibung": "Das Tuch wird ganz langsam gehoben und gesenkt. Reihum darf ein Kind in die Mitte legen und die Wolke ueber sich schweben lassen.",
+      "aufbau": "Schwungtuch ausbreiten, alle sitzen oder knien am Rand.",
+      "hinweise": "Leise Stimme, langsame Bewegungen - das beruhigt die Gruppe zuverlaessig."
+    },
+    {
+      "id": "abs_fantasiereise",
+      "name": "Fantasiereise auf der Matte",
+      "phase": "abschluss",
+      "orte": [
+        "halle"
+      ],
+      "alter_min": 3,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 10,
+      "tags": [
+        "entspannung",
+        "wahrnehmung",
+        "fantasie"
       ],
       "organisation": "einzeln",
       "gruppengroesse": 1,
       "geraete_pro_gruppe": {
         "matte": 1
       },
+      "geraete_fix": {
+        "musikanlage": 1
+      },
       "intensitaet": 1,
-      "beschreibung": "Dehnprogramm in Rueckenlage und im Sitz: Huefte, Gesaess, Rueckenrotation, Kindhaltung, Katzenbuckel. Ruhige Musik im Hintergrund.",
-      "aufbau": "Pro Person eine Matte, Reihen mit 1 m Abstand.",
-      "hinweise": "Positionen ruhig halten, Atmung fliessen lassen."
+      "thema": "",
+      "beschreibung": "Alle liegen bequem. Eine kurze Geschichte fuehrt durch die Sinne: schwere Arme, warme Fuesse, leiser Wind. Am Ende wird langsam zurueckgeholt - recken, straecken, aufsetzen.",
+      "aufbau": "Matten sternfoermig auslegen, Licht daempfen, leise Musik.",
+      "hinweise": "Kein abruptes Ende. Wer nicht liegen mag, sitzt dabei."
     },
     {
-      "id": "abs_ruhespiel_koffer",
-      "name": "Ich packe meinen Koffer in Bewegung",
+      "id": "abs_massage_igelball",
+      "name": "Partnermassage mit Ball",
       "phase": "abschluss",
       "orte": [
-        "halle",
-        "freien",
-        "sportplatz"
+        "halle"
       ],
       "alter_min": 5,
       "alter_max": 10,
-      "dauer_min": 5,
+      "dauer_min": 4,
       "dauer_max": 10,
       "tags": [
-        "ruhespiel",
-        "spielform",
-        "gedaechtnis",
-        "abschlusskreis"
+        "entspannung",
+        "partner",
+        "wahrnehmung"
       ],
-      "organisation": "ganze_gruppe",
+      "organisation": "partner",
+      "gruppengroesse": 2,
+      "geraete_pro_gruppe": {
+        "matte": 1,
+        "kleiner_ball": 1
+      },
       "intensitaet": 1,
-      "beschreibung": "Im Sitzkreis nennt jedes Kind eine Bewegung, die alle nachmachen. Die naechste Person wiederholt alle vorherigen Bewegungen und ergaenzt eine neue.",
-      "aufbau": "Sitzkreis in der Hallenmitte.",
-      "hinweise": "Bei jungen Kindern maximal 6 Bewegungen merken lassen, gemeinsam helfen ist erlaubt."
+      "thema": "",
+      "beschreibung": "Ein Kind liegt auf dem Bauch, das andere rollt den kleinen Ball langsam ueber Ruecken, Schultern und Beine - Pizza backen, Regen, Sonne. Dann wird gewechselt.",
+      "aufbau": "Pro Paar eine Matte und ein kleiner Ball, ruhige Atmosphaere.",
+      "hinweise": "Wirbelsaeule aussparen, immer fragen, ob es angenehm ist. Mitmachen ist freiwillig."
     },
     {
       "id": "abs_stille_post_bewegung",
@@ -2286,39 +3067,68 @@
         "freien",
         "sportplatz"
       ],
-      "alter_min": 6,
-      "alter_max": 12,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 5,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
         "ruhespiel",
         "spielform",
-        "wahrnehmung"
+        "wahrnehmung",
+        "abschlusskreis"
       ],
       "organisation": "ganze_gruppe",
       "intensitaet": 1,
-      "beschreibung": "Die Gruppe steht in einer Reihe mit dem Ruecken zur naechsten Person. Eine Bewegungsfolge wird nach vorne weitergegeben, am Ende wird verglichen.",
+      "thema": "",
+      "beschreibung": "Die Gruppe steht hintereinander. Eine kleine Bewegungsfolge wandert nach vorne, am Ende wird verglichen: Ist sie noch dieselbe?",
       "aufbau": "Reihenaufstellung, kein Material.",
-      "hinweise": "Ruhige Atmosphaere, kein Sprechen - guter Uebergang zum Stundenende."
+      "hinweise": "Ohne Sprechen - das macht den Reiz aus und wird ganz leise."
     },
     {
-      "id": "abs_entspannung_fantasiereise",
-      "name": "Fantasiereise auf der Matte",
+      "id": "abs_koffer_packen",
+      "name": "Ich packe meinen Turnkoffer",
+      "phase": "abschluss",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 4,
+      "alter_max": 9,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "ruhespiel",
+        "abschlusskreis",
+        "gedaechtnis",
+        "spielform"
+      ],
+      "organisation": "ganze_gruppe",
+      "intensitaet": 1,
+      "thema": "",
+      "beschreibung": "Im Sitzkreis nennt und zeigt jedes Kind eine Bewegung aus der heutigen Stunde. Die naechsten wiederholen alle vorherigen und ergaenzen eine neue.",
+      "aufbau": "Sitzkreis, kein Material.",
+      "hinweise": "Bei den Kleinen hoechstens fuenf Bewegungen - gemeinsam helfen ist ausdruecklich erlaubt."
+    },
+    {
+      "id": "abs_traumreise_eltern",
+      "name": "Kuschelrunde mit Eltern",
       "phase": "abschluss",
       "orte": [
         "halle"
       ],
-      "alter_min": 5,
-      "alter_max": 14,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 1,
+      "alter_max": 4,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
         "entspannung",
+        "eltern_kind",
         "wahrnehmung",
-        "regeneration"
+        "abschlusskreis"
       ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
+      "organisation": "partner",
+      "gruppengroesse": 2,
       "geraete_pro_gruppe": {
         "matte": 1
       },
@@ -2326,187 +3136,104 @@
         "musikanlage": 1
       },
       "intensitaet": 1,
-      "beschreibung": "Alle liegen bequem auf einer Matte. Der Trainer erzaehlt eine kurze Fantasiegeschichte mit Koerperwahrnehmung (schwere Arme, warme Beine). Ruhiges Zurueckholen am Ende.",
-      "aufbau": "Matten in Sternform auslegen, Licht wenn moeglich daempfen, leise Musik.",
-      "hinweise": "Ruhephase nicht abrupt beenden - langsam raeckeln und aufsetzen lassen."
+      "thema": "",
+      "beschreibung": "Die Kinder liegen oder sitzen bei ihrer Begleitperson. Zu ruhiger Musik wird gestreichelt, gewiegt und ein kurzes Abschlusslied gesungen.",
+      "aufbau": "Matten im Kreis auslegen, leise Musik.",
+      "hinweise": "Immer dasselbe Lied als Ritual - die Kinder erkennen daran das Stundenende."
     },
     {
-      "id": "abs_massage_partner",
-      "name": "Partnermassage mit Ball",
+      "id": "abs_luftballon_ruhe",
+      "name": "Luftballon-Ballett",
       "phase": "abschluss",
       "orte": [
         "halle"
       ],
-      "alter_min": 8,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 3,
+      "alter_max": 9,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
-        "entspannung",
-        "partner",
+        "ruhespiel",
         "wahrnehmung",
-        "regeneration"
+        "koordination"
       ],
-      "organisation": "partner",
-      "gruppengroesse": 2,
+      "organisation": "einzeln",
+      "gruppengroesse": 1,
       "geraete_pro_gruppe": {
-        "matte": 1,
-        "tennisball": 1
+        "luftballon": 1
       },
-      "intensitaet": 1,
-      "beschreibung": "Person A liegt auf dem Bauch, B rollt mit dem Tennisball langsam ueber Ruecken, Schultern und Beine. Nach 3 Minuten Wechsel.",
-      "aufbau": "Pro Paar eine Matte, ein Tennisball, ruhige Atmosphaere.",
-      "hinweise": "Wirbelsaeule aussparen, Druck nach Rueckmeldung anpassen. Freiwilligkeit beachten."
-    },
-    {
-      "id": "abs_auslaufen_reflexion",
-      "name": "Auslaufen und Stundenreflexion",
-      "phase": "abschluss",
-      "orte": [
-        "sportplatz",
-        "freien",
-        "halle"
-      ],
-      "alter_min": 10,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 12,
-      "tags": [
-        "regeneration",
-        "reflexion",
-        "laufen",
-        "abschlusskreis"
-      ],
-      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "musikanlage": 1
+      },
       "intensitaet": 2,
-      "beschreibung": "Fuenf Minuten lockeres Auslaufen im Gespraech, danach Abschlusskreis: Was hat heute gut geklappt, was nehmen wir uns fuer naechste Woche vor?",
-      "aufbau": "Kein Aufbau, Abschlusskreis in der Hallen- oder Platzmitte.",
-      "hinweise": "Jede Person kommt zu Wort, positive Rueckmeldung zuerst."
+      "thema": "",
+      "beschreibung": "Zu ruhiger Musik wird der Ballon ganz langsam und leise in der Luft gehalten - mit dem Finger, dem Kopf, im Sitzen, im Liegen.",
+      "aufbau": "Pro Kind ein Ballon, ruhige Musik.",
+      "hinweise": "Bewusst langsam - das senkt das Tempo am Stundenende."
     },
     {
-      "id": "abs_koenigsspiel_ruhig",
-      "name": "Ruhiges Ballspiel im Kreis",
+      "id": "abs_tier_raten",
+      "name": "Tier raten",
       "phase": "abschluss",
       "orte": [
         "halle",
         "freien",
         "sportplatz"
       ],
-      "alter_min": 6,
-      "alter_max": 14,
-      "dauer_min": 5,
-      "dauer_max": 10,
+      "alter_min": 3,
+      "alter_max": 8,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
         "ruhespiel",
-        "spielform",
-        "reaktion",
+        "fantasie",
+        "abschlusskreis",
+        "spielform"
+      ],
+      "organisation": "ganze_gruppe",
+      "intensitaet": 2,
+      "thema": "dschungel",
+      "beschreibung": "Ein Kind stellt ein Tier in Zeitlupe dar, die anderen raten. Wer richtig raet, darf als naechstes zeigen.",
+      "aufbau": "Sitzkreis, kein Material.",
+      "hinweise": "Zeitlupe bremst die Gruppe angenehm herunter."
+    },
+    {
+      "id": "abs_dehnen_kindgerecht",
+      "name": "Lange machen, klein machen",
+      "phase": "abschluss",
+      "orte": [
+        "halle",
+        "freien",
+        "sportplatz"
+      ],
+      "alter_min": 4,
+      "alter_max": 10,
+      "dauer_min": 4,
+      "dauer_max": 8,
+      "tags": [
+        "entspannung",
+        "wahrnehmung",
+        "mobilisation",
         "abschlusskreis"
       ],
       "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "softball": 2
-      },
-      "intensitaet": 2,
-      "beschreibung": "Im Kreis wird der Ball mit Namensnennung zugeworfen. Steigerung: zwei Baelle, danach Ball nur noch rollen - das Tempo nimmt bewusst ab.",
-      "aufbau": "Kreis mit ca. 6 m Durchmesser, zwei weiche Baelle bereitlegen.",
-      "hinweise": "Guter Uebergang von Belastung zu Ruhe, Namen lernen inklusive."
-    },
-    {
-      "id": "abs_atmung_entspannung",
-      "name": "Atemuebungen zum Ausklang",
-      "phase": "abschluss",
-      "orte": [
-        "halle",
-        "freien"
-      ],
-      "alter_min": 14,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 10,
-      "tags": [
-        "entspannung",
-        "gesundheit",
-        "regeneration"
-      ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
-      "geraete_pro_gruppe": {
-        "matte": 1
-      },
       "intensitaet": 1,
-      "beschreibung": "Bauchatmung im Liegen, 4-6-Atmung (4 Sekunden ein, 6 Sekunden aus), progressive Muskelentspannung fuer Haende, Schultern und Beine.",
-      "aufbau": "Matten locker verteilt auslegen, Raum ruhig halten.",
-      "hinweise": "Freiwillig - wer mag, bleibt im Sitzen. Nicht hyperventilieren lassen."
+      "thema": "",
+      "beschreibung": "Kindgerechtes Dehnen in Bildern: hoher Baum (strecken), kleiner Stein (Paket), Katzenbuckel, Schmetterling im Sitz, Wind im Gras (Rumpf pendeln).",
+      "aufbau": "Kreisaufstellung, kein Material noetig.",
+      "hinweise": "Nur so weit, wie es sich gut anfuehlt - nicht wippen, nicht vergleichen."
     },
     {
-      "id": "abs_dehnen_senioren",
-      "name": "Dehnen und Lockern im Sitzen",
-      "phase": "abschluss",
-      "orte": [
-        "halle"
-      ],
-      "alter_min": 60,
-      "alter_max": 99,
-      "dauer_min": 5,
-      "dauer_max": 12,
-      "tags": [
-        "dehnen",
-        "gesundheit",
-        "regeneration",
-        "mobilisation"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "langbank": 1
-      },
-      "intensitaet": 1,
-      "beschreibung": "Auf der Bank sitzend: Nacken seitlich dehnen, Schultern kreisen, Oberschenkelrueckseite mit gestrecktem Bein, Waden im Stand mit Bankhalt. Jede Position 20 Sekunden.",
-      "aufbau": "Langbaenke im Halbkreis aufstellen.",
-      "hinweise": "Positionen ohne Schmerz halten, Aufstehen mit Halt. Zum Schluss gemeinsames Abschlussritual."
-    },
-    {
-      "id": "abs_cool_down_ballspiel",
-      "name": "Cool-Down mit Zielwerfen",
+      "id": "abs_aufraeumspiel",
+      "name": "Aufraeumspiel und Abschiedskreis",
       "phase": "abschluss",
       "orte": [
         "halle",
-        "sportplatz",
-        "freien"
+        "freien",
+        "sportplatz"
       ],
-      "alter_min": 8,
-      "alter_max": 16,
-      "dauer_min": 5,
-      "dauer_max": 10,
-      "tags": [
-        "ruhespiel",
-        "wurfspiel",
-        "wettkampf",
-        "praezision"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "reifen": 2,
-        "softball": 2
-      },
-      "intensitaet": 2,
-      "stationsbetrieb": true,
-      "beschreibung": "Zielwerfen in Reifen aus verschiedenen Entfernungen. Ruhige Wettbewerbsform mit Punktewertung als Gruppenaufgabe.",
-      "aufbau": "Pro Gruppe zwei Reifen in 4 und 7 m Entfernung auslegen, Wurflinie markieren.",
-      "hinweise": "Niedriges Tempo halten, Pulssenkung ist das Ziel."
-    },
-    {
-      "id": "abs_gemeinsam_aufraeumen",
-      "name": "Aufraeumspiel und Verabschiedung",
-      "phase": "abschluss",
-      "orte": [
-        "halle",
-        "sportplatz",
-        "freien"
-      ],
-      "alter_min": 4,
-      "alter_max": 12,
+      "alter_min": 2,
+      "alter_max": 10,
       "dauer_min": 4,
       "dauer_max": 8,
       "tags": [
@@ -2517,251 +3244,38 @@
       ],
       "organisation": "ganze_gruppe",
       "intensitaet": 2,
-      "beschreibung": "Aufraeumen als Aufgabe mit Zeitziel: Jede Gruppe raeumt ihre Station gemeinsam weg. Danach Abschlusskreis mit gemeinsamem Ritual (Applaus, Schlachtruf).",
-      "aufbau": "Kein zusaetzlicher Aufbau, Zustaendigkeiten vorher zuweisen.",
-      "hinweise": "Grossgeraete raeumen ausschliesslich unter Aufsicht weg - Kinder tragen keine Kastenteile allein."
+      "thema": "",
+      "beschreibung": "Alle raeumen gemeinsam ihre Station auf - Kleingeraete zaehlen und wegbringen. Danach Abschlusskreis mit gemeinsamem Ritual: Haende in die Mitte und Gruppenruf.",
+      "aufbau": "Kein zusaetzlicher Aufbau, Zustaendigkeiten vorher verteilen.",
+      "hinweise": "Grossgeraete raeumen nur Erwachsene weg. Kinder tragen keine Kastenteile und keine Matten allein."
     },
     {
-      "id": "haupt_kleine_spiele_turnier",
-      "name": "Kleine-Spiele-Turnier",
-      "phase": "hauptteil",
-      "orte": [
-        "freien",
-        "sportplatz",
-        "halle"
-      ],
-      "alter_min": 7,
-      "alter_max": 14,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "spielform",
-        "teamwork",
-        "wettkampf",
-        "laufen"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "huetchen": 4,
-        "leibchen": 4
-      },
-      "intensitaet": 4,
-      "stationsbetrieb": true,
-      "beschreibung": "Drei kleine Spiele im Wechsel: Schwaenzchenfangen, Ueberlaufen (Schwarzer Mann), Tag-Team-Fangen. Alle 6 Minuten Spielwechsel mit kurzer Trinkpause.",
-      "aufbau": "Pro Gruppe ein Feld von ca. 20 x 15 m mit vier Huetchen abstecken, Leibchen bereitlegen.",
-      "hinweise": "Feldgrenzen deutlich machen, ausreichend Abstand zwischen den Feldern und zu Hindernissen."
-    },
-    {
-      "id": "haupt_waldparcours",
-      "name": "Naturparcours im Gelaende",
-      "phase": "hauptteil",
-      "orte": [
-        "freien"
-      ],
-      "alter_min": 6,
-      "alter_max": 14,
-      "dauer_min": 15,
-      "dauer_max": 30,
-      "tags": [
-        "natur",
-        "koordination",
-        "kraft",
-        "teamwork",
-        "gleichgewicht"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "huetchen": 2
-      },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Aus dem, was das Gelaende hergibt, entsteht ein Parcours: ueber Baumstaemme balancieren, um Baeume slalomlaufen, Aeste ueberspringen, Zapfen zielwerfen, einen Hang hinauflaufen. Jede Gruppe baut eine Station und stellt sie vor.",
-      "aufbau": "Start und Ziel mit je einem Huetchen markieren, Gelaendeabschnitt vorher auf Gefahrenstellen absuchen.",
-      "hinweise": "Kein Klettern ueber Kniehoehe, keine morschen Aeste. Totholz und Boeschungen vorher pruefen."
-    },
-    {
-      "id": "haupt_zweifelderball",
-      "name": "Zweifelderball",
-      "phase": "hauptteil",
-      "orte": [
-        "freien",
-        "sportplatz",
-        "halle"
-      ],
-      "alter_min": 8,
-      "alter_max": 14,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "spielform",
-        "wurfspiel",
-        "teamwork",
-        "wettkampf"
-      ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "softball": 2,
-        "markierungsteller": 10,
-        "leibchen": 8
-      },
-      "intensitaet": 4,
-      "beschreibung": "Zwei Teams in je einem Feld mit Aussenfeld. Getroffene Spielende wechseln ins Aussenfeld und koennen sich durch einen eigenen Treffer zurueckspielen.",
-      "aufbau": "Spielfeld mit Markierungstellern in zwei Haelften plus Aussenfelder teilen (ca. 24 x 12 m).",
-      "hinweise": "Nur weiche Baelle, keine Kopftreffer. Bei grossen Gruppen zwei Felder parallel."
-    },
-    {
-      "id": "haupt_rope_skipping",
-      "name": "Rope-Skipping-Challenge",
-      "phase": "hauptteil",
-      "orte": [
-        "halle",
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "ausdauer",
-        "rhythmus",
-        "sprung",
-        "fitness",
-        "koordination"
-      ],
-      "organisation": "einzeln",
-      "gruppengroesse": 1,
-      "geraete_pro_gruppe": {
-        "springseil": 1
-      },
-      "intensitaet": 4,
-      "beschreibung": "Vier Runden à 3 Minuten: Grundsprung, Wechselsprung, Laufsprung, freie Kuer. Zwischen den Runden 1 Minute Pause mit Partneraufgabe. Zum Schluss Gruppenwettbewerb: Wie viele Sprunge schafft die Gruppe in 60 Sekunden zusammen?",
-      "aufbau": "Pro Person ein Springseil, Aufstellung in Reihen mit 2 m Abstand auf ebenem Untergrund.",
-      "hinweise": "Auf federnde Landung achten. Bei Ermuedung Technik zuerst - lieber kuerzere Serien."
-    },
-    {
-      "id": "haupt_wurfscheibe_ziel",
-      "name": "Wurfscheiben-Zielspiel",
-      "phase": "hauptteil",
-      "orte": [
-        "freien",
-        "sportplatz"
-      ],
-      "alter_min": 9,
-      "alter_max": 99,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "technik",
-        "wurfspiel",
-        "teamwork",
-        "praezision"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 6,
-      "geraete_pro_gruppe": {
-        "wurfscheibe": 1,
-        "huetchen": 3
-      },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Backhand- und Forehand-Wurf lernen, dann Zielwurf auf Huetchen aus 10, 15 und 20 m. Abschluss: Disc-Golf-Runde ueber sechs selbst gewaehlte Ziele.",
-      "aufbau": "Pro Gruppe drei Huetchen als Ziele in unterschiedlicher Entfernung aufstellen, Wurfrichtung von anderen Gruppen wegdrehen.",
-      "hinweise": "Wurfrichtungen absprechen, nie in Richtung anderer Gruppen werfen."
-    },
-    {
-      "id": "haupt_bewegungsgeschichte",
-      "name": "Bewegungsgeschichte",
-      "phase": "hauptteil",
+      "id": "abs_zauberstab_ruhe",
+      "name": "Der Zauberstab macht leise",
+      "phase": "abschluss",
       "orte": [
         "halle",
         "freien"
       ],
-      "alter_min": 4,
-      "alter_max": 7,
-      "dauer_min": 12,
-      "dauer_max": 25,
-      "tags": [
-        "fantasie",
-        "spielform",
-        "koordination",
-        "wahrnehmung"
-      ],
-      "organisation": "ganze_gruppe",
-      "geraete_fix": {
-        "reifen": 6,
-        "langbank": 2
-      },
-      "absicherung_fix": {
-        "matte": 2
-      },
-      "intensitaet": 3,
-      "beschreibung": "Eine Geschichte gibt die Bewegungen vor: ueber den Fluss balancieren (Bank), durch das Dickicht kriechen, von Stein zu Stein springen (Reifen), im Sumpf schleichen, vor dem Gewitter davonlaufen. Die Kinder erfinden das Ende der Geschichte selbst.",
-      "aufbau": "Zwei Baenke als Bruecken mit je einer Matte am Ende, sechs Reifen als Steine auslegen.",
-      "hinweise": "Keine Wartezeiten - alle Kinder sind gleichzeitig in Bewegung. Nicht von den Baenken springen."
-    },
-    {
-      "id": "haupt_ballspielwiese_klein",
-      "name": "Ballspielwiese fuer die Kleinen",
-      "phase": "hauptteil",
-      "orte": [
-        "halle",
-        "freien"
-      ],
-      "alter_min": 4,
+      "alter_min": 3,
       "alter_max": 8,
-      "dauer_min": 12,
-      "dauer_max": 25,
+      "dauer_min": 4,
+      "dauer_max": 8,
       "tags": [
-        "ballschule",
-        "spielform",
-        "koordination",
-        "stationen"
+        "ruhespiel",
+        "fantasie",
+        "wahrnehmung",
+        "abschlusskreis"
       ],
-      "organisation": "stationen",
-      "gruppengroesse": 5,
-      "geraete_pro_gruppe": {
-        "softball": 2,
-        "reifen": 2,
-        "huetchen": 2
+      "organisation": "ganze_gruppe",
+      "geraete_fix": {
+        "gymnastikstab": 1
       },
-      "intensitaet": 3,
-      "stationsbetrieb": true,
-      "beschreibung": "Vier einfache Ballstationen: Ball in den Reifen rollen, Ball ueber die Huetchen werfen, Ball zu zweit hin- und herrollen, Ball hochwerfen und fangen. Wechsel alle drei Minuten.",
-      "aufbau": "Pro Station zwei Reifen als Ziel, zwei Huetchen als Tor, zwei weiche Baelle bereitlegen.",
-      "hinweise": "Grosse, weiche Baelle verwenden. Abstaende so waehlen, dass jedes Kind Erfolg hat."
-    },
-    {
-      "id": "haupt_sprintspiele_freien",
-      "name": "Sprint- und Reaktionsspiele",
-      "phase": "hauptteil",
-      "orte": [
-        "freien",
-        "sportplatz",
-        "halle"
-      ],
-      "alter_min": 8,
-      "alter_max": 16,
-      "dauer_min": 15,
-      "dauer_max": 25,
-      "tags": [
-        "sprint",
-        "reaktion",
-        "wettkampf",
-        "spielform"
-      ],
-      "organisation": "gruppen",
-      "gruppengroesse": 8,
-      "geraete_pro_gruppe": {
-        "huetchen": 4
-      },
-      "intensitaet": 5,
-      "stationsbetrieb": true,
-      "beschreibung": "Drei Wettkampfformen: Partnerjagd aus verschiedenen Startpositionen, Nummernwettlauf, Materialtransport-Sprint. Zwischen den Formen vollstaendige Pausen.",
-      "aufbau": "Pro Gruppe vier Huetchen: Startlinie, zwei Wendepunkte in 10 und 20 m, Ziel.",
-      "hinweise": "Auslaufzone hinter dem Ziel freihalten, Sprints nur auf trockenem, ebenem Untergrund."
+      "intensitaet": 1,
+      "thema": "ritter",
+      "beschreibung": "Der Zauberstab verwandelt die Gruppe Stueck fuer Stueck: erst in Schnecken, dann in schlafende Baeren, dann in Steine. Am Ende sind alle ganz still.",
+      "aufbau": "Sitzkreis, ein Gymnastikstab als Zauberstab.",
+      "hinweise": "Stimme immer leiser werden lassen - funktioniert besser als jede Ermahnung."
     }
   ]
 }

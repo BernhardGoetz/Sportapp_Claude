@@ -26,7 +26,7 @@ class CLITest(unittest.TestCase):
     # -- Stammdaten --------------------------------------------------------
     def test_init_und_orte(self):
         self.lauf("orte")
-        self.assertIn("Dreifachhalle Schulzentrum", self.text)
+        self.assertIn("Turnhalle Grundschule", self.text)
         self.assertIn("Sportplatz Am Wald", self.text)
 
     def test_geraete_und_altersgruppen(self):
@@ -64,10 +64,11 @@ class CLITest(unittest.TestCase):
                 "1",      # Ort: Dreifachhalle
                 "3",      # Ausstattung: Anzahlen anpassen
                 "minitrampolin=0,tau=2",
-                "4",      # Altersgruppe: D-Jugend
+                "4",      # Gruppe: Grundschule 1./2. Klasse
                 "60",     # Dauer
-                "16",     # Teilnehmer
+                "16",     # Anzahl Kinder
                 "turnen", # Schwerpunkt
+                "4",      # Motto: Dschungel
                 "s",      # speichern
                 "a",      # Aufbauplan
                 "p", "",  # PDF in den Standardordner
@@ -100,14 +101,14 @@ class CLITest(unittest.TestCase):
         self.assertIn("braucht ein Terminal", self.text)
 
     def test_unbekanntes_geraet_wird_abgelehnt(self):
-        code = self.lauf("ort-bearbeiten", "halle-schulzentrum", "--geraete", "trampolin=2")
+        code = self.lauf("ort-bearbeiten", "halle-grundschule", "--geraete", "trampolin=2")
         self.assertEqual(code, 1)
         self.assertIn("Unbekannte Geraete-ID", self.text)
 
     # -- Planung -----------------------------------------------------------
     def test_planen_json(self):
         code = self.lauf(
-            "planen", "--ort", "halle-schulzentrum", "--altersgruppe", "d",
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "grundschule_1",
             "--dauer", "60", "--teilnehmer", "16", "--seed", "3", "--json",
         )
         self.assertEqual(code, 0)
@@ -120,7 +121,7 @@ class CLITest(unittest.TestCase):
 
     def test_planen_mit_ohne_geraeten(self):
         code = self.lauf(
-            "planen", "--ort", "halle-schulzentrum", "--altersgruppe", "d",
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "grundschule_1",
             "--ohne", "minitrampolin,kasten_gross,tau", "--seed", "2", "--json",
         )
         self.assertEqual(code, 0)
@@ -136,7 +137,7 @@ class CLITest(unittest.TestCase):
 
     def test_planen_speichern_und_pdf(self):
         code = self.lauf(
-            "planen", "--ort", "halle-schulzentrum", "--alter", "9",
+            "planen", "--ort", "halle-grundschule", "--alter", "6",
             "--seed", "4", "--speichern", "--pdf",
         )
         self.assertEqual(code, 0)
@@ -153,8 +154,42 @@ class CLITest(unittest.TestCase):
         self.assertEqual(self.lauf("pdf", stunden[0].id, "--datei", str(ziel)), 0)
         self.assertTrue(ziel.exists())
 
+    def test_planen_mit_thema_und_stationen(self):
+        code = self.lauf(
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "vorschule",
+            "--thema", "dschungel", "--stationen", "--teilnehmer", "18",
+            "--seed", "5", "--json",
+        )
+        self.assertEqual(code, 0)
+        daten = json.loads(self.text)
+        self.assertEqual(daten["thema"], "dschungel")
+        hauptteil = [t for t in daten["teile"] if t["phase"] == "hauptteil"][0]
+        self.assertTrue(hauptteil["parallel"])
+        self.assertGreaterEqual(len(hauptteil["uebungen"]), 3)
+
+    def test_planen_als_grosses_spiel(self):
+        self.lauf(
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "grundschule_1",
+            "--spiel", "--seed", "2", "--json",
+        )
+        hauptteil = [
+            t for t in json.loads(self.text)["teile"] if t["phase"] == "hauptteil"
+        ][0]
+        self.assertLessEqual(len(hauptteil["uebungen"]), 2)
+
+    def test_nur_stundenbild_flag(self):
+        ziel = self.verzeichnis / "kurz.pdf"
+        code = self.lauf(
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "vorschule",
+            "--seed", "7", "--nur-stundenbild", "--pdf", str(ziel),
+        )
+        self.assertEqual(code, 0)
+        self.assertTrue(ziel.exists())
+        inhalt = ziel.read_bytes()
+        self.assertIn(b"/Count 1", inhalt)
+
     def test_planen_ohne_ort_nicht_interaktiv(self):
-        code = self.lauf("planen", "--altersgruppe", "d")
+        code = self.lauf("planen", "--altersgruppe", "grundschule_1")
         self.assertEqual(code, 1)
 
     def test_planen_unbekannter_ort(self):
@@ -163,7 +198,7 @@ class CLITest(unittest.TestCase):
     # -- Stunden verwalten -------------------------------------------------
     def test_stunden_markieren_export_import(self):
         self.lauf(
-            "planen", "--ort", "halle-schulzentrum", "--altersgruppe", "c",
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "grundschule_2",
             "--seed", "6", "--speichern",
         )
         speicher = Speicher(self.verzeichnis)
@@ -192,7 +227,7 @@ class CLITest(unittest.TestCase):
 
     def test_loeschen(self):
         self.lauf(
-            "planen", "--ort", "halle-schulzentrum", "--altersgruppe", "d",
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "grundschule_1",
             "--seed", "1", "--speichern",
         )
         stunde_id = Speicher(self.verzeichnis).stunden()[0].id
@@ -204,16 +239,22 @@ class CLITest(unittest.TestCase):
         self.assertIn("90", self.text)
         self.assertEqual(Speicher(self.verzeichnis).einstellungen()["standard_dauer"], 90)
 
-        self.lauf("planen", "--ort", "halle-schulzentrum", "--altersgruppe", "d", "--json")
+        self.lauf("planen", "--ort", "halle-grundschule", "--altersgruppe", "grundschule_1", "--json")
         self.assertEqual(json.loads(self.text)["dauer"], 90)
 
     def test_koordination_ab_alter_einstellbar(self):
-        self.lauf("einstellungen", "--setzen", "koordination_ab_alter=12")
-        self.lauf("planen", "--ort", "halle-schulzentrum", "--altersgruppe", "e", "--json")
+        # Standard: ab 6 Jahren, also schon fuer die Vorschulkinder.
+        self.lauf("planen", "--ort", "halle-grundschule", "--altersgruppe", "vorschule", "--json")
+        self.assertIn("koordination", [t["phase"] for t in json.loads(self.text)["teile"]])
+
+        self.lauf("einstellungen", "--setzen", "koordination_ab_alter=9")
+        self.lauf("planen", "--ort", "halle-grundschule", "--altersgruppe", "vorschule", "--json")
         phasen = [t["phase"] for t in json.loads(self.text)["teile"]]
         self.assertNotIn("koordination", phasen)
 
-        self.lauf("planen", "--ort", "halle-schulzentrum", "--altersgruppe", "c", "--json")
+        self.lauf(
+            "planen", "--ort", "halle-grundschule", "--altersgruppe", "grundschule_2", "--json"
+        )
         phasen = [t["phase"] for t in json.loads(self.text)["teile"]]
         self.assertIn("koordination", phasen)
 
@@ -222,8 +263,8 @@ class CLITest(unittest.TestCase):
         eingaben = iter(
             [
                 "1",            # Ort: erster Eintrag
-                "4",            # Altersgruppe: D-Jugend
-                "14",           # Teilnehmerzahl
+                "4",            # Gruppe: Grundschule 1./2. Klasse
+                "14",           # Anzahl Kinder
                 "Meine Stunde", # Titel
                 "2026-01-07",   # Datum
                 "1", "10", "",  # Aufwaermen: erste Uebung, 10 min, Ende
@@ -241,12 +282,12 @@ class CLITest(unittest.TestCase):
         self.assertEqual(len(stunden), 1)
         stunde = stunden[0]
         self.assertEqual(stunde.titel, "Meine Stunde")
-        self.assertEqual(stunde.altersgruppe_id, "d")
+        self.assertEqual(stunde.altersgruppe_id, "grundschule_1")
         self.assertEqual(stunde.teilnehmer, 14)
         self.assertEqual(len(stunde.teile), 4)
         self.assertEqual(stunde.gesamtdauer, 50)
 
-        self.lauf("stil", "--altersgruppe", "d")
+        self.lauf("stil", "--altersgruppe", "grundschule_1")
         self.assertIn("Gelernt aus 1 eigenen Stunde(n).", self.text)
 
 

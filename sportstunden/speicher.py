@@ -11,11 +11,12 @@ from .katalog import Katalog
 from .models import Ort, Stunde
 
 STANDARD_EINSTELLUNGEN: Dict[str, Any] = {
-    "koordination_ab_alter": 8,
+    "koordination_ab_alter": 6,
     "standard_dauer": 60,
     "standard_teilnehmer": 12,
     "trainer": "",
     "verein": "",
+    "kopftitel": "Ki Tu",
 }
 
 

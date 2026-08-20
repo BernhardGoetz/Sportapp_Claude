@@ -188,6 +188,74 @@ class PDF:
             f"{farbe.pdf()} RG {staerke:.2f} w {x1:.2f} {y1:.2f} m {x2:.2f} {y2:.2f} l S"
         )
 
+    def rechteck_rand(
+        self,
+        x: float,
+        y: float,
+        breite: float,
+        hoehe: float,
+        farbe: Farbe = GRAU,
+        staerke: float = 0.8,
+    ) -> None:
+        self.seite.anhaengen(
+            f"{farbe.pdf()} RG {staerke:.2f} w "
+            f"{x:.2f} {y:.2f} {breite:.2f} {hoehe:.2f} re S"
+        )
+
+    def kreis(
+        self,
+        x: float,
+        y: float,
+        radius: float,
+        farbe: Farbe = SCHWARZ,
+        staerke: float = 0.8,
+        fuellen: bool = False,
+    ) -> None:
+        """Kreis aus vier Bezierkurven."""
+        k = radius * 0.5523
+        befehle = [
+            f"{x - radius:.2f} {y:.2f} m",
+            f"{x - radius:.2f} {y + k:.2f} {x - k:.2f} {y + radius:.2f} {x:.2f} {y + radius:.2f} c",
+            f"{x + k:.2f} {y + radius:.2f} {x + radius:.2f} {y + k:.2f} {x + radius:.2f} {y:.2f} c",
+            f"{x + radius:.2f} {y - k:.2f} {x + k:.2f} {y - radius:.2f} {x:.2f} {y - radius:.2f} c",
+            f"{x - k:.2f} {y - radius:.2f} {x - radius:.2f} {y - k:.2f} {x - radius:.2f} {y:.2f} c",
+        ]
+        abschluss = f"{farbe.pdf()} rg f" if fuellen else f"{farbe.pdf()} RG {staerke:.2f} w S"
+        self.seite.anhaengen(" ".join(befehle) + " " + abschluss)
+
+    def pfad(
+        self,
+        punkte: Sequence[Tuple[float, float]],
+        farbe: Farbe = SCHWARZ,
+        staerke: float = 0.8,
+        schliessen: bool = False,
+        fuellen: bool = False,
+    ) -> None:
+        if len(punkte) < 2:
+            return
+        befehle = [f"{punkte[0][0]:.2f} {punkte[0][1]:.2f} m"]
+        befehle += [f"{x:.2f} {y:.2f} l" for x, y in punkte[1:]]
+        if schliessen:
+            befehle.append("h")
+        if fuellen:
+            befehle.append(f"{farbe.pdf()} rg f")
+        else:
+            befehle.insert(0, f"{farbe.pdf()} RG {staerke:.2f} w")
+            befehle.append("S")
+        self.seite.anhaengen(" ".join(befehle))
+
+    def text_zentriert(
+        self,
+        text: str,
+        mitte_x: float,
+        y: float,
+        groesse: float,
+        fett: bool = False,
+        farbe: Farbe = SCHWARZ,
+    ) -> None:
+        breite = textbreite(text, groesse, fett)
+        self._text(text, mitte_x - breite / 2, y, groesse, fett=fett, farbe=farbe)
+
     # -- Textbausteine -----------------------------------------------------
     def kopfzeile(self, titel: str, untertitel: str = "") -> None:
         hoehe = 54.0
@@ -383,7 +451,7 @@ class PDF:
         assert pages == pages_id
         info = objekt(
             f"<< /Title ({_kodieren(self.titel).decode('latin-1')}) "
-            f"/Producer (Sportstunden-Planer) >>".encode("latin-1")
+            f"/Producer (Kinderturnen-Stundenplaner) >>".encode("latin-1")
         )
         katalog = objekt(f"<< /Type /Catalog /Pages {pages} 0 R >>".encode("latin-1"))
 

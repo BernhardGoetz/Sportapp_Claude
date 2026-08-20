@@ -1,4 +1,4 @@
-"""Datenmodelle des Sportstunden-Planers."""
+"""Datenmodelle des Kinderturnen-Stundenplaners."""
 
 from __future__ import annotations
 
@@ -68,6 +68,12 @@ class Geraet:
     name: str
     kategorie: str = "sonstiges"
     einheit: str = "Stueck"
+    kurz: str = ""
+
+    @property
+    def kurzname(self) -> str:
+        """Kurzform fuer den Stundenplan (z. B. 'LB', 'WB', 'kl. Kasten')."""
+        return self.kurz or self.name
 
     @staticmethod
     def from_dict(daten: Dict[str, Any]) -> "Geraet":
@@ -76,6 +82,7 @@ class Geraet:
             name=daten["name"],
             kategorie=daten.get("kategorie", "sonstiges"),
             einheit=daten.get("einheit", "Stueck"),
+            kurz=daten.get("kurz", ""),
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -144,6 +151,7 @@ class Altersgruppe:
     druckbedingungen: List[str] = field(default_factory=list)
     hinweis: str = ""
     max_intensitaet: int = 5
+    kinder_pro_station: int = 4
 
     @property
     def mittleres_alter(self) -> float:
@@ -160,6 +168,7 @@ class Altersgruppe:
             druckbedingungen=list(daten.get("druckbedingungen", [])),
             hinweis=daten.get("hinweis", ""),
             max_intensitaet=int(daten.get("max_intensitaet", 5)),
+            kinder_pro_station=int(daten.get("kinder_pro_station", 4)),
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -206,6 +215,7 @@ class Uebung:
     koordination: List[str] = field(default_factory=list)
     druckbedingungen: List[str] = field(default_factory=list)
     stationsbetrieb: bool = False
+    thema: str = ""
 
     # -- Bedarf ------------------------------------------------------------
     def gruppen(self, teilnehmer: int) -> int:
@@ -253,6 +263,7 @@ class Uebung:
             koordination=list(daten.get("koordination", [])),
             druckbedingungen=list(daten.get("druckbedingungen", [])),
             stationsbetrieb=bool(daten.get("stationsbetrieb", False)),
+            thema=daten.get("thema", ""),
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -373,6 +384,7 @@ class Stunde:
     teilnehmer: int
     teile: List[Stundenteil] = field(default_factory=list)
     schwerpunkt: str = ""
+    thema: str = ""
     datum: str = field(default_factory=lambda: date.today().isoformat())
     quelle: str = "geplant"  # "geplant" | "eigene"
     notiz: str = ""
@@ -420,6 +432,7 @@ class Stunde:
             teilnehmer=int(daten.get("teilnehmer", 12)),
             teile=[Stundenteil.from_dict(t) for t in daten.get("teile", [])],
             schwerpunkt=daten.get("schwerpunkt", ""),
+            thema=daten.get("thema", ""),
             datum=daten.get("datum", date.today().isoformat()),
             quelle=daten.get("quelle", "geplant"),
             notiz=daten.get("notiz", ""),
@@ -438,6 +451,7 @@ class Stunde:
             "teilnehmer": self.teilnehmer,
             "teile": [t.to_dict() for t in self.teile],
             "schwerpunkt": self.schwerpunkt,
+            "thema": self.thema,
             "datum": self.datum,
             "quelle": self.quelle,
             "notiz": self.notiz,

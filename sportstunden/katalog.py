@@ -73,6 +73,15 @@ class Katalog:
         geraet = self.geraete.get(geraet_id)
         return geraet.name if geraet else geraet_id
 
+    def geraet_kurz(self, geraet_id: str) -> str:
+        """Kurzform fuer das Stundenbild (z. B. 'LB' statt 'Langbank')."""
+        geraet = self.geraete.get(geraet_id)
+        return geraet.kurzname if geraet else geraet_id
+
+    def themen(self) -> List[str]:
+        """Alle im Katalog vorkommenden Stundenthemen."""
+        return sorted({u.thema for u in self.uebungen if u.thema})
+
     def ist_absicherung(self, geraet_id: str) -> bool:
         geraet = self.geraete.get(geraet_id)
         return bool(geraet and geraet.kategorie == "absicherung")

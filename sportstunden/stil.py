@@ -25,16 +25,18 @@ GEWICHT_GRENZE = 1.2
 
 NEUTRALE_PHASEN_ANTEILE = {
     "aufwaermen": 0.20,
-    "koordination": 0.15,
-    "hauptteil": 0.50,
+    "koordination": 0.13,
+    "hauptteil": 0.52,
     "abschluss": 0.15,
 }
 
+# Kinderturnen: ein Anfangsspiel, ein Koordinationsteil, eine
+# Bewegungslandschaft mit mehreren Stationen, ein Abschlussspiel.
 NEUTRALE_UEBUNGSZAHL = {
-    "aufwaermen": 1.4,
-    "koordination": 1.4,
-    "hauptteil": 1.8,
-    "abschluss": 1.2,
+    "aufwaermen": 1.1,
+    "koordination": 1.0,
+    "hauptteil": 5.0,
+    "abschluss": 1.1,
 }
 
 
@@ -77,7 +79,7 @@ class Stilprofil:
     geraete_gewichte: Dict[str, float] = field(default_factory=dict)
     lieblingsuebungen: Dict[str, float] = field(default_factory=dict)
     intensitaet: float = 3.0
-    stationsanteil: float = 0.4
+    stationsanteil: float = 0.75
 
     # -- Bewertung ---------------------------------------------------------
     def bewerte(self, uebung: Uebung) -> float:
