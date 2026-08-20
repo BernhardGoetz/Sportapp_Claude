@@ -11,9 +11,16 @@ einzige Datei fuer Handy, Tablet und Rechner, der Plan laesst sich mit dem
 Finger verschieben. Mehr als ein Browser wird nicht gebraucht; eine
 Kommandozeilen- oder Fensterfassung gibt es nicht.
 
+Die Datei ist **verschluesselt**. Sie oeffnet sich auf zwei Wegen:
+
+| Weg | Was passiert |
+| --- | --- |
+| **Angemeldet** | Der eigene Server (`werkzeuge/server.py`) gibt den Schluessel an angemeldete Konten heraus - Registrierung, Anmeldung und Verwaltung inbegriffen. |
+| **Offline-Schluessel** | Ein vom Verwalter freigegebener Schluessel oeffnet dieselbe Datei ohne jede Verbindung - fuer Hallen ohne Empfang. |
+
 Reines JavaScript, keine Fremdbibliotheken - auch nicht fuer den PDF-Export.
-Das Python-Paket im Projekt liefert nur noch die Stammdaten und baut die
-Browser-Fassung; ausgeliefert wird es nicht.
+Das Python-Paket im Projekt liefert die Stammdaten, baut die Browser-Fassung
+und stellt den Server; ausgeliefert wird allein die eine HTML-Datei.
 
 ## Was das Programm macht
 
@@ -55,56 +62,100 @@ Browser-Fassung; ausgeliefert wird es nicht.
   Zeitaufteilung, Inhalte, Stationszahl, Lieblingsstationen und Intensitaet -
   **pro Altersgruppe getrennt**.
 
-## Ohne Installation: die Browser-Fassung
+## Eine Datei fuer alle Geraete
 
 `web/kinderturnen.html` ist **eine einzige Datei** mit Katalog, Oberflaeche und
-PDF-Erzeugung darin. Sie braucht keine Installation; dass sie dabei auch ohne
-Internetverbindung laeuft, ist eine Zugabe:
+PDF-Erzeugung darin. Installiert wird nichts:
 
-* **Rechner:** Datei doppelklicken - sie oeffnet sich im Browser.
-* **Handy und Tablet:** Datei per Mail, Messenger oder Cloud aufs Geraet legen
-  und antippen. In Safari und Chrome laesst sie sich ueber "Zum Home-Bildschirm"
-  wie eine App ablegen.
-* **Verein:** Datei auf eine Webseite legen - dann genuegt der Link.
+* **Rechner:** Adresse des Servers aufrufen - oder die heruntergeladene Datei
+  doppelklicken.
+* **Handy und Tablet:** In Safari und Chrome laesst sich die Seite ueber "Zum
+  Home-Bildschirm" wie eine App ablegen. Die heruntergeladene Datei tut es
+  genauso, sobald ein Offline-Schluessel freigegeben ist.
 
 Die Oberflaeche passt sich der Bildschirmgroesse an: Der Plan bekommt immer den
 groessten Teil des Fensters, auf hochkant gehaltenen Geraeten wird er passend
 gedreht. Stationen werden mit dem Finger oder der Maus verschoben (Fangraster
 25 cm), Ort und Geraetezahlen bleiben auf dem Geraet gespeichert.
 
+## Konten, Anmeldung und Offline-Schluessel
+
+Der Server (`werkzeuge/server.py`) haelt die Konten und gibt den Schluessel
+zur Datei heraus. Der Weg fuer eine neue Uebungsleiterin:
+
+1. **Registrieren** unter `/registrieren` (Name, E-Mail, Kennwort). Das Konto
+   ist sofort nutzbar; das **erste angelegte Konto wird Verwalter**.
+2. **Planen**: Nach der Anmeldung liefert `/` die Datei, sie holt sich den
+   Schluessel ueber `/freischalten` und entschluesselt sich selbst.
+3. **Offline arbeiten**: Der Verwalter gibt unter `/verwaltung` einen
+   Offline-Schluessel frei. Er steht danach im Konto der Person
+   (`KITU-XXXX-XXXX-XXXX-XXXX`), dazu ein Verweis zum Herunterladen der Datei.
+   Einmal gespeichert, laeuft sie ueberall ohne Verbindung - beim ersten
+   Oeffnen fragt sie nach dem Schluessel und merkt ihn sich.
+
+Der Verwalter kann Konten **sperren** (danach kommt der Zugang weder online
+noch an einen neuen Schluessel), Offline-Schluessel **entziehen** und weitere
+Verwalter ernennen. `?lizenz=neu` in der Adresse loescht einen gemerkten
+Schluessel wieder vom Geraet.
+
 ```bash
-python3 werkzeuge/baue_web.py --oeffnen   # neu bauen und gleich anschauen
+python3 werkzeuge/lizenzen.py --vorrat 50    # Schluesselvorrat anlegen
+python3 werkzeuge/baue_web.py                # Datei bauen (verschluesselt)
+python3 werkzeuge/server.py --port 8000      # Server starten
 ```
 
-## Veroeffentlichen: der Quelltext bleibt zu
+Der Vorrat wird einmal erzeugt und in die Datei eingebaut; der Server vergibt
+daraus, ohne dass neu gebaut werden muss. Erst wenn er leer ist (oder ein
+Schluessel gesperrt werden soll), sind `--vorrat` und ein neuer Bau faellig.
 
-Die ausgelieferte Datei enthaelt **keinen lesbaren Quelltext**. Aufbau
-(HTML), Gestaltung (CSS), Katalog und Programm liegen in einem einzigen,
-verwuerfelten Base64-Block; sichtbar ist nur ein kurzer Lader, der den Block
-zur Laufzeit zusammensetzt und ausfuehrt. "Seitenquelltext anzeigen" zeigt
-damit nichts Verwertbares mehr - weder Uebungen und Sicherheitsregeln noch die
-Planungslogik. Zusaetzlich:
+### Server betreiben
 
+* **Verschluesselte Verbindung:** Das Skript spricht einfaches HTTP. Fuer den
+  echten Betrieb gehoert nginx oder Caddy davor, der HTTPS beendet; dann
+  `--https` mitgeben, damit das Sitzungs-Cookie als `Secure` markiert wird.
+* **Sichern:** `server/konten.json` (Konten samt Offline-Zuteilung),
+  `server/geheim.txt` und `web/lizenzen.json` gehoeren ins Backup.
+  `server/zugriff.log` protokolliert Registrierung, Anmeldung, Freischaltung
+  und jede Verwaltungshandlung.
+* **Kennwoerter** liegen als PBKDF2-HMAC-SHA256 mit 240000 Runden und eigenem
+  Salz. Nach zehn Fehlversuchen in einer Viertelstunde ist Ruhe. Jedes
+  Formular traegt eine an die Sitzung gebundene Marke gegen fremde Absender.
+* **Kein Mailversand:** Es gibt keine Bestaetigungsmail und kein
+  Zuruecksetzen per Mail. Wer sein Kennwort vergisst, wendet sich an den
+  Verwalter (`--verwalter mail@beispiel.de` macht ein Konto zum Verwalter).
+* **`Content-Security-Policy`:** Wird die Datei ueber einen eigenen Webserver
+  ausgeliefert, darf `script-src` nicht ohne `'unsafe-eval'` gesetzt sein -
+  der Lader startet das entschluesselte Programm ueber `new Function`.
+
+## Der Quelltext bleibt zu
+
+Die ausgelieferte Datei enthaelt **keinen lesbaren Quelltext**. Aufbau (HTML),
+Gestaltung (CSS), Katalog und Programm liegen in einem verschluesselten Block
+(Schluesselstrom aus SHA-256 im Zaehlerbetrieb, 32-Byte-Schluessel); sichtbar
+ist nur der Lader, der ihn nach Anmeldung oder mit dem Offline-Schluessel
+entschluesselt. "Seitenquelltext anzeigen" zeigt nichts Verwertbares - weder
+Uebungen und Sicherheitsregeln noch die Planungslogik. Zusaetzlich:
+
+* Aus dem Offline-Schluessel wird der Blockschluessel ueber 20000 Runden
+  SHA-256 abgeleitet; die Datei traegt nur die verdeckten Huellen.
 * Die Innereien (`window.KiTu`) reicht die Seite nur mit `?pruefung=1` in der
   Adresse heraus - im Normalbetrieb gibt es keinen Einstiegspunkt.
-* Kommentare und Einrueckung sind vor dem Packen entfernt.
+* Kommentare und Einrueckung sind vor dem Verschluesseln entfernt.
 * `<meta name="robots" content="noarchive">` haelt Suchmaschinen-Archive fern.
-* Die lesbaren Quellen liegen unter `web/quelle/` und werden **nicht**
-  mit veroeffentlicht - weitergegeben wird allein `web/kinderturnen.html`.
+* Die lesbaren Quellen liegen unter `web/quelle/`, die Schluessel in
+  `web/lizenzen.json`. Beides bleibt im Projekt; weitergegeben wird allein
+  `web/kinderturnen.html`.
 
-**Grenze, die ehrlich benannt sein will:** Was der Browser ausfuehrt, muss der
-Browser entpacken koennen - der Lader steht in der Datei. Wer sich hinsetzt,
-kann den Block darueber zurueckrechnen; und die fertig aufgebaute Seite ist in
-den Entwicklerwerkzeugen als Elementbaum sichtbar, weil sie dort ja dargestellt
-wird. Das hier ist eine wirksame Huerde gegen Mitlesen und Abkupfern, keine
-Verschluesselung. Wirklich geheim bliebe die Planungslogik nur, wenn sie auf
-einem Server laeuft und der Browser bloss das fertige Ergebnis bekommt. Das
-kostet einen Server samt Pflege, und die Seite laeuft dann nur noch mit Netz -
-am Ziel "keine Installation beim Nutzer" aendert es dagegen nichts.
-
-Wird die Datei auf einen Webserver gelegt, darf dessen `Content-Security-Policy`
-`script-src` nicht ohne `'unsafe-eval'` gesetzt sein: der Lader startet das
-entpackte Programm ueber `new Function`.
+**Grenzen, die ehrlich benannt sein wollen:** Ohne Schluessel ist der Block
+nicht zu oeffnen - so weit haelt die Verschluesselung. Wer aber einen
+Schluessel hat (angemeldet oder offline freigegeben), kann ihn aufheben und
+weitergeben: Was der Browser ausfuehrt, muss der Browser entschluesseln
+koennen. Die fertig aufgebaute Seite ist in den Entwicklerwerkzeugen ausserdem
+als Elementbaum sichtbar. Der Serverbetrieb ist damit vor allem eine
+abschaltbare, protokollierte Nutzungsschranke - kein Bann fuer alle Zeiten.
+Wirklich beim Betreiber bliebe die Planungslogik nur, wenn sie auf dem Server
+liefe und der Browser nur das Ergebnis bekaeme; dann gaebe es aber keinen
+Offline-Betrieb mehr.
 
 ## Bedienung
 
@@ -124,12 +175,17 @@ gelernten Stil.
 ```bash
 git clone <repo>
 cd Sportapp_Claude
-python3 werkzeuge/baue_web.py --oeffnen
+python3 werkzeuge/lizenzen.py --vorrat 50           # einmalig
+python3 werkzeuge/baue_web.py --oeffnen             # bauen und anschauen
+python3 werkzeuge/server.py --port 8000             # Konten und Freischaltung
 ```
 
 Gearbeitet wird in `web/quelle/` (Oberflaeche) und `sportstunden/data/`
 (Katalog); `werkzeuge/baue_web.py` setzt daraus die auslieferbare Datei
 zusammen. Getestet mit Python 3.9+, keine Fremdbibliotheken.
+
+Zum Ausprobieren ohne Server hilft `--server ""`: Dann fragt die Datei
+gleich nach einem Offline-Schluessel aus `web/lizenzen.json`.
 
 ## Gruppen und Koordinationsteil
 
@@ -239,11 +295,17 @@ und Bestand, Aufbau je Stundenteil und die Sicherheitshinweise.
 
 ```
 web/
-  kinderturnen.html   das Programm: eine Datei, gepackt, zum Weitergeben
-  quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css, app.js)
+  kinderturnen.html   das Programm: eine Datei, verschluesselt, zum Weitergeben
+  quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css,
+                      app.js und lader.js - der sichtbare Teil)
+  lizenzen.json       Blockschluessel und Vorrat an Offline-Schluesseln
 werkzeuge/
-  baue_web.py     baut web/kinderturnen.html aus Quellen und Katalogdaten
-  packen.py       entfernt Kommentare und verpackt Aufbau, Stil, Daten, Programm
+  baue_web.py     baut und verschluesselt web/kinderturnen.html
+  packen.py       Kommentare entfernen, verschluesseln, Schluessel ableiten
+  lizenzen.py     Schluesselvorrat anlegen, listen, sperren
+  server.py       Konten, Registrierung, Anmeldung, Freischaltung, Verwaltung
+server/           Laufzeitdaten des Servers (nicht im Projektstand)
+  konten.json, sitzungen.json, geheim.txt, zugriff.log
 sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeliefert)
   data/           Geraete, Sicherheitsregeln, Gruppen, Uebungen, Beispielorte
   models.py       Datenmodelle (Ort, Geraeteplatz, Uebung, Stunde ...)
@@ -255,7 +317,7 @@ sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeli
   hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-tests/            100 Tests (unittest)
+tests/            145 Tests (unittest)
 ```
 
 `web/quelle/app.js` traegt dieselbe Logik wie das Python-Paket in JavaScript.
@@ -278,16 +340,24 @@ ohne Ueberlappung in der Halle und Stationen mit ortsfesten Geraeten stehen an
 deren Platz, das PDF enthaelt weder Minuten noch eine Kinderzahl, die
 Ueberschrift ist frei waehlbar, der gelernte Stil veraendert die Auswahl.
 
-Die Browser-Fassung wird im echten Chromium geprueft: sie baut sich
-aus dem gepackten Block selbst auf, plant ohne Fehler, alle Stationen liegen in
+Die Browser-Fassung wird im echten Chromium geprueft: sie baut sich aus dem
+entschluesselten Block selbst auf, plant ohne Fehler, alle Stationen liegen in
 der Halle, Ziehen funktioniert auch im gedrehten Plan, der Plan nimmt auf Handy,
 Tablet und Rechner den groessten Teil des Fensters ein, und das erzeugte PDF hat
-genau eine Seite (mit Details mehr) und keine Zeitangaben. Geprueft wird auch,
-dass im Seitenquelltext nichts Lesbares steht und ohne `?pruefung=1` keine
-Innereien zugaenglich sind. Diese Tests brauchen Playwright und werden sonst
-uebersprungen. Nach Aenderungen an `web/quelle/` bitte
-`python3 werkzeuge/baue_web.py` ausfuehren - ein Test prueft, dass die abgelegte
-Datei dazu passt.
+genau eine Seite (mit Details mehr) und keine Zeitangaben. Zur Verschluesselung:
+im Seitenquelltext steht nichts Lesbares, ohne Schluessel bleibt es bei der
+Abfrage, ein falscher Schluessel wird abgewiesen, ein richtiger wird gemerkt.
+
+Der Server hat eigene Tests: Registrierung, Anmeldung, Sperre nach zehn
+Fehlversuchen, Kennwoerter nur als Hash, kein Zutritt zur Verwaltung ohne
+Rolle, Vergabe und Entzug der Offline-Schluessel, Formulare ohne gueltige
+Marke werden abgewiesen. Zwei Tests gehen den ganzen Weg im Browser: im
+leeren Chromium registrieren, das Programm erscheint und plant eine Stunde -
+damit ist auch belegt, dass das SHA-256 im Lader exakt zu Python passt.
+
+Die Browsertests brauchen Playwright und werden sonst uebersprungen. Nach
+Aenderungen an `web/quelle/` bitte `python3 werkzeuge/baue_web.py` ausfuehren -
+ein Test prueft, dass die abgelegte Datei dazu passt.
 
 ## Uebungskatalog erweitern
 

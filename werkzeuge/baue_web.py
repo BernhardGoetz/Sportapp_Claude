@@ -30,12 +30,13 @@ sys.path.insert(0, str(WURZEL))
 from sportstunden.katalog import Katalog  # noqa: E402
 from sportstunden.pdf import _HELVETICA, _HELVETICA_BOLD  # noqa: E402
 from sportstunden.platzierung import GERAETEMASSE, ORTSFESTE_GERAETE  # noqa: E402
+from werkzeuge import lizenzen  # noqa: E402
 from werkzeuge.packen import (  # noqa: E402
     lader,
     ohne_css_kommentare,
     ohne_html_kommentare,
     ohne_kommentare,
-    verpacke,
+    verschluessele,
 )
 
 QUELLE = WURZEL / "web" / "quelle"
@@ -96,10 +97,28 @@ def nutzlast() -> str:
     )
 
 
-def baue() -> str:
+def baue(server: str = None) -> str:
+    """Die fertige Seite: verschluesselter Block plus sichtbarer Lader."""
+    daten = lizenzen.lade()
+    if not daten.get("vorrat"):
+        lizenzen.fuelle(daten, lizenzen.VORGABE_VORRAT)
+        lizenzen.sichere(daten)
+    if server is not None and server != daten.get("server"):
+        daten["server"] = server
+        lizenzen.sichere(daten)
+
+    block = verschluessele(nutzlast(), bytes.fromhex(daten["blockschluessel"]))
+    huellen = [
+        {"k": eintrag["kennung"], "h": eintrag["huelle"]}
+        for eintrag in daten["vorrat"]
+        if not eintrag.get("gesperrt")
+    ]
+
     vorlage = (QUELLE / "vorlage.html").read_text(encoding="utf-8")
-    block, schluessel = verpacke(nutzlast())
-    return vorlage.replace("__LADER__", lader(block, schluessel))
+    quelle = (QUELLE / "lader.js").read_text(encoding="utf-8")
+    return vorlage.replace(
+        "__LADER__", lader(quelle, block, huellen, daten.get("server", ""))
+    )
 
 
 def main() -> int:
@@ -114,9 +133,14 @@ def main() -> int:
         action="store_true",
         help="die gebaute Datei anschliessend im Browser oeffnen",
     )
+    parser.add_argument(
+        "--server",
+        metavar="ADRESSE",
+        help='Adresse der Freischaltung (Vorgabe "/freischalten", "" = keine)',
+    )
     args = parser.parse_args()
 
-    seite = baue()
+    seite = baue(args.server)
     if args.pruefen:
         if not ZIEL.exists():
             print(f"{ZIEL} fehlt - bitte 'python3 werkzeuge/baue_web.py' ausfuehren.")

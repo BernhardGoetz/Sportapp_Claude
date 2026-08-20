@@ -1,28 +1,34 @@
-"""Packt die Browser-Fassung so, dass der Quelltext nicht offen dasteht.
+"""Packt und verschluesselt die Browser-Fassung.
 
-Zwei Schritte:
+Drei Schritte:
 
 1. ``ohne_kommentare()`` nimmt dem JavaScript alle Kommentare und die
    Einrueckung. Zeichenketten, Vorlagen (Backticks) und regulaere Ausdruecke
    bleiben dabei unangetastet.
-2. ``verpacke()`` legt Aufbau, Gestaltung, Daten und Programm in einen
-   einzigen Block, wuerfelt ihn Byte fuer Byte mit einem Schluesselstrom
-   durcheinander und schreibt ihn als Base64 in die Seite. ``lader()``
-   liefert das kurze Stueck JavaScript, das den Block zur Laufzeit wieder
-   zusammensetzt und ausfuehrt.
+2. ``verschluessele()`` legt Aufbau, Gestaltung, Daten und Programm in einen
+   einzigen Block und verschluesselt ihn mit einem 32-Byte-Schluessel
+   (Schluesselstrom aus SHA-256 im Zaehlerbetrieb). Der Block steht als
+   Base64 in der Seite.
+3. ``huelle()`` verpackt diesen Schluessel je Lizenz noch einmal: aus dem
+   Lizenzschluessel wird ueber 20000 SHA-256-Runden ein Ableitungsschluessel,
+   der den Blockschluessel verdeckt. Ohne passenden Lizenzschluessel - oder
+   ohne einen Server, der den Blockschluessel herausgibt - laesst sich der
+   Block nicht entschluesseln und die Seite startet nicht.
 
-Damit zeigt "Seitenquelltext anzeigen" im Browser nichts Lesbares mehr:
-weder Markup noch Stil, Katalog oder Programm. Ein entschlossener Leser
-kann den Block mit dem sichtbaren Lader trotzdem zurueckrechnen - eine
-Seite, die im Browser laeuft, muss ihren Code dort auch entpacken koennen.
-Wirklich geheim bleibt nur, was auf einem Server liegt.
+"Seitenquelltext anzeigen" zeigt damit nichts Lesbares: weder Markup noch
+Stil, Katalog oder Programm. Anders als eine blosse Verschleierung haelt das
+auch einem entschlossenen Leser stand, solange er keinen Schluessel hat. Wer
+einen Schluessel besitzt, kommt an den Klartext heran - was der Browser
+ausfuehrt, muss der Browser entpacken koennen.
 """
 
 from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import re
+import secrets
 
 # Schluesselwoerter, nach denen ein "/" einen regulaeren Ausdruck einleitet
 # und keine Division ist.
@@ -201,38 +207,82 @@ def ohne_html_kommentare(html: str) -> str:
     return "\n".join(zeile for zeile in zeilen if zeile.strip())
 
 
-def _schluessel(daten: bytes) -> int:
-    """Aus dem Inhalt abgeleitet - gleicher Inhalt, gleicher Schluessel."""
-    return int.from_bytes(hashlib.sha256(daten).digest()[:4], "big") | 1
+MARKE = "/*KITU1*/\n"  # steht am Anfang des Klartexts - so ist ein
+# falscher Schluessel sofort zu erkennen.
+_RUNDEN = 20000  # Ableitung des Lizenzschluessels: absichtlich zaehfluessig
 
 
-def _strom(daten: bytes, schluessel: int) -> bytes:
-    zustand = schluessel & 0xFFFFFFFF
-    heraus = bytearray(len(daten))
-    for i, byte in enumerate(daten):
-        zustand = (zustand * 1664525 + 1013904223) & 0xFFFFFFFF
-        heraus[i] = byte ^ ((zustand >> 24) & 0xFF)
-    return bytes(heraus)
+def normiere(lizenz: str) -> str:
+    """Lizenzschluessel ohne Bindestriche, Leerzeichen und Kleinschreibung."""
+    return "".join(z for z in (lizenz or "").upper() if z.isalnum())
 
 
-def verpacke(nutzlast: str) -> tuple:
-    """(Base64-Block, Schluessel) fuer den Lader."""
-    roh = nutzlast.encode("utf-8")
-    schluessel = _schluessel(roh)
-    return base64.b64encode(_strom(roh, schluessel)).decode("ascii"), schluessel
+def kennung(lizenz: str) -> str:
+    """Kurzes, oeffentliches Merkmal einer Lizenz (verraet sie nicht)."""
+    roh = ("kitu1-kennung:" + normiere(lizenz)).encode("utf-8")
+    return hashlib.sha256(roh).hexdigest()[:8]
 
 
-def entpacke(block: str, schluessel: int) -> str:
-    """Gegenprobe zu :func:`verpacke` - fuer die Tests."""
-    return _strom(base64.b64decode(block), schluessel).decode("utf-8")
+def lizenzschluessel(lizenz: str) -> bytes:
+    """Ableitungsschluessel aus dem Lizenzschluessel - 20000 Runden SHA-256."""
+    h = hashlib.sha256(("kitu1:" + normiere(lizenz)).encode("utf-8")).digest()
+    marke = b"kitu1"
+    for _ in range(_RUNDEN):
+        h = hashlib.sha256(h + marke).digest()
+    return h
 
 
-def lader(block: str, schluessel: int) -> str:
-    """Das sichtbare Stueck JavaScript: entpackt und startet die Anwendung."""
-    return (
-        "(function(){"
-        f'var q="{block}",b=atob(q),n=b.length,u=new Uint8Array(n),s={schluessel}>>>0;'
-        "for(var i=0;i<n;i++){s=(s*1664525+1013904223)>>>0;u[i]=b.charCodeAt(i)^(s>>>24);}"
-        "new Function(new TextDecoder().decode(u))();"
-        "})();"
-    )
+def neuer_lizenzschluessel(zufall=None) -> str:
+    """Neuer Lizenzschluessel in der Form KITU-XXXX-XXXX-XXXX-XXXX."""
+    zeichen = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # ohne I, O, 0, 1
+    quelle = zufall or secrets.choice
+    bloecke = ["".join(quelle(zeichen) for _ in range(4)) for _ in range(4)]
+    return "KITU-" + "-".join(bloecke)
+
+
+def neuer_blockschluessel() -> str:
+    """Neuer Schluessel fuer den Block, als Hex."""
+    return secrets.token_hex(32)
+
+
+def huelle(blockschluessel: bytes, lizenz: str) -> str:
+    """Blockschluessel, verdeckt mit dem Ableitungsschluessel der Lizenz."""
+    ableitung = lizenzschluessel(lizenz)
+    return bytes(a ^ b for a, b in zip(blockschluessel, ableitung)).hex()
+
+
+def _strom(laenge: int, schluessel: bytes) -> bytes:
+    """Schluesselstrom: SHA-256(Schluessel || Zaehler), aneinandergehaengt."""
+    heraus = bytearray()
+    block = 0
+    while len(heraus) < laenge:
+        heraus += hashlib.sha256(schluessel + block.to_bytes(4, "big")).digest()
+        block += 1
+    return bytes(heraus[:laenge])
+
+
+def verschluessele(nutzlast: str, schluessel: bytes) -> str:
+    """Klartext -> Base64-Block."""
+    roh = (MARKE + nutzlast).encode("utf-8")
+    strom = _strom(len(roh), schluessel)
+    return base64.b64encode(bytes(a ^ b for a, b in zip(roh, strom))).decode("ascii")
+
+
+def entschluessele(block: str, schluessel: bytes):
+    """Base64-Block -> Klartext, oder None bei falschem Schluessel."""
+    roh = base64.b64decode(block)
+    strom = _strom(len(roh), schluessel)
+    try:
+        text = bytes(a ^ b for a, b in zip(roh, strom)).decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+    return text[len(MARKE):] if text.startswith(MARKE) else None
+
+
+def lader(quelle: str, block: str, huellen: list, server: str) -> str:
+    """Der sichtbare Lader: Vorlage aus web/quelle/lader.js mit Werten."""
+    fertig = ohne_kommentare(quelle)
+    fertig = fertig.replace("__BLOCK__", block)
+    fertig = fertig.replace("__HUELLEN__", json.dumps(huellen, separators=(",", ":")))
+    fertig = fertig.replace("__SERVER__", server)
+    return fertig

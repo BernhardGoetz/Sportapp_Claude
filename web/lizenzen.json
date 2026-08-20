@@ -1,0 +1,306 @@
+{
+  "blockschluessel": "edfb4508a9cb372d13da820f39ede69d7d383f99b9f8dd34314bf7bb5f9cfb93",
+  "server": "/freischalten",
+  "vorrat": [
+    {
+      "schluessel": "KITU-7E8C-B6B4-L79K-22KM",
+      "kennung": "31fb40ff",
+      "huelle": "3912111ebaa24e652e9d1d3961e440003a1869e3ca93f226e39addaea990ccf4",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-Y9HZ-DJ36-CUMJ-HL29",
+      "kennung": "ba8e8bdd",
+      "huelle": "8469f751a237b981b75e3c29630242b53d1c905cd779ca9e8923710e6e0d5bef",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-C3V6-KLZT-TNBD-FSDU",
+      "kennung": "76a20f6d",
+      "huelle": "9274c26ef818ec1454120c138644e802fb89b0e76e2a8eec589bafcc343c3675",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-4RWX-WHPY-V3LW-7PJF",
+      "kennung": "114b94ec",
+      "huelle": "878700af1d1e1634b2df8d24f811f2955c1278daa2944159dc782647a0caba81",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-FJ8P-63RV-QL6K-S8TQ",
+      "kennung": "3840e4c3",
+      "huelle": "199d5dee08e69fb08e066b5bf1777b997f8dbc3d37757ee4fbd25afbc68ccb83",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-4TCC-4UJ4-M34Q-2X9L",
+      "kennung": "f995b719",
+      "huelle": "84f23f0e705d6e4fc28d9c2e44135795b0387a947eb2f42d1f54849fc5a14607",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-4QYF-BANQ-445F-WRFX",
+      "kennung": "846aa40d",
+      "huelle": "8c5a4fd8ab6ee413d6f58fae4be1a000a90935ed6260ccd2f27771a486264eac",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-57HY-6RZM-N9FJ-VAF5",
+      "kennung": "9af4a38f",
+      "huelle": "e1f2e835882473d9e696143d05b92e28c143976683dcbe64c8efca22c1d4b1fd",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-FD6U-435F-PQ7W-Z527",
+      "kennung": "a8d2c93b",
+      "huelle": "1b2825bf8f31a7c5aca00f6a94ffbad62e0df6b7675c137e5d9613e3e05fd37c",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-L5DN-NAHU-CKVX-EFFF",
+      "kennung": "d17e05e7",
+      "huelle": "c57eb60c2261ba919792f0fa685b1740159c827373dbcbd095a8808f070dbfd0",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-T2WE-4G3B-7SFG-YYKH",
+      "kennung": "53b2989c",
+      "huelle": "a34c4f97f13c5631d936b5cf16d23d2aa2c2fbfebbe9b9d18a63e2ef9c0498d2",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-Z23Q-9WW4-HK4S-D8EN",
+      "kennung": "4b984f2b",
+      "huelle": "85a6b1a2e7d8d76f401df9a304ba799abbe5907bb1d05a9523b9d086ad7cda5f",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-NA6J-7BNL-UY2E-KJUN",
+      "kennung": "a7420489",
+      "huelle": "7da154fcf5f2ce2412527f6bb05d7bd2f8cd69456659b47c54c5f1c32ca6f113",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-SSVJ-LEFS-2SFA-MZ49",
+      "kennung": "710e1f79",
+      "huelle": "97cb2d618ba2ad3967157ed50e12110a9b61c0fa7fb908b326f6ebe6f7a69521",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-FVCW-3YS5-2SVL-K49Q",
+      "kennung": "86d4359d",
+      "huelle": "881784fa982770a8f834f02a66c2a0cec81e0c71a3e9ca81096eb7c9ba0782e1",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-BAA8-79TD-DHJ7-AZBU",
+      "kennung": "818a923b",
+      "huelle": "5862be87784a7d7a4684c38ee264ee92cb0dd004210fef21c5f1c69023c778d4",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-SN69-YAC4-VN8D-LNUA",
+      "kennung": "83f72cfe",
+      "huelle": "4ae23e1bd09c59bb0bf2f6927cddad31295a0d22e700de48a07855d62c3eed4f",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-4DJ6-XQPK-5LGP-G3K9",
+      "kennung": "c0d8671e",
+      "huelle": "4a8e34921ae7fdebdaae83f80d6e59fa2eed5a84680e38595232124f4938200b",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-BWDN-3DUJ-N6B6-TNWV",
+      "kennung": "3681536b",
+      "huelle": "0337635f2751081573bec0a9004bba7cb4be769f15d97857e1be2d54398614f5",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-J8U8-RYTF-MVTH-V6MV",
+      "kennung": "5caf80cc",
+      "huelle": "41f2c2335cd8730491ecaf53ff87e0a78cf92157dce1d353c10e5bc5cabf1603",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-5DM3-FVDJ-YZL3-P8RM",
+      "kennung": "27121243",
+      "huelle": "b913bef152d91eb37cfacffe3769f6e892493f6f835ccf268d257e6cfd933286",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-DUML-RVCA-ZCGJ-J79M",
+      "kennung": "6d993e9d",
+      "huelle": "91e932abc15f62107ca70100067e8d7b64609b23b452304d6ba662befd85f379",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-QQFX-BD4Q-YGDF-AHG6",
+      "kennung": "5fc36da3",
+      "huelle": "d616da13afc8edc52e6195b2ede2aa15072cc96183f7efc5050297f2023e3016",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-PZV5-GGA5-4QPJ-H5TS",
+      "kennung": "930e7920",
+      "huelle": "9e283ad4bfd8561ed2323e71bac1e227bd917779c8fe124a48f517ae3d77c6d8",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-RCT2-H8WQ-XEBJ-5VQN",
+      "kennung": "1d33156b",
+      "huelle": "fddf9a99c273fdb096d0ac17033558f3bf761f2a7b9792d2e1fa622be738dd2e",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-NYBF-GP5G-RNQ8-GMPY",
+      "kennung": "f2bd9f75",
+      "huelle": "16a812fdc34272cbc0f91db1a8b17bc2d169ebf9b4b50c18a9530753145f3492",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-CQJS-AXEJ-FFKD-G5C8",
+      "kennung": "0e6dafc3",
+      "huelle": "4e9f097a0790a7406ae4e6e492a3fe184e17e382028704b0f9e6168ff287dbb2",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-VQJZ-YRJH-6R9U-7XV7",
+      "kennung": "6a787284",
+      "huelle": "e3652f2d52f55186857a5aa3227df749fd73ef8822ff6afa7e2a50456b9670bb",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-J8BG-42QT-2RHA-W8CD",
+      "kennung": "de41f207",
+      "huelle": "e7874fd5ccdfa17dbf4e991f7af951ac976995e84e1cf7584601e3556991cba6",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-W2FX-MXP4-BB5V-LDEV",
+      "kennung": "1c0e2c93",
+      "huelle": "6049a564eb49c9e604d399c76876e12bd051d26f9a7cdcc7f2040fc4fad06012",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-SW8A-3VNA-3HKC-DSBZ",
+      "kennung": "bd313dba",
+      "huelle": "d3aa4683ae341377c0070d208ad76404a35e6d06912b5d80cceef9984b051200",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-F6V6-XX8L-SM3M-MKLU",
+      "kennung": "39a3f92b",
+      "huelle": "4398bf5ea084ae0c10dfec50c0aa0aabb78c9a5f7aa188b79c2ad592f91b14a8",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-GDHR-E5TC-PU7A-AWS2",
+      "kennung": "055c088e",
+      "huelle": "d0d326b665b8a4f2982c16306879d4111cb3d3ed423f6a6f88e2deb0302a984e",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-G6XT-9TWS-DXQ7-K9LG",
+      "kennung": "f58fa0e2",
+      "huelle": "38fc85124567a44f75187b61c1fe6e9acb53c8989548b3a3959f77b5795ab98a",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-VTJ3-5LF3-Z9AT-F6UD",
+      "kennung": "8a73fd9a",
+      "huelle": "10d66a2a5824265e2f947c9eb7059ff6e38aa31d04b582c5f326adceb51f7942",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-JDJS-W7FE-B26Y-L573",
+      "kennung": "bfbd6fc5",
+      "huelle": "8660e23130713f593499ec96030f047f868dac0cfde51eac89d3fa09860f57ed",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-MQCA-FXVV-SF2T-353M",
+      "kennung": "fd82512c",
+      "huelle": "a7042bb03c8f8731e39aa85ad8cbbf75c2716692a8e2011a94bb02b9df3ec243",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-7Z2Q-XSDY-ULXK-P7GD",
+      "kennung": "393b5878",
+      "huelle": "dc2fb0d3f1128858f6dc59ba893c6e87a33edd11493a56fd69f6a7deee3abc44",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-62CY-J57N-YY5S-G7FA",
+      "kennung": "2b248422",
+      "huelle": "f136fd4d8576e45ebd7ab3efe0aade477b0ccfc18b51a17de032c76ade4970d8",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-P5D6-Z3J5-YFBM-35V4",
+      "kennung": "777ef99c",
+      "huelle": "c45b250351124d146b405733ce05f430eb511f7d14262951c9fb29ddc80d4413",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-JNFP-ZSVQ-78EK-F26R",
+      "kennung": "5d0ed320",
+      "huelle": "342de021a4ed001317a24455b446f4814e688dc210fee553d85f92996dc640e1",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-2YVF-FHCR-P2AV-NDES",
+      "kennung": "dc7afcd2",
+      "huelle": "afcd68a34320585b6eaecbbb7871fe1473a494e9b32e76008e08d32f1d5d7b2c",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-KAWQ-WQZW-RZ9Y-GRVB",
+      "kennung": "6f20d11f",
+      "huelle": "63c6a1f7c231c815818ec4f254cf1d54a20bd7ba5ea11c303f11c0a34974e0da",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-SSCS-A722-UUEK-V7XL",
+      "kennung": "e8ae1045",
+      "huelle": "5cf503d29337fce9ffb346763b7c6c4229570449292025362aa4a72ba27e5708",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-9Y3A-2D95-YMPY-SHU8",
+      "kennung": "0d8c68ca",
+      "huelle": "c4f3ef89b583575bb9982d2d98be611ce395187a363b3d246088c9cf356c6ea5",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-RU3V-7J2U-LXTZ-5U9Q",
+      "kennung": "ebab5546",
+      "huelle": "dd207f8146457cc93e74d7f52c64176f97bd617dcaef8a29289b1ca97a3b6ef4",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-C9FU-VD9B-FNKB-VNCE",
+      "kennung": "6c4ca4a1",
+      "huelle": "0d2a65103f039916cd9c1a9ab42ab894ec8130addb852d3cd3a36c5453bb742b",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-WVZB-7MSK-EKCQ-JE99",
+      "kennung": "b7c5948b",
+      "huelle": "a45f0477cf9c041cccb4fc2fce04cc543e89da7d2da1be90de3651aa609e9de7",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-2PT8-TKVA-9QFE-8JE4",
+      "kennung": "0f91a996",
+      "huelle": "851230e1bc67c0ea05b5e2b03e5c34770b8775475bb2bb137a1e35f335262512",
+      "gesperrt": false
+    },
+    {
+      "schluessel": "KITU-TSFB-KUPE-2RCA-AKK2",
+      "kennung": "66b73951",
+      "huelle": "aba50f7e6bccd8dd0018ddb60473d63b726a338098797b9d6fc74e9fe7c4796e",
+      "gesperrt": false
+    }
+  ]
+}

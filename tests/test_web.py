@@ -17,19 +17,23 @@ WURZEL = Path(__file__).resolve().parent.parent
 SEITE = WURZEL / "web" / "kinderturnen.html"
 
 sys.path.insert(0, str(WURZEL))
-from werkzeuge.packen import entpacke, ohne_kommentare  # noqa: E402
+from werkzeuge import lizenzen  # noqa: E402
+from werkzeuge.packen import entschluessele, lizenzschluessel, ohne_kommentare  # noqa: E402
+
+LIZENZEN = lizenzen.lade()
+SCHLUESSEL = bytes.fromhex(LIZENZEN["blockschluessel"])
+OFFLINE = LIZENZEN["vorrat"][0]["schluessel"]  # Offline-Schluessel fuer die Tests
 
 
-def gepackter_block(inhalt: str):
-    """(Block, Schluessel) aus dem Lader der gebauten Seite."""
-    treffer = re.search(r'var q="([A-Za-z0-9+/=]+)".*?s=(\d+)>>>0', inhalt)
-    return (treffer.group(1), int(treffer.group(2))) if treffer else (None, None)
+def block_der_seite(inhalt: str):
+    """Der verschluesselte Block aus dem Lader der gebauten Seite."""
+    treffer = re.search(r'var BLOCK = "([A-Za-z0-9+/=]+)"', inhalt)
+    return treffer.group(1) if treffer else None
 
 
 def programmtext(inhalt: str) -> str:
-    """Der entpackte Inhalt der Seite."""
-    block, schluessel = gepackter_block(inhalt)
-    return entpacke(block, schluessel)
+    """Der entschluesselte Inhalt der Seite."""
+    return entschluessele(block_der_seite(inhalt), SCHLUESSEL)
 
 try:  # pragma: no cover - haengt von der Installation ab
     from playwright.sync_api import sync_playwright
@@ -73,13 +77,12 @@ class WebDateiTest(unittest.TestCase):
     def test_quelltext_ist_nicht_lesbar(self):
         """Im Seitenquelltext steht nur der Lader - kein Markup, kein Programm."""
         inhalt = SEITE.read_text(encoding="utf-8")
-        block, schluessel = gepackter_block(inhalt)
-        self.assertIsNotNone(block, "gepackter Block nicht gefunden")
-        self.assertGreater(schluessel, 0)
+        block = block_der_seite(inhalt)
+        self.assertIsNotNone(block, "verschluesselter Block nicht gefunden")
 
-        # Alles ausserhalb des Blocks ist die Huelle und bleibt winzig.
+        # Alles ausserhalb des Blocks ist die Huelle: Lader und Schluesselhuellen.
         huelle = inhalt.replace(block, "")
-        self.assertLess(len(huelle), 1200, "zu viel offener Text in der Seite")
+        self.assertLess(len(huelle), 16_000, "zu viel offener Text in der Seite")
 
         verraeter = [
             "Bewegungslandschaft",
@@ -90,8 +93,9 @@ class WebDateiTest(unittest.TestCase):
             "stationsliste",
             "<canvas",
             "<button",
-            "function ",
             "altersgruppe",
+            "Turnhalle",
+            "Aufwaermen",
         ]
         for wort in verraeter:
             self.assertNotIn(wort, huelle, f"lesbarer Quelltext gefunden: {wort}")
@@ -149,14 +153,49 @@ class PackerTest(unittest.TestCase):
         quelle = "const s = `<< /Type ${liste\n  .join(' ')}] >>`;"
         self.assertEqual(ohne_kommentare(quelle), "const s = `<< /Type ${liste\n.join(' ')}] >>`;")
 
-    def test_packen_und_entpacken(self):
-        from werkzeuge.packen import lader, verpacke
+
+class SchluesselTest(unittest.TestCase):
+    """Verschluesselung und Ableitung aus dem Lizenzschluessel."""
+
+    def test_verschluesseln_und_zurueck(self):
+        from werkzeuge.packen import neuer_blockschluessel, verschluessele
 
         text = 'const x = "Groesse: 27 x 15 m";'
-        block, schluessel = verpacke(text)
+        schluessel = bytes.fromhex(neuer_blockschluessel())
+        block = verschluessele(text, schluessel)
         self.assertNotIn("Groesse", block)
-        self.assertEqual(entpacke(block, schluessel), text)
-        self.assertIn(str(schluessel), lader(block, schluessel))
+        self.assertEqual(entschluessele(block, schluessel), text)
+
+    def test_falscher_schluessel_gibt_nichts_her(self):
+        from werkzeuge.packen import verschluessele
+
+        block = verschluessele("geheim", bytes(range(32)))
+        self.assertIsNone(entschluessele(block, bytes(32)))
+
+    def test_schreibweise_des_lizenzschluessels_ist_egal(self):
+        from werkzeuge.packen import kennung, normiere
+
+        for form in ("KITU-AAAA-BBBB", "kitu aaaa bbbb", "kituaaaabbbb"):
+            self.assertEqual(normiere(form), "KITUAAAABBBB")
+            self.assertEqual(kennung(form), kennung("KITU-AAAA-BBBB"))
+
+    def test_huelle_gibt_den_blockschluessel_zurueck(self):
+        from werkzeuge.packen import huelle
+
+        lizenz = LIZENZEN["vorrat"][1]["schluessel"]
+        verdeckt = bytes.fromhex(huelle(SCHLUESSEL, lizenz))
+        zurueck = bytes(a ^ b for a, b in zip(verdeckt, lizenzschluessel(lizenz)))
+        self.assertEqual(zurueck, SCHLUESSEL)
+        self.assertEqual(verdeckt.hex(), LIZENZEN["vorrat"][1]["huelle"])
+
+    def test_jeder_vorratsschluessel_oeffnet_die_seite(self):
+        block = block_der_seite(SEITE.read_text(encoding="utf-8"))
+        for eintrag in LIZENZEN["vorrat"][:3]:
+            verdeckt = bytes.fromhex(eintrag["huelle"])
+            schluessel = bytes(
+                a ^ b for a, b in zip(verdeckt, lizenzschluessel(eintrag["schluessel"]))
+            )
+            self.assertIsNotNone(entschluessele(block, schluessel), eintrag["schluessel"])
 
 
 @unittest.skipUnless(PLAYWRIGHT_DA and CHROMIUM, "Playwright oder Chromium fehlt")
@@ -173,7 +212,8 @@ class WebOberflaecheTest(unittest.TestCase):
         cls.browser.close()
         cls._pw.stop()
 
-    def oeffne(self, breite=1280, hoehe=860, pruefung=True):
+    def neue_seite(self, breite=1280, hoehe=860, lizenz=OFFLINE):
+        """Leere Seite mit Fehlerwaechter - der Schluessel liegt schon bereit."""
         seite = self.browser.new_page(viewport={"width": breite, "height": hoehe})
         self.fehler = []
         seite.on("pageerror", lambda e: self.fehler.append(str(e)))
@@ -181,10 +221,73 @@ class WebOberflaecheTest(unittest.TestCase):
             "console",
             lambda m: self.fehler.append(m.text) if m.type == "error" else None,
         )
+        if lizenz:
+            seite.add_init_script(
+                "try { localStorage.setItem('kitu.lizenz', %s); } catch (e) {}"
+                % json.dumps(lizenz)
+            )
+        return seite
+
+    def oeffne(self, breite=1280, hoehe=860, pruefung=True):
+        """Seite mit Offline-Schluessel oeffnen und auf das Programm warten."""
+        seite = self.neue_seite(breite, hoehe)
         # Die Innereien reicht die Seite nur mit "?pruefung=1" heraus.
         seite.goto(SEITE.resolve().as_uri() + ("?pruefung=1" if pruefung else ""))
+        seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
         seite.wait_for_timeout(350)
         return seite
+
+    def test_ohne_schluessel_bleibt_es_bei_der_abfrage(self):
+        seite = self.neue_seite(lizenz=None)
+        seite.goto(SEITE.resolve().as_uri())
+        seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        self.assertFalse(seite.evaluate("() => !!document.getElementById('plan')"))
+        # Nichts vom Programm ist im Dokument gelandet.
+        self.assertNotIn("Bewegungslandschaft", seite.content())
+        seite.close()
+
+    def test_falscher_schluessel_wird_abgewiesen(self):
+        seite = self.neue_seite(lizenz=None)
+        seite.goto(SEITE.resolve().as_uri())
+        seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        seite.fill("#lizenzfeld", "KITU-XXXX-XXXX-XXXX-XXXX")
+        seite.click("#lizenzknopf")
+        seite.wait_for_function(
+            "() => document.getElementById('lizenzhinweis').textContent.length > 0",
+            timeout=20000,
+        )
+        self.assertIn("passt nicht", seite.text_content("#lizenzhinweis"))
+        self.assertFalse(seite.evaluate("() => !!document.getElementById('plan')"))
+        seite.close()
+
+    def test_richtiger_schluessel_schaltet_frei_und_wird_gemerkt(self):
+        seite = self.neue_seite(lizenz=None)
+        seite.goto(SEITE.resolve().as_uri())
+        seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        seite.fill("#lizenzfeld", OFFLINE)
+        seite.click("#lizenzknopf")
+        seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
+        self.assertEqual(
+            seite.evaluate("() => localStorage.getItem('kitu.lizenz')"), OFFLINE
+        )
+        # Neu laden: kein Nachfragen mehr.
+        seite.reload()
+        seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
+        self.assertEqual(self.fehler, [])
+        seite.close()
+
+    def test_lizenz_neu_vergisst_den_schluessel(self):
+        seite = self.oeffne()
+        seite.goto(SEITE.resolve().as_uri() + "?lizenz=neu")
+        seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        self.assertIsNone(seite.evaluate("() => localStorage.getItem('kitu.lizenz')"))
+        seite.close()
+
+    def test_schluessel_darf_auch_in_der_adresse_stehen(self):
+        seite = self.neue_seite(lizenz=None)
+        seite.goto(SEITE.resolve().as_uri() + "#lizenz=" + OFFLINE)
+        seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
+        seite.close()
 
     def test_seite_baut_sich_selbst_auf(self):
         """Der Aufbau steckt im gepackten Block, nicht im Quelltext."""
