@@ -10,10 +10,10 @@ Aufbau, Gestaltung, Daten und Programm liegen in einem gepackten Block
 Lader. Die lesbaren Quellen bleiben hier im Projekt und werden nicht
 veroeffentlicht.
 
-Aufruf:  python3 werkzeuge/baue_web.py [--pruefen]
+Aufruf:  python3 werkzeuge/baue_web.py [--oeffnen | --pruefen]
 
-``--pruefen`` baut nur im Speicher und meldet, ob die abgelegte Datei aktuell
-ist (fuer die Tests).
+``--oeffnen`` zeigt die gebaute Datei gleich im Browser, ``--pruefen`` baut nur
+im Speicher und meldet, ob die abgelegte Datei aktuell ist (fuer die Tests).
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import webbrowser
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parent.parent
@@ -108,6 +109,11 @@ def main() -> int:
         action="store_true",
         help="nur pruefen, ob die abgelegte Datei aktuell ist",
     )
+    parser.add_argument(
+        "--oeffnen",
+        action="store_true",
+        help="die gebaute Datei anschliessend im Browser oeffnen",
+    )
     args = parser.parse_args()
 
     seite = baue()
@@ -127,6 +133,8 @@ def main() -> int:
     ZIEL.parent.mkdir(parents=True, exist_ok=True)
     ZIEL.write_text(seite, encoding="utf-8")
     print(f"{ZIEL} geschrieben ({len(seite) // 1024} KB, eine Datei, keine Abhaengigkeiten).")
+    if args.oeffnen:
+        webbrowser.open(ZIEL.resolve().as_uri())
     return 0
 
 

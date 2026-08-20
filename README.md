@@ -6,15 +6,14 @@ als PDF**: Anfang, massstaeblicher Hallenplan mit nummerierten Stationen an
 ihren tatsaechlichen Positionen, Stationsliste mit Material, Ende. Detailseiten
 gibt es auf Wunsch.
 
-Zwei Wege zur Bedienung, beide mit demselben Katalog und derselben Logik:
+Bedient wird das Programm im Browser: **`web/kinderturnen.html`** - eine
+einzige Datei fuer Handy, Tablet und Rechner, der Plan laesst sich mit dem
+Finger verschieben. Mehr als ein Browser wird nicht gebraucht; eine
+Kommandozeilen- oder Fensterfassung gibt es nicht.
 
-| Weg | Wofuer | Voraussetzung |
-| --- | --- | --- |
-| **`web/kinderturnen.html`** | Handy, Tablet, Rechner - Plan mit dem Finger verschieben | ein Browser, sonst nichts |
-| `python3 -m sportstunden` | Fenster-Oberflaeche am Rechner | Python 3.9+ mit tkinter |
-
-Eine Kommandozeilenfassung gibt es nicht (mehr). Reines Python beziehungsweise
-reines JavaScript - keine Fremdbibliotheken, auch nicht fuer den PDF-Export.
+Reines JavaScript, keine Fremdbibliotheken - auch nicht fuer den PDF-Export.
+Das Python-Paket im Projekt liefert nur noch die Stammdaten und baut die
+Browser-Fassung; ausgeliefert wird es nicht.
 
 ## Was das Programm macht
 
@@ -59,7 +58,8 @@ reines JavaScript - keine Fremdbibliotheken, auch nicht fuer den PDF-Export.
 ## Ohne Installation: die Browser-Fassung
 
 `web/kinderturnen.html` ist **eine einzige Datei** mit Katalog, Oberflaeche und
-PDF-Erzeugung darin. Sie braucht keine Installation und keine Internetverbindung:
+PDF-Erzeugung darin. Sie braucht keine Installation; dass sie dabei auch ohne
+Internetverbindung laeuft, ist eine Zugabe:
 
 * **Rechner:** Datei doppelklicken - sie oeffnet sich im Browser.
 * **Handy und Tablet:** Datei per Mail, Messenger oder Cloud aufs Geraet legen
@@ -73,7 +73,7 @@ gedreht. Stationen werden mit dem Finger oder der Maus verschoben (Fangraster
 25 cm), Ort und Geraetezahlen bleiben auf dem Geraet gespeichert.
 
 ```bash
-python3 werkzeuge/baue_web.py           # baut die Datei neu aus den Quellen
+python3 werkzeuge/baue_web.py --oeffnen   # neu bauen und gleich anschauen
 ```
 
 ## Veroeffentlichen: der Quelltext bleibt zu
@@ -97,33 +97,39 @@ Browser entpacken koennen - der Lader steht in der Datei. Wer sich hinsetzt,
 kann den Block darueber zurueckrechnen; und die fertig aufgebaute Seite ist in
 den Entwicklerwerkzeugen als Elementbaum sichtbar, weil sie dort ja dargestellt
 wird. Das hier ist eine wirksame Huerde gegen Mitlesen und Abkupfern, keine
-Verschluesselung. Wirklich geheim bleibt nur, was auf einem Server liegt und nie
-ausgeliefert wird - das widerspricht aber dem Ziel, ohne Installation und ohne
-Netz zu laufen.
+Verschluesselung. Wirklich geheim bliebe die Planungslogik nur, wenn sie auf
+einem Server laeuft und der Browser bloss das fertige Ergebnis bekommt. Das
+kostet einen Server samt Pflege, und die Seite laeuft dann nur noch mit Netz -
+am Ziel "keine Installation beim Nutzer" aendert es dagegen nichts.
 
 Wird die Datei auf einen Webserver gelegt, darf dessen `Content-Security-Policy`
 `script-src` nicht ohne `'unsafe-eval'` gesetzt sein: der Lader startet das
 entpackte Programm ueber `new Function`.
 
-## Fenster-Oberflaeche am Rechner
+## Bedienung
+
+Oben stehen Ueberschrift und Datum, hinter **"Einstellungen"** Ort, Gruppe,
+Dauer, Motto, Schwerpunkt, Hauptteil, Stationszahl und Koordinationsteil. Den
+groessten Teil des Fensters nimmt der massstaebliche Hallenplan ein:
+**Stationen lassen sich mit dem Finger oder der Maus an ihren Platz schieben**
+(Fangraster 25 cm, Ueberlappungen werden rot umrandet). Daneben - auf dem Handy
+darunter - stehen Anfang, Koordinationsteil, Stationsliste und Ende.
+
+Die Leiste unten plant eine Stunde, wuerfelt sie neu, schreibt das PDF, merkt
+sich die Stunde auf dem Geraet oder uebernimmt sie als **eigene Stunde** in den
+gelernten Stil.
+
+## Neu bauen und weiterentwickeln
 
 ```bash
 git clone <repo>
 cd Sportapp_Claude
-python3 -m sportstunden            # oder nach 'pip install -e .': sportstunden-gui
+python3 werkzeuge/baue_web.py --oeffnen
 ```
 
-Links werden Ort, Gruppe, Dauer, Motto, Schwerpunkt und Ueberschrift
-eingestellt, in der Mitte steht der massstaebliche Hallenplan. **Stationen
-lassen sich mit der Maus an ihren Platz schieben** (Fangraster 25 cm,
-Ueberlappungen werden rot umrandet), darunter stehen Anfang, Stationsliste und
-Ende. Die Schaltflaechen speichern die Stunde, uebernehmen sie in den
-gelernten Stil oder schreiben das PDF.
-
-Tkinter gehoert zur Standardbibliothek. Windows und macOS bringen es mit der
-Python-Installation mit; unter Linux gegebenenfalls
-`sudo apt install python3-tk` nachinstallieren. Die Daten liegen in
-`~/.sportstunden` (aenderbar ueber `SPORTSTUNDEN_HOME`).
+Gearbeitet wird in `web/quelle/` (Oberflaeche) und `sportstunden/data/`
+(Katalog); `werkzeuge/baue_web.py` setzt daraus die auslieferbare Datei
+zusammen. Getestet mit Python 3.9+, keine Fremdbibliotheken.
 
 ## Gruppen und Koordinationsteil
 
@@ -143,9 +149,9 @@ sie uebernimmt.
 
 ## Ausstattung pflegen
 
-In beiden Oberflaechen fuehrt die Schaltflaeche **"Geraete des Ortes"** zu den
-Stueckzahlen: anpassen oder auf 0 setzen, wenn heute etwas fehlt. Der Browser
-merkt sich das auf dem Geraet, die Fenster-Oberflaeche in `~/.sportstunden`.
+Unter "Einstellungen" fuehrt die Schaltflaeche **"Geraete des Ortes"** zu den
+Stueckzahlen: anpassen oder auf 0 setzen, wenn heute etwas fehlt. Die Seite
+merkt sich das auf dem Geraet, ohne dass etwas nach draussen geht.
 
 Neue Orte und ihre festen Geraeteplaetze kommen in
 `sportstunden/data/orte.json` (siehe unten) und stehen nach
@@ -198,8 +204,8 @@ sich jede Station noch von Hand verschieben; die Position landet im PDF.
 
 ## Stil lernen
 
-Es zaehlen ausschliesslich Stunden, die als **"Eigene Stunde"** uebernommen
-wurden - die Schaltflaeche gibt es in beiden Oberflaechen. Gelernt werden
+Es zaehlen ausschliesslich Stunden, die mit **"Eigene Stunde"** uebernommen
+wurden. Gelernt werden
 Zeitaufteilung, Zahl der Stationen bzw. Spiele je Teil, bevorzugte Inhalte,
 Organisationsformen, Geraete, Lieblingsstationen, die typische Intensitaet und
 wie oft mit Stationsbetrieb gearbeitet wird. Die Gewichte werden gegen die
@@ -232,29 +238,31 @@ und Bestand, Aufbau je Stundenteil und die Sicherheitshinweise.
 ## Projektstruktur
 
 ```
-sportstunden/
+web/
+  kinderturnen.html   das Programm: eine Datei, gepackt, zum Weitergeben
+  quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css, app.js)
+werkzeuge/
+  baue_web.py     baut web/kinderturnen.html aus Quellen und Katalogdaten
+  packen.py       entfernt Kommentare und verpackt Aufbau, Stil, Daten, Programm
+sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeliefert)
+  data/           Geraete, Sicherheitsregeln, Gruppen, Uebungen, Beispielorte
   models.py       Datenmodelle (Ort, Geraeteplatz, Uebung, Stunde ...)
   katalog.py      Stammdaten, Bedarfsrechnung inkl. Sicherheitsregeln
   speicher.py     JSON-Speicherung von Orten, Stunden, Einstellungen
   stil.py         Stil-Lernen je Altersgruppe
   planer.py       Auswahl, Flaechenbudget, Zeitverteilung, Geraetebuchung
   platzierung.py  Geraetemasse und Positionen der Stationen in der Halle
-  hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen (PDF und Bildschirm)
+  hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-  gui.py          Fenster-Oberflaeche (Tkinter)
-  data/           Geraete, Sicherheitsregeln, Gruppen, Uebungen, Beispielorte
-web/
-  kinderturnen.html   fertige Browser-Fassung (eine Datei, gepackt)
-  quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css, app.js)
-werkzeuge/
-  baue_web.py     baut web/kinderturnen.html aus Quellen und Katalogdaten
-  packen.py       entfernt Kommentare und verpackt Aufbau, Stil, Daten, Programm
-tests/            104 Tests (unittest)
+tests/            100 Tests (unittest)
 ```
 
-Die Browser-Fassung traegt dieselbe Logik wie das Python-Paket in JavaScript;
-die Stammdaten kommen in beiden Faellen aus `sportstunden/data/`.
+`web/quelle/app.js` traegt dieselbe Logik wie das Python-Paket in JavaScript.
+Das Python-Paket bleibt als Quelle der Stammdaten und als geprueftes
+Gegenstueck bestehen: Bedarfsrechnung, Absicherung, Flaechenbudget und
+Platzierung lassen sich dort mit vollem Testumfang nachrechnen. Wer die
+Planungsregeln aendert, aendert sie an beiden Stellen.
 
 ## Tests
 
@@ -268,11 +276,9 @@ ergaenzt, der Koordinationsteil erscheint genau ab der richtigen Altersklasse,
 die Stationszahl richtet sich nach der Hallenflaeche, alle Stationen liegen
 ohne Ueberlappung in der Halle und Stationen mit ortsfesten Geraeten stehen an
 deren Platz, das PDF enthaelt weder Minuten noch eine Kinderzahl, die
-Ueberschrift ist frei waehlbar, der gelernte Stil veraendert die Auswahl - und
-die Fenster-Oberflaeche laesst sich bedienen und verschiebt Stationen im Raster
-(diese Tests werden ohne tkinter uebersprungen).
+Ueberschrift ist frei waehlbar, der gelernte Stil veraendert die Auswahl.
 
-Die Browser-Fassung wird zusaetzlich im echten Chromium geprueft: sie baut sich
+Die Browser-Fassung wird im echten Chromium geprueft: sie baut sich
 aus dem gepackten Block selbst auf, plant ohne Fehler, alle Stationen liegen in
 der Halle, Ziehen funktioniert auch im gedrehten Plan, der Plan nimmt auf Handy,
 Tablet und Rechner den groessten Teil des Fensters ein, und das erzeugte PDF hat

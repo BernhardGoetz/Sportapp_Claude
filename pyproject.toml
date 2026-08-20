@@ -4,14 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sportstunden-planer"
-version = "3.0.0"
-description = "Automatische Planung von Kinderturnstunden (1-10 Jahre) mit Stundenbild als PDF"
+version = "4.0.0"
+description = "Stammdaten und Bauwerkzeug des Kinderturnen-Stundenplaners (Browser-Fassung)"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []
-
-[project.gui-scripts]
-sportstunden-gui = "sportstunden.gui:starte"
 
 [tool.setuptools]
 packages = ["sportstunden"]
