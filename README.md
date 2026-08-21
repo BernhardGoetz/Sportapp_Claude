@@ -219,13 +219,18 @@ Gebraucht werden **PHP 8.0 oder neuer** mit `pdo_mysql` und eine
      php/      DocumentRoot                          <- hier zeigt die Domain hin
    ```
 
-2. **Datenbank anlegen** (im Kundenmenue oder auf der Konsole):
+2. **Datenbank anlegen.** Fertig dafuer ist `datenbank/kitu.sql` - einspielen
+   auf der Konsole oder in phpMyAdmin unter "Importieren":
 
-   ```sql
-   CREATE DATABASE kitu CHARACTER SET utf8mb4;
-   CREATE USER 'kitu'@'localhost' IDENTIFIED BY '...';
-   GRANT ALL ON kitu.* TO 'kitu'@'localhost';
+   ```bash
+   mysql -u root -p < datenbank/kitu.sql
    ```
+
+   Das Skript legt Datenbank, Zugang und die vier Tabellen an (InnoDB,
+   utf8mb4, passende Schluessel). Wer Datenbank und Benutzer schon im
+   Kundenmenue des Hosters angelegt hat, loescht den ersten Abschnitt der
+   Datei und spielt nur die Tabellen ein. **Das Beispielkennwort darin bitte
+   vorher ersetzen.**
 
 3. **Konfiguration**: `php/inc/konfig.beispiel.php` nach
    `php/inc/konfig.php` kopieren, Zugangsdaten, Adresse und einen frischen
@@ -473,6 +478,8 @@ web/              gehoert **ausserhalb** des DocumentRoot
   quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css,
                       app.js und lader.js - der sichtbare Teil)
   lizenzen.json       Blockschluessel und Serveradresse
+datenbank/
+  kitu.sql        legt Datenbank, Zugang und die vier Tabellen an
 werkzeuge/        laeuft am Arbeitsplatz, nicht auf dem Server
   baue_web.py     baut und verschluesselt web/kinderturnen.html
   packen.py       Kommentare entfernen, verschluesseln, Schluessel ableiten
@@ -488,7 +495,7 @@ sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeli
   hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-tests/            153 Tests (unittest)
+tests/            157 Tests (unittest)
 ```
 
 `web/quelle/app.js` traegt dieselbe Planungslogik wie das Python-Paket in
@@ -544,6 +551,11 @@ Code aus dem Postfach eingeben, das Programm erscheint und plant eine Stunde;
 und die persoenliche Datei oeffnet sich per `file://` mit E-Mail und
 Schluessel. Damit ist auch belegt, dass das SHA-256 im Lader exakt zu PHP und
 Python passt.
+
+Ein weiterer Test haelt `datenbank/kitu.sql` und `php/inc/db.php`
+gegeneinander: Beide muessen dieselben Tabellen mit denselben Spalten
+beschreiben. Ist ein Datenbankserver erreichbar, wird das Skript zusaetzlich
+wirklich eingespielt.
 
 Die Tests laufen ueber PDO gegen SQLite, damit sie ohne Datenbankserver
 durchlaufen; mit `KITU_TEST_DSN` gehen dieselben Tests gegen eine echte

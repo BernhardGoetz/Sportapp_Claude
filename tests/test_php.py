@@ -717,6 +717,77 @@ class RollenTest(PhpTest):
         self.assertIn("Kommandozeile", text)
 
 
+class DatenbankTest(unittest.TestCase):
+    """``datenbank/kitu.sql`` und ``php/inc/db.php`` muessen dasselbe sagen."""
+
+    SQL = WURZEL / "datenbank" / "kitu.sql"
+
+    @staticmethod
+    def tabellen(text: str) -> dict:
+        """{Tabelle: [Spalten]} aus CREATE-TABLE-Anweisungen."""
+        gefunden = {}
+        muster = re.compile(
+            r"CREATE TABLE IF NOT EXISTS\s+`?(\w+)`?\s*\((.*?)\n\s*\)", re.S
+        )
+        for name, koerper in muster.findall(text):
+            spalten = []
+            for zeile in koerper.splitlines():
+                zeile = zeile.strip().rstrip(",")
+                treffer = re.match(r"`?(\w+)`?\s+(VARCHAR\(\d+\)|TINYINT|BIGINT|INT)", zeile)
+                if treffer and not zeile.upper().startswith(("PRIMARY", "KEY", "UNIQUE")):
+                    spalten.append((treffer.group(1), treffer.group(2)))
+            gefunden[name] = spalten
+        return gefunden
+
+    def test_datei_ist_vorhanden(self):
+        self.assertTrue(self.SQL.exists(), "datenbank/kitu.sql fehlt")
+        inhalt = self.SQL.read_text(encoding="utf-8")
+        self.assertIn("CREATE DATABASE IF NOT EXISTS `kitu`", inhalt)
+        self.assertIn("utf8mb4", inhalt)
+        self.assertIn("ENGINE=InnoDB", inhalt)
+        # Kein echtes Kennwort in der ausgelieferten Datei.
+        self.assertIn("bitte-hier-ein-eigenes-kennwort", inhalt)
+
+    def test_sql_und_php_beschreiben_dieselben_tabellen(self):
+        aus_sql = self.tabellen(self.SQL.read_text(encoding="utf-8"))
+        aus_php = self.tabellen((PHPORDNER / "inc" / "db.php").read_text(encoding="utf-8"))
+
+        self.assertEqual(sorted(aus_sql), sorted(aus_php), "andere Tabellen")
+        self.assertEqual(sorted(aus_sql), ["codes", "fehlversuche", "konten", "protokoll"])
+        for tabelle in aus_sql:
+            self.assertEqual(
+                aus_sql[tabelle], aus_php[tabelle],
+                f"Tabelle {tabelle}: Spalten laufen auseinander",
+            )
+
+    def test_alle_spalten_der_anwendung_stehen_darin(self):
+        """Was konten.php schreibt, muss die Tabelle auch haben."""
+        spalten = {name for name, _ in self.tabellen(
+            self.SQL.read_text(encoding="utf-8"))["konten"]}
+        gebraucht = {"kennung", "name", "kennwort", "rolle", "angelegt", "bestaetigt",
+                     "gesperrt", "abo_art", "abo_seit", "abo_bis", "probe_zuletzt",
+                     "offline"}
+        self.assertEqual(spalten, gebraucht)
+
+    @unittest.skipUnless(shutil.which("mariadb") or shutil.which("mysql"),
+                         "kein MySQL-Kommando vorhanden")
+    def test_sql_laeuft_auf_einer_echten_datenbank(self):
+        """Nur wenn ein Server erreichbar ist - sonst uebersprungen."""
+        werkzeug = shutil.which("mariadb") or shutil.which("mysql")
+        socket_pfad = os.environ.get("KITU_TEST_SOCKET", "/tmp/kitu-maria.sock")
+        if not Path(socket_pfad).exists():
+            self.skipTest("kein Datenbankserver erreichbar")
+
+        skript = self.SQL.read_text(encoding="utf-8").replace("`kitu`", "`kitu_probe`")
+        skript = skript.replace("'kitu'@'localhost'", "'kitu_probe'@'localhost'")
+        ergebnis = subprocess.run(
+            [werkzeug, f"--socket={socket_pfad}"],
+            input=skript + "\nDROP DATABASE `kitu_probe`;\nDROP USER 'kitu_probe'@'localhost';\n",
+            capture_output=True, text=True,
+        )
+        self.assertEqual(ergebnis.returncode, 0, ergebnis.stderr)
+
+
 @unittest.skipUnless(PHP and PLAYWRIGHT_DA and CHROMIUM and SEITE.exists(),
                      "PHP, Playwright, Chromium oder die gebaute Datei fehlt")
 class EndeZuEndeTest(PhpTest):

@@ -1,13 +1,13 @@
 # Der Webserver liefert nur die Seiten aus - Logik, Vorlagen und Daten bleiben zu.
 
 <IfModule mod_authz_core.c>
-    <FilesMatch "\.(html|json|log|sqlite)$">
+    <FilesMatch "\.(html|json|log|sqlite|sql)$">
         Require all denied
     </FilesMatch>
 </IfModule>
 
 <IfModule !mod_authz_core.c>
-    <FilesMatch "\.(html|json|log|sqlite)$">
+    <FilesMatch "\.(html|json|log|sqlite|sql)$">
         Order allow,deny
         Deny from all
     </FilesMatch>

@@ -5,6 +5,11 @@
  * Gedacht ist MySQL/MariaDB; das Schema ist aber bewusst schlicht gehalten
  * (Textspalten, kennung als Schluessel, kein AUTO_INCREMENT), damit es auch
  * ueber PDO/SQLite laeuft - so kommen die Tests ohne Datenbankserver aus.
+ *
+ * Dieselben Tabellen stehen als eigenstaendiges Skript in
+ * ``datenbank/kitu.sql`` - das ist der Weg fuer den Hoster (InnoDB, utf8mb4,
+ * Schluessel). Was hier steht, springt nur ein, wenn eine Tabelle fehlt.
+ * Wer eine Spalte aendert, aendert sie an beiden Stellen; ein Test vergleicht.
  */
 
 declare(strict_types=1);
@@ -40,8 +45,8 @@ function schema_anlegen(PDO $pdo): void
             kennwort      VARCHAR(255) NOT NULL,
             rolle         VARCHAR(20)  NOT NULL DEFAULT \'nutzer\',
             angelegt      VARCHAR(32)  NOT NULL DEFAULT \'\',
-            bestaetigt    INTEGER      NOT NULL DEFAULT 0,
-            gesperrt      INTEGER      NOT NULL DEFAULT 0,
+            bestaetigt    TINYINT      NOT NULL DEFAULT 0,
+            gesperrt      TINYINT      NOT NULL DEFAULT 0,
             abo_art       VARCHAR(20)  NOT NULL DEFAULT \'frei\',
             abo_seit      VARCHAR(10)  NOT NULL DEFAULT \'\',
             abo_bis       VARCHAR(10)  NOT NULL DEFAULT \'\',
@@ -55,15 +60,15 @@ function schema_anlegen(PDO $pdo): void
             kennung  VARCHAR(190) NOT NULL,
             art      VARCHAR(20)  NOT NULL DEFAULT \'\',
             hash     VARCHAR(64)  NOT NULL DEFAULT \'\',
-            bis      INTEGER      NOT NULL DEFAULT 0,
-            versuche INTEGER      NOT NULL DEFAULT 0,
+            bis      BIGINT       NOT NULL DEFAULT 0,
+            versuche INT          NOT NULL DEFAULT 0,
             PRIMARY KEY (kennung)
         )'
     );
     $pdo->exec(
         'CREATE TABLE IF NOT EXISTS fehlversuche (
             merkmal   VARCHAR(190) NOT NULL,
-            zeitpunkt INTEGER      NOT NULL
+            zeitpunkt BIGINT       NOT NULL
         )'
     );
     $pdo->exec(
