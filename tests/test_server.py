@@ -21,6 +21,7 @@ from pathlib import Path
 WURZEL = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(WURZEL))
 
+from werkzeuge import post as postfach  # noqa: E402
 from werkzeuge import server  # noqa: E402
 
 
@@ -79,7 +80,8 @@ class ServerTest(unittest.TestCase):
         self.ordner.cleanup()
 
     # -- Hilfen ------------------------------------------------------------
-    def registriere(self, browser: Browser, kennung="turnen@beispiel.de", name="Test"):
+    def melde_neu_an(self, browser: Browser, kennung="turnen@beispiel.de", name="Test"):
+        """Nur registrieren - das Konto ist danach noch unbestaetigt."""
         return browser.sende(
             "/registrieren",
             {
@@ -88,6 +90,17 @@ class ServerTest(unittest.TestCase):
                 "kennwort": "turnhalle1",
                 "kennwort2": "turnhalle1",
             },
+        )
+
+    def code_aus_mail(self, kennung: str) -> str:
+        return postfach.code_aus_text(self.anwendung.postausgang.letzte(kennung))
+
+    def registriere(self, browser: Browser, kennung="turnen@beispiel.de", name="Test"):
+        """Registrieren und den Code aus der Mail gleich bestaetigen."""
+        self.melde_neu_an(browser, kennung, name)
+        return browser.sende(
+            "/bestaetigen",
+            {"kennung": kennung, "code": self.code_aus_mail(kennung)},
         )
 
     # -- Tests -------------------------------------------------------------
@@ -173,7 +186,7 @@ class ServerTest(unittest.TestCase):
         self.assertIn("nicht ueberein", text)
         self.registriere(self.browser, "a@b.de")
         zweiter = Browser(self.browser.wurzel)
-        _, text, _ = self.registriere(zweiter, "a@b.de")
+        _, text, _ = self.melde_neu_an(zweiter, "a@b.de")
         self.assertIn("schon ein Konto", text)
 
     def test_ohne_marke_geht_nichts(self):
@@ -251,6 +264,199 @@ class ServerTest(unittest.TestCase):
         status, text, _ = self.browser.hole("/kinderturnen.html")
         self.assertEqual(status, 200)
         self.assertIn("var BLOCK", text)
+
+    # -- Bestaetigung per Mail ---------------------------------------------
+    def test_neues_konto_ist_erst_nach_dem_code_freigeschaltet(self):
+        status, text, adresse = self.melde_neu_an(self.browser)
+        self.assertEqual(status, 200)
+        self.assertIn("/bestaetigen", adresse)
+        self.assertIn("Konto bestaetigen", text)
+        self.assertFalse(self.anwendung.konto("turnen@beispiel.de")["bestaetigt"])
+        # Ohne Bestaetigung gibt es den Schluessel nicht.
+        status, koerper, _ = self.browser.hole("/freischalten")
+        self.assertEqual(status, 401)
+        self.assertEqual(json.loads(koerper)["fehler"], "bestaetigung")
+        # Auch das Programm bleibt zu.
+        _, _, adresse = self.browser.hole("/")
+        self.assertIn("/bestaetigen", adresse)
+
+    def test_mail_traegt_namen_code_und_verweis(self):
+        self.anwendung.adresse = "https://kitu.beispiel.de"
+        self.melde_neu_an(self.browser, name="Anna Uebungsleiterin")
+        mail = self.anwendung.postausgang.letzte("turnen@beispiel.de")
+        self.assertIn("An: turnen@beispiel.de", mail)
+        self.assertIn("Bestaetigungscode", mail)
+        self.assertIn("Hallo Anna Uebungsleiterin,", mail)
+        self.assertIn("https://kitu.beispiel.de/bestaetigen", mail)
+        self.assertIn("30 Minuten", mail)
+        self.assertRegex(mail, r"\n {4}\d{3} \d{3}\n")
+        self.assertNotIn("{", mail)  # keine offenen Platzhalter
+
+    def test_falscher_code_haelt_die_tuer_zu(self):
+        self.melde_neu_an(self.browser)
+        _, text, _ = self.browser.sende("/bestaetigen", {"code": "000000"})
+        self.assertIn("stimmt nicht", text)
+        self.assertFalse(self.anwendung.konto("turnen@beispiel.de")["bestaetigt"])
+        self.assertEqual(self.browser.hole("/freischalten")[0], 401)
+
+    def test_code_ist_nach_fuenf_versuchen_verbraucht(self):
+        self.melde_neu_an(self.browser)
+        for _ in range(5):
+            self.browser.sende("/bestaetigen", {"code": "000000"})
+        richtig = self.code_aus_mail("turnen@beispiel.de")
+        _, text, _ = self.browser.sende("/bestaetigen", {"code": richtig})
+        self.assertIn("stimmt nicht", text)
+        # Ein neuer Code hilft.
+        self.browser.sende("/code-neu", {}, marke_von="/bestaetigen")
+        neuer = self.code_aus_mail("turnen@beispiel.de")
+        self.assertNotEqual(neuer, richtig)
+        _, _, adresse = self.browser.sende("/bestaetigen", {"code": neuer})
+        self.assertTrue(adresse.endswith("/"))
+
+    def test_abgelaufener_code_wird_abgewiesen(self):
+        self.melde_neu_an(self.browser)
+        konto = self.anwendung.konto("turnen@beispiel.de")
+        code = self.code_aus_mail("turnen@beispiel.de")
+        konto["code"]["bis"] = server.jetzt() - 1
+        _, text, _ = self.browser.sende("/bestaetigen", {"code": code})
+        self.assertIn("abgelaufen", text)
+
+    def test_code_steht_nur_als_hash_in_der_datei(self):
+        self.melde_neu_an(self.browser)
+        code = self.code_aus_mail("turnen@beispiel.de")
+        inhalt = (Path(self.ordner.name) / "konten.json").read_text(encoding="utf-8")
+        self.assertNotIn(code, inhalt)
+
+    def test_nie_bestaetigtes_konto_verfaellt(self):
+        self.melde_neu_an(self.browser, "vergessen@beispiel.de")
+        konto = self.anwendung.konto("vergessen@beispiel.de")
+        konto["angelegt"] = server.in_tagen(-server.UNBESTAETIGT_TAGE - 1)
+        self.assertEqual(self.anwendung.raeume_konten_auf(), 1)
+        self.assertIsNone(self.anwendung.konto("vergessen@beispiel.de"))
+        # Bestaetigte Konten bleiben unangetastet.
+        self.registriere(self.browser, "bleibt@beispiel.de")
+        self.anwendung.konto("bleibt@beispiel.de")["angelegt"] = server.in_tagen(-99)
+        self.assertEqual(self.anwendung.raeume_konten_auf(), 0)
+        self.assertIsNotNone(self.anwendung.konto("bleibt@beispiel.de"))
+
+    # -- Kennwort vergessen -------------------------------------------------
+    def test_kennwort_zuruecksetzen_ueber_die_mail(self):
+        self.registriere(self.browser)
+        abgemeldet = Browser(self.browser.wurzel)
+        _, text, _ = abgemeldet.sende(
+            "/kennwort-vergessen", {"kennung": "turnen@beispiel.de"}
+        )
+        self.assertIn("ist ein Code unterwegs", text)
+        mail = self.anwendung.postausgang.letzte("turnen@beispiel.de")
+        self.assertIn("Neues Kennwort", mail)
+        code = postfach.code_aus_text(mail)
+
+        _, _, adresse = abgemeldet.sende(
+            "/kennwort-neu",
+            {"kennung": "turnen@beispiel.de", "code": code,
+             "kennwort": "neueshaus1", "kennwort2": "neueshaus1"},
+        )
+        self.assertTrue(adresse.endswith("/"))
+        self.assertEqual(abgemeldet.hole("/freischalten")[0], 200)
+
+        # Das alte Kennwort gilt nicht mehr, das neue schon.
+        dritter = Browser(self.browser.wurzel)
+        _, text, _ = dritter.sende(
+            "/anmelden", {"kennung": "turnen@beispiel.de", "kennwort": "turnhalle1"}
+        )
+        self.assertIn("stimmt nicht", text)
+        _, _, adresse = dritter.sende(
+            "/anmelden", {"kennung": "turnen@beispiel.de", "kennwort": "neueshaus1"}
+        )
+        self.assertTrue(adresse.endswith("/"))
+
+    def test_kennwortcode_gilt_nur_einmal(self):
+        self.registriere(self.browser)
+        self.browser.sende("/kennwort-vergessen", {"kennung": "turnen@beispiel.de"})
+        code = self.code_aus_mail("turnen@beispiel.de")
+        felder = {"kennung": "turnen@beispiel.de", "code": code,
+                  "kennwort": "neueshaus1", "kennwort2": "neueshaus1"}
+        self.browser.sende("/kennwort-neu", dict(felder))
+        _, text, _ = self.browser.sende("/kennwort-neu", dict(felder))
+        self.assertIn("stimmt nicht", text)
+
+    def test_unbekannte_adresse_verraet_nichts(self):
+        vorher = len(list((Path(self.ordner.name) / "postfach").glob("*.txt"))) \
+            if (Path(self.ordner.name) / "postfach").exists() else 0
+        _, text, _ = self.browser.sende(
+            "/kennwort-vergessen", {"kennung": "niemand@beispiel.de"}
+        )
+        self.assertIn("Wenn es zu dieser E-Mail ein Konto gibt", text)
+        nachher = len(list((Path(self.ordner.name) / "postfach").glob("*.txt")))
+        self.assertEqual(nachher, vorher, "es wurde doch eine Mail verschickt")
+
+    # -- Abo ----------------------------------------------------------------
+    def test_neues_konto_hat_ein_probeabo(self):
+        self.registriere(self.browser)
+        abo = self.anwendung.konto("turnen@beispiel.de")["abo"]
+        self.assertEqual(abo["art"], "probe")
+        self.assertEqual(abo["bis"], server.in_tagen(server.TESTTAGE))
+        _, text, _ = self.browser.hole("/konto")
+        self.assertIn(abo["bis"], text)
+
+    def test_abgelaufenes_abo_sperrt_das_programm(self):
+        self.registriere(self.browser)
+        konto = self.anwendung.konto("turnen@beispiel.de")
+        self.anwendung.beende_abo(konto)
+
+        status, koerper, _ = self.browser.hole("/freischalten")
+        self.assertEqual(status, 401)
+        self.assertEqual(json.loads(koerper)["fehler"], "abo")
+        _, text, _ = self.browser.hole("/")
+        self.assertIn("Abo ist abgelaufen", text)
+
+    def test_verwalter_verlaengert_das_abo(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        konto = self.anwendung.konto("helfer@beispiel.de")
+        self.anwendung.beende_abo(konto)
+        self.assertEqual(nutzer.hole("/freischalten")[0], 401)
+
+        _, text, _ = self.browser.sende(
+            "/verwaltung", {"tat": "abo_jahr", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertIn("laeuft bis", text)
+        self.assertEqual(konto["abo"]["bis"], server.in_tagen(365))
+        self.assertEqual(nutzer.hole("/freischalten")[0], 200)
+
+    # -- Offline-Schluessel je Konto ---------------------------------------
+    def test_schluessel_passt_nur_auf_sein_konto(self):
+        from werkzeuge.packen import entschluessele, oeffne_huelle
+
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        self.browser.sende(
+            "/verwaltung", {"tat": "offline_geben", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        konto = self.anwendung.konto("helfer@beispiel.de")
+        schluessel = konto["offline"]
+
+        # Persoenliche Datei: genau eine Huelle, mit dem Ablaufdatum des Abos.
+        seite = self.anwendung.persoenliche_seite(konto).decode("utf-8")
+        huellen = json.loads(re.search(r"var HUELLEN = (\[.*?\]);", seite).group(1))
+        self.assertEqual(len(huellen), 1)
+        self.assertEqual(huellen[0]["bis"], konto["abo"]["bis"])
+
+        block = re.search(r'var BLOCK = "([A-Za-z0-9+/=]+)"', seite).group(1)
+        richtig = oeffne_huelle(huellen[0]["h"], "helfer@beispiel.de", schluessel)
+        self.assertIsNotNone(entschluessele(block, richtig))
+
+        # Mit einem anderen Konto oeffnet derselbe Schluessel nichts.
+        falsch = oeffne_huelle(huellen[0]["h"], "chef@beispiel.de", schluessel)
+        self.assertIsNone(entschluessele(block, falsch))
+
+    def test_allgemeine_datei_traegt_keine_huelle(self):
+        inhalt = (WURZEL / "web" / "kinderturnen.html").read_text(encoding="utf-8")
+        self.assertIn("var HUELLEN = [];", inhalt)
 
     def test_kennwort_aendern(self):
         self.registriere(self.browser)
@@ -335,6 +541,12 @@ class EndeZuEndeTest(ServerTest):
         seite.fill("#kennwort2", "turnhalle1")
         seite.click("#knopf-registrieren")
 
+        # Erst der Code aus der Mail, dann das Programm.
+        seite.wait_for_selector("#knopf-bestaetigen", timeout=15000)
+        self.assertIn("Konto bestaetigen", seite.content())
+        seite.fill("#code", self.code_aus_mail("leitung@beispiel.de"))
+        seite.click("#knopf-bestaetigen")
+
         # Der Server gibt den Schluessel heraus, die Seite entschluesselt sich.
         seite.wait_for_function("() => !!document.getElementById('plan')", timeout=30000)
         stationen = seite.evaluate(
@@ -351,6 +563,27 @@ class EndeZuEndeTest(ServerTest):
         self.assertFalse(seite.evaluate("() => !!document.getElementById('plan')"))
         seite.close()
 
+    def test_persoenliche_datei_laeuft_offline(self):
+        """Herunterladen, oeffnen, E-Mail und Schluessel eingeben - fertig."""
+        self.registriere(self.browser, "chef@beispiel.de")
+        konto = self.anwendung.konto("chef@beispiel.de")
+        self.browser.sende(
+            "/verwaltung", {"tat": "offline_geben", "konto": "chef@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        schluessel = konto["offline"]
+        datei = Path(self.ordner.name) / "meine.html"
+        datei.write_bytes(self.anwendung.persoenliche_seite(konto))
+
+        seite = self.chrom.new_page()
+        seite.goto(datei.resolve().as_uri())
+        seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        seite.fill("#kontofeld", "chef@beispiel.de")
+        seite.fill("#lizenzfeld", schluessel)
+        seite.click("#lizenzknopf")
+        seite.wait_for_function("() => !!document.getElementById('plan')", timeout=30000)
+        seite.close()
+
     def test_gesperrtes_konto_kommt_nicht_mehr_hinein(self):
         self.registriere(self.browser, "chef@beispiel.de")  # erster = Verwalter
         seite = self.chrom.new_page()
@@ -360,6 +593,9 @@ class EndeZuEndeTest(ServerTest):
         seite.fill("#kennwort", "turnhalle1")
         seite.fill("#kennwort2", "turnhalle1")
         seite.click("#knopf-registrieren")
+        seite.wait_for_selector("#knopf-bestaetigen", timeout=15000)
+        seite.fill("#code", self.code_aus_mail("helfer@beispiel.de"))
+        seite.click("#knopf-bestaetigen")
         seite.wait_for_function("() => !!document.getElementById('plan')", timeout=30000)
 
         self.browser.sende(

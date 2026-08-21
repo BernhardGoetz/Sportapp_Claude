@@ -15,8 +15,8 @@ Die Datei ist **verschluesselt**. Sie oeffnet sich auf zwei Wegen:
 
 | Weg | Was passiert |
 | --- | --- |
-| **Angemeldet** | Der eigene Server (`werkzeuge/server.py`) gibt den Schluessel an angemeldete Konten heraus - Registrierung, Anmeldung und Verwaltung inbegriffen. |
-| **Offline-Schluessel** | Ein vom Verwalter freigegebener Schluessel oeffnet dieselbe Datei ohne jede Verbindung - fuer Hallen ohne Empfang. |
+| **Angemeldet** | Der eigene Server (`werkzeuge/server.py`) gibt den Schluessel an angemeldete Konten mit laufendem Abo heraus - Registrierung mit Mailbestaetigung, Anmeldung und Verwaltung inbegriffen. |
+| **Offline-Schluessel** | Ein vom Verwalter freigegebener Schluessel oeffnet dieselbe Datei ohne jede Verbindung - fuer Hallen ohne Empfang. Er passt auf **genau ein Konto** und gilt bis zum Ende des Abos. |
 
 Reines JavaScript, keine Fremdbibliotheken - auch nicht fuer den PDF-Export.
 Das Python-Paket im Projekt liefert die Stammdaten, baut die Browser-Fassung
@@ -83,46 +83,88 @@ gedreht. Stationen werden mit dem Finger oder der Maus verschoben (Fangraster
 Der Server (`werkzeuge/server.py`) haelt die Konten und gibt den Schluessel
 zur Datei heraus. Der Weg fuer eine neue Uebungsleiterin:
 
-1. **Registrieren** unter `/registrieren` (Name, E-Mail, Kennwort). Das Konto
-   ist sofort nutzbar; das **erste angelegte Konto wird Verwalter**.
-2. **Planen**: Nach der Anmeldung liefert `/` die Datei, sie holt sich den
+1. **Registrieren** unter `/registrieren` (Name, E-Mail, Kennwort).
+2. **Bestaetigen**: Es geht sofort ein sechsstelliger Code per Mail hinaus;
+   erst wer ihn unter `/bestaetigen` eingibt, kommt ins Programm. Der Code
+   gilt 30 Minuten, vertraegt fuenf Fehlversuche und laesst sich erneut
+   anfordern. Nie bestaetigte Konten verfallen nach einer Woche von selbst.
+   Das **erste angelegte Konto wird Verwalter**.
+3. **Planen**: Nach der Anmeldung liefert `/` die Datei, sie holt sich den
    Schluessel ueber `/freischalten` und entschluesselt sich selbst.
-3. **Offline arbeiten**: Der Verwalter gibt unter `/verwaltung` einen
+4. **Offline arbeiten**: Der Verwalter gibt unter `/verwaltung` einen
    Offline-Schluessel frei. Er steht danach im Konto der Person
-   (`KITU-XXXX-XXXX-XXXX-XXXX`), dazu ein Verweis zum Herunterladen der Datei.
-   Einmal gespeichert, laeuft sie ueberall ohne Verbindung - beim ersten
-   Oeffnen fragt sie nach dem Schluessel und merkt ihn sich.
+   (`KITU-XXXX-XXXX-XXXX-XXXX`), dazu ein Verweis auf die **persoenliche
+   Kopie** der Datei. Einmal gespeichert, laeuft sie ueberall ohne
+   Verbindung - beim ersten Oeffnen fragt sie nach **E-Mail und Schluessel**
+   und merkt sich beides.
 
-Der Verwalter kann Konten **sperren** (danach kommt der Zugang weder online
-noch an einen neuen Schluessel), Offline-Schluessel **entziehen** und weitere
-Verwalter ernennen. `?lizenz=neu` in der Adresse loescht einen gemerkten
-Schluessel wieder vom Geraet.
+**Ein Schluessel, ein Konto.** Die Huelle, die den Blockschluessel verdeckt,
+wird aus Kontokennung *und* Offline-Schluessel abgeleitet und steckt nur in
+der persoenlichen Kopie. Ein weitergereichter Schluessel nuetzt ohne die
+zugehoerige E-Mail nichts - und in einer fremden Kopie der Datei ebenso wenig.
+
+**Kennwort vergessen** laeuft ueber denselben Mailweg: `/kennwort-vergessen`
+schickt einen Code, `/kennwort-neu` nimmt Code und neues Kennwort entgegen.
+Ob es zu einer Adresse ein Konto gibt, verraet die Seite dabei nicht.
+
+Der Verwalter kann Konten **sperren**, Offline-Schluessel **entziehen**, das
+**Abo verlaengern** und weitere Verwalter ernennen. `?lizenz=neu` in der
+Adresse loescht einen gemerkten Schluessel wieder vom Geraet.
 
 ```bash
-python3 werkzeuge/lizenzen.py --vorrat 50    # Schluesselvorrat anlegen
 python3 werkzeuge/baue_web.py                # Datei bauen (verschluesselt)
-python3 werkzeuge/server.py --port 8000      # Server starten
+python3 werkzeuge/server.py --port 8000 \
+    --adresse https://kitu.mein-verein.de    # Adresse fuer die Verweise in den Mails
 ```
 
-Der Vorrat wird einmal erzeugt und in die Datei eingebaut; der Server vergibt
-daraus, ohne dass neu gebaut werden muss. Erst wenn er leer ist (oder ein
-Schluessel gesperrt werden soll), sind `--vorrat` und ein neuer Bau faellig.
+### Abo
+
+Jedes Konto traegt ein Abo mit Ablaufdatum. Bei der Registrierung laeuft ein
+**Probeabo ueber 30 Tage**; danach entscheidet der Verwalter:
+
+| Knopf | Wirkung |
+| --- | --- |
+| **+1 Monat** / **+1 Jahr** | verlaengert ab dem bisherigen Ende (oder ab heute, wenn es schon abgelaufen ist) |
+| **Abo beenden** | setzt das Ende auf gestern |
+
+Ist das Abo abgelaufen, gibt `/freischalten` nichts mehr heraus und die Seite
+zeigt den Hinweis statt des Plans. Auch die persoenliche Offline-Kopie kennt
+ihr Enddatum und macht danach zu. Bezahlung ist bewusst nicht eingebaut - die
+Mechanik dafuer steht, angebunden wird sie, wenn ein Anbieter feststeht.
+
+### Mail
+
+Ohne `--smtp` landet jede Mail als lesbare Textdatei in `<daten>/postfach/` -
+gut zum Ausprobieren und fuer die Tests. Mit Mailserver:
+
+```bash
+export KITU_SMTP_KENNWORT="..."
+python3 werkzeuge/server.py --smtp mail.mein-verein.de:587 \
+    --smtp-nutzer kitu@mein-verein.de \
+    --absender "Ki Tu <kitu@mein-verein.de>" \
+    --adresse https://kitu.mein-verein.de
+```
+
+Die beiden Texte stehen in `werkzeuge/post.py` (`text_bestaetigung`,
+`text_kennwort`): Anrede mit Namen, der Code gut lesbar als `792 681`, die
+Gueltigkeit, der passende Verweis und je ein Satz fuer den Fall, dass die
+Mail unerwartet kam.
 
 ### Server betreiben
 
 * **Verschluesselte Verbindung:** Das Skript spricht einfaches HTTP. Fuer den
   echten Betrieb gehoert nginx oder Caddy davor, der HTTPS beendet; dann
   `--https` mitgeben, damit das Sitzungs-Cookie als `Secure` markiert wird.
-* **Sichern:** `server/konten.json` (Konten samt Offline-Zuteilung),
+* **Sichern:** `server/konten.json` (Konten, Abo, Offline-Zuteilung),
   `server/geheim.txt` und `web/lizenzen.json` gehoeren ins Backup.
-  `server/zugriff.log` protokolliert Registrierung, Anmeldung, Freischaltung
-  und jede Verwaltungshandlung.
+  `server/zugriff.log` protokolliert Registrierung, Bestaetigung, Anmeldung,
+  Mailversand, Freischaltung und jede Verwaltungshandlung.
 * **Kennwoerter** liegen als PBKDF2-HMAC-SHA256 mit 240000 Runden und eigenem
-  Salz. Nach zehn Fehlversuchen in einer Viertelstunde ist Ruhe. Jedes
-  Formular traegt eine an die Sitzung gebundene Marke gegen fremde Absender.
-* **Kein Mailversand:** Es gibt keine Bestaetigungsmail und kein
-  Zuruecksetzen per Mail. Wer sein Kennwort vergisst, wendet sich an den
-  Verwalter (`--verwalter mail@beispiel.de` macht ein Konto zum Verwalter).
+  Salz, die Mailcodes als HMAC. Nach zehn Fehlversuchen in einer
+  Viertelstunde ist Ruhe. Jedes Formular traegt eine an die Sitzung gebundene
+  Marke gegen fremde Absender.
+* **Verwalter nachtragen:** `--verwalter mail@beispiel.de` macht ein
+  bestehendes Konto zum Verwalter.
 * **`Content-Security-Policy`:** Wird die Datei ueber einen eigenen Webserver
   ausgeliefert, darf `script-src` nicht ohne `'unsafe-eval'` gesetzt sein -
   der Lader startet das entschluesselte Programm ueber `new Function`.
@@ -136,8 +178,10 @@ ist nur der Lader, der ihn nach Anmeldung oder mit dem Offline-Schluessel
 entschluesselt. "Seitenquelltext anzeigen" zeigt nichts Verwertbares - weder
 Uebungen und Sicherheitsregeln noch die Planungslogik. Zusaetzlich:
 
-* Aus dem Offline-Schluessel wird der Blockschluessel ueber 20000 Runden
-  SHA-256 abgeleitet; die Datei traegt nur die verdeckten Huellen.
+* Aus **Kontokennung und Offline-Schluessel** wird ueber 20000 Runden
+  SHA-256 die Huelle abgeleitet, die den Blockschluessel verdeckt. Die
+  allgemeine Datei traegt gar keine Huelle (`var HUELLEN = [];`), die
+  persoenliche Kopie genau eine - mit dem Ablaufdatum des Abos.
 * Die Innereien (`window.KiTu`) reicht die Seite nur mit `?pruefung=1` in der
   Adresse heraus - im Normalbetrieb gibt es keinen Einstiegspunkt.
 * Kommentare und Einrueckung sind vor dem Verschluesseln entfernt.
@@ -150,12 +194,15 @@ Uebungen und Sicherheitsregeln noch die Planungslogik. Zusaetzlich:
 nicht zu oeffnen - so weit haelt die Verschluesselung. Wer aber einen
 Schluessel hat (angemeldet oder offline freigegeben), kann ihn aufheben und
 weitergeben: Was der Browser ausfuehrt, muss der Browser entschluesseln
-koennen. Die fertig aufgebaute Seite ist in den Entwicklerwerkzeugen ausserdem
+koennen. Die Bindung an ein Konto und das Ablaufdatum erhoehen die Huerde,
+sind aber kein Bann fuer alle Zeiten - eine einmal heruntergeladene
+persoenliche Kopie laeuft bis zum Ende ihres Abos weiter, auch wenn der
+Schluessel danach entzogen wird, und die Datumspruefung glaubt der Uhr des
+Geraets. Die fertig aufgebaute Seite ist in den Entwicklerwerkzeugen ausserdem
 als Elementbaum sichtbar. Der Serverbetrieb ist damit vor allem eine
-abschaltbare, protokollierte Nutzungsschranke - kein Bann fuer alle Zeiten.
-Wirklich beim Betreiber bliebe die Planungslogik nur, wenn sie auf dem Server
-liefe und der Browser nur das Ergebnis bekaeme; dann gaebe es aber keinen
-Offline-Betrieb mehr.
+abschaltbare, protokollierte Nutzungsschranke. Wirklich beim Betreiber bliebe
+die Planungslogik nur, wenn sie auf dem Server liefe und der Browser nur das
+Ergebnis bekaeme; dann gaebe es aber keinen Offline-Betrieb mehr.
 
 ## Bedienung
 
@@ -298,14 +345,15 @@ web/
   kinderturnen.html   das Programm: eine Datei, verschluesselt, zum Weitergeben
   quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css,
                       app.js und lader.js - der sichtbare Teil)
-  lizenzen.json       Blockschluessel und Vorrat an Offline-Schluesseln
+  lizenzen.json       Blockschluessel und Serveradresse
 werkzeuge/
   baue_web.py     baut und verschluesselt web/kinderturnen.html
   packen.py       Kommentare entfernen, verschluesseln, Schluessel ableiten
-  lizenzen.py     Schluesselvorrat anlegen, listen, sperren
-  server.py       Konten, Registrierung, Anmeldung, Freischaltung, Verwaltung
+  lizenzen.py     Blockschluessel und Serveradresse pflegen
+  server.py       Konten, Registrierung, Bestaetigung, Abo, Freischaltung
+  post.py         Mailtexte (Bestaetigung, Kennwort) und Versand
 server/           Laufzeitdaten des Servers (nicht im Projektstand)
-  konten.json, sitzungen.json, geheim.txt, zugriff.log
+  konten.json, sitzungen.json, geheim.txt, zugriff.log, postfach/
 sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeliefert)
   data/           Geraete, Sicherheitsregeln, Gruppen, Uebungen, Beispielorte
   models.py       Datenmodelle (Ort, Geraeteplatz, Uebung, Stunde ...)
@@ -317,7 +365,7 @@ sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeli
   hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-tests/            145 Tests (unittest)
+tests/            185 Tests (unittest)
 ```
 
 `web/quelle/app.js` traegt dieselbe Logik wie das Python-Paket in JavaScript.
@@ -346,14 +394,28 @@ der Halle, Ziehen funktioniert auch im gedrehten Plan, der Plan nimmt auf Handy,
 Tablet und Rechner den groessten Teil des Fensters ein, und das erzeugte PDF hat
 genau eine Seite (mit Details mehr) und keine Zeitangaben. Zur Verschluesselung:
 im Seitenquelltext steht nichts Lesbares, ohne Schluessel bleibt es bei der
-Abfrage, ein falscher Schluessel wird abgewiesen, ein richtiger wird gemerkt.
+Abfrage, ein falscher Schluessel wird abgewiesen, derselbe Schluessel mit
+einer fremden E-Mail ebenfalls, ein abgelaufenes Abo haelt die Datei zu, und
+ein richtiges Paar wird gemerkt.
 
-Der Server hat eigene Tests: Registrierung, Anmeldung, Sperre nach zehn
-Fehlversuchen, Kennwoerter nur als Hash, kein Zutritt zur Verwaltung ohne
+Der Server hat eigene Tests: Registrierung, Bestaetigung per Mailcode
+(falscher, abgelaufener und verbrauchter Code, neuer Code auf Wunsch),
+Anmeldung, Sperre nach zehn Fehlversuchen, Kennwoerter und Codes nur als
+Hash, Kennwort-Zuruecksetzen ueber die Mail (einmalig, ohne zu verraten wer
+ein Konto hat), Probeabo und Verlaengerung, kein Zutritt zur Verwaltung ohne
 Rolle, Vergabe und Entzug der Offline-Schluessel, Formulare ohne gueltige
-Marke werden abgewiesen. Zwei Tests gehen den ganzen Weg im Browser: im
-leeren Chromium registrieren, das Programm erscheint und plant eine Stunde -
-damit ist auch belegt, dass das SHA-256 im Lader exakt zu Python passt.
+Marke werden abgewiesen. Ein Test rechnet nach, dass die Huelle eines Kontos
+mit einer anderen Kennung nichts hergibt.
+
+Die Mailtexte pruefen `tests/test_post.py`: Anrede, gruppierter Code,
+Gueltigkeit, der richtige Verweis, keine offenen Platzhalter - und dass sich
+die beiden Texte nicht verwechseln lassen.
+
+Drei Tests gehen den ganzen Weg im Browser: im leeren Chromium registrieren,
+Code aus dem Postfach eingeben, das Programm erscheint und plant eine Stunde;
+ein gesperrtes Konto fliegt wieder heraus; und die persoenliche Datei
+oeffnet sich per `file://` mit E-Mail und Schluessel. Damit ist auch belegt,
+dass das SHA-256 im Lader exakt zu Python passt.
 
 Die Browsertests brauchen Playwright und werden sonst uebersprungen. Nach
 Aenderungen an `web/quelle/` bitte `python3 werkzeuge/baue_web.py` ausfuehren -

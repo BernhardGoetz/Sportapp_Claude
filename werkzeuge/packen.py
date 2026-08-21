@@ -217,16 +217,26 @@ def normiere(lizenz: str) -> str:
     return "".join(z for z in (lizenz or "").upper() if z.isalnum())
 
 
-def kennung(lizenz: str) -> str:
-    """Kurzes, oeffentliches Merkmal einer Lizenz (verraet sie nicht)."""
-    roh = ("kitu1-kennung:" + normiere(lizenz)).encode("utf-8")
+def normiere_konto(konto: str) -> str:
+    """Kontokennung (E-Mail) einheitlich klein und ohne Rand."""
+    return (konto or "").strip().lower()
+
+
+def _paar(konto: str, lizenz: str) -> str:
+    """Konto und Schluessel gehoeren zusammen - eins ohne das andere zaehlt nicht."""
+    return normiere_konto(konto) + ":" + normiere(lizenz)
+
+
+def kennung(konto: str, lizenz: str) -> str:
+    """Kurzes, oeffentliches Merkmal eines Konto-Schluessel-Paares."""
+    roh = ("kitu2-kennung:" + _paar(konto, lizenz)).encode("utf-8")
     return hashlib.sha256(roh).hexdigest()[:8]
 
 
-def lizenzschluessel(lizenz: str) -> bytes:
-    """Ableitungsschluessel aus dem Lizenzschluessel - 20000 Runden SHA-256."""
-    h = hashlib.sha256(("kitu1:" + normiere(lizenz)).encode("utf-8")).digest()
-    marke = b"kitu1"
+def lizenzschluessel(konto: str, lizenz: str) -> bytes:
+    """Ableitung aus Konto **und** Schluessel - 20000 Runden SHA-256."""
+    h = hashlib.sha256(("kitu2:" + _paar(konto, lizenz)).encode("utf-8")).digest()
+    marke = b"kitu2"
     for _ in range(_RUNDEN):
         h = hashlib.sha256(h + marke).digest()
     return h
@@ -245,10 +255,22 @@ def neuer_blockschluessel() -> str:
     return secrets.token_hex(32)
 
 
-def huelle(blockschluessel: bytes, lizenz: str) -> str:
-    """Blockschluessel, verdeckt mit dem Ableitungsschluessel der Lizenz."""
-    ableitung = lizenzschluessel(lizenz)
+def huelle(blockschluessel: bytes, konto: str, lizenz: str) -> str:
+    """Blockschluessel, verdeckt mit der Ableitung aus Konto und Schluessel.
+
+    Die Huelle passt damit auf genau ein Konto: Wer den Schluessel ohne die
+    zugehoerige Kennung hat, kann nichts damit anfangen.
+    """
+    ableitung = lizenzschluessel(konto, lizenz)
     return bytes(a ^ b for a, b in zip(blockschluessel, ableitung)).hex()
+
+
+def oeffne_huelle(verdeckt: str, konto: str, lizenz: str) -> bytes:
+    """Aus Huelle, Konto und Schluessel den Blockschluessel zurueckrechnen."""
+    return bytes(
+        a ^ b
+        for a, b in zip(bytes.fromhex(verdeckt), lizenzschluessel(konto, lizenz))
+    )
 
 
 def _strom(laenge: int, schluessel: bytes) -> bytes:

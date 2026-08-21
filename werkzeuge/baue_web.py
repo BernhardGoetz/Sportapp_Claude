@@ -98,26 +98,24 @@ def nutzlast() -> str:
 
 
 def baue(server: str = None) -> str:
-    """Die fertige Seite: verschluesselter Block plus sichtbarer Lader."""
+    """Die fertige Seite: verschluesselter Block plus sichtbarer Lader.
+
+    Die allgemeine Datei traegt **keine** Huelle - sie oeffnet sich nur ueber
+    den Server. Die persoenliche Huelle fuer den Offline-Betrieb setzt der
+    Server bei der Freigabe ein (siehe ``werkzeuge/server.py``).
+    """
     daten = lizenzen.lade()
-    if not daten.get("vorrat"):
-        lizenzen.fuelle(daten, lizenzen.VORGABE_VORRAT)
-        lizenzen.sichere(daten)
     if server is not None and server != daten.get("server"):
         daten["server"] = server
         lizenzen.sichere(daten)
+    elif not lizenzen.DATEI.exists():
+        lizenzen.sichere(daten)
 
     block = verschluessele(nutzlast(), bytes.fromhex(daten["blockschluessel"]))
-    huellen = [
-        {"k": eintrag["kennung"], "h": eintrag["huelle"]}
-        for eintrag in daten["vorrat"]
-        if not eintrag.get("gesperrt")
-    ]
-
     vorlage = (QUELLE / "vorlage.html").read_text(encoding="utf-8")
     quelle = (QUELLE / "lader.js").read_text(encoding="utf-8")
     return vorlage.replace(
-        "__LADER__", lader(quelle, block, huellen, daten.get("server", ""))
+        "__LADER__", lader(quelle, block, [], daten.get("server", ""))
     )
 
 

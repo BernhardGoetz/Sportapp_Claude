@@ -117,28 +117,48 @@
   }
 
   // ------------------------------------------------------------ Schluessel
-  function kennung(lizenz) {
-    return zuHex(sha256(bytes("kitu1-kennung:" + normiere(lizenz)))).slice(0, 8);
+  function normiereKonto(konto) {
+    return (konto || "").trim().toLowerCase();
   }
 
-  function ausLizenz(lizenz) {
-    var h = sha256(bytes("kitu1:" + normiere(lizenz)));
-    var marke = bytes("kitu1");
+  function paar(konto, lizenz) {
+    return normiereKonto(konto) + ":" + normiere(lizenz);
+  }
+
+  function kennung(konto, lizenz) {
+    return zuHex(sha256(bytes("kitu2-kennung:" + paar(konto, lizenz)))).slice(0, 8);
+  }
+
+  function ausLizenz(konto, lizenz) {
+    var h = sha256(bytes("kitu2:" + paar(konto, lizenz)));
+    var marke = bytes("kitu2");
     for (var i = 0; i < RUNDEN; i++) h = sha256(verbinde(h, marke));
     return h;
   }
 
-  function blockschluessel(lizenz) {
-    var gesucht = kennung(lizenz);
+  /* Huelle zu diesem Konto-Schluessel-Paar: {schluessel, bis} oder null. */
+  function blockschluessel(konto, lizenz) {
+    var gesucht = kennung(konto, lizenz);
     for (var i = 0; i < HUELLEN.length; i++) {
       if (HUELLEN[i].k !== gesucht) continue;
       var verdeckt = ausHex(HUELLEN[i].h);
-      var ableitung = ausLizenz(lizenz);
+      var ableitung = ausLizenz(konto, lizenz);
       var schluessel = new Uint8Array(32);
       for (var j = 0; j < 32; j++) schluessel[j] = verdeckt[j] ^ ableitung[j];
-      return schluessel;
+      return { schluessel: schluessel, bis: HUELLEN[i].bis || "" };
     }
     return null;
+  }
+
+  /* Abo abgelaufen? Vergleicht das Datum "JJJJ-MM-TT" mit dem heutigen Tag. */
+  function abgelaufen(bis) {
+    if (!bis) return false;
+    var heute = new Date();
+    var tag =
+      heute.getFullYear() +
+      "-" + ("0" + (heute.getMonth() + 1)).slice(-2) +
+      "-" + ("0" + heute.getDate()).slice(-2);
+    return bis < tag;
   }
 
   function entschluessele(schluessel) {
@@ -166,15 +186,18 @@
   // -------------------------------------------------------------- Ablage
   function gemerkt() {
     try {
-      return localStorage.getItem(ABLAGE);
+      var roh = localStorage.getItem(ABLAGE);
+      return roh ? JSON.parse(roh) : null;
     } catch (fehler) {
       return null;
     }
   }
 
-  function merke(lizenz) {
+  function merke(konto, lizenz) {
     try {
-      localStorage.setItem(ABLAGE, lizenz);
+      localStorage.setItem(
+        ABLAGE, JSON.stringify({ konto: konto, schluessel: lizenz })
+      );
       return true;
     } catch (fehler) {
       return false;
@@ -190,7 +213,7 @@
   }
 
   // -------------------------------------------------------------- Abfrage
-  function abfrage(meldung) {
+  function abfrage(meldung, vorgabe) {
     var stil = document.createElement("style");
     stil.textContent =
       "body{margin:0;font:16px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;" +
@@ -200,11 +223,13 @@
       "width:calc(100% - 2rem);box-shadow:0 8px 30px rgba(0,0,0,.12)}" +
       ".karte h1{margin:0 0 4px;font-size:1.5rem;color:#17568c}" +
       ".karte p{margin:0 0 16px;color:#4a5b6b}" +
-      ".karte input{width:100%;padding:12px;font-size:1.05rem;letter-spacing:.06em;" +
-      "border:1px solid #c3ced9;border-radius:9px;box-sizing:border-box;text-align:center}" +
+      ".karte input{width:100%;margin-bottom:8px;padding:12px;font-size:1.05rem;" +
+      "letter-spacing:.04em;border:1px solid #c3ced9;border-radius:9px;" +
+      "box-sizing:border-box;text-align:center}" +
       ".karte button{margin-top:12px;width:100%;padding:13px;font-size:1.05rem;" +
       "border:0;border-radius:9px;background:#17568c;color:#fff;cursor:pointer}" +
-      ".hinweis{margin-top:12px;min-height:1.4em;font-size:.95rem;color:#a4341f}";
+      ".hinweis{margin-top:12px;min-height:1.4em;font-size:.95rem;color:#a4341f}" +
+      ".fuss{margin:14px 0 0;font-size:.85rem;color:#7b8a99}";
     document.head.appendChild(stil);
 
     var karte = document.createElement("div");
@@ -212,44 +237,68 @@
     var titel = document.createElement("h1");
     titel.textContent = "Ki Tu - Stundenplaner";
     var text = document.createElement("p");
-    text.textContent = meldung || "Bitte den Lizenzschluessel eingeben.";
+    text.textContent =
+      meldung || "Bitte E-Mail und Offline-Schluessel des Kontos eingeben.";
+
+    var kontofeld = document.createElement("input");
+    kontofeld.setAttribute("placeholder", "E-Mail des Kontos");
+    kontofeld.setAttribute("type", "email");
+    kontofeld.setAttribute("autocapitalize", "none");
+    kontofeld.setAttribute("spellcheck", "false");
+    kontofeld.id = "kontofeld";
+
     var feld = document.createElement("input");
     feld.setAttribute("placeholder", "KITU-XXXX-XXXX-XXXX-XXXX");
     feld.setAttribute("autocapitalize", "characters");
     feld.setAttribute("spellcheck", "false");
     feld.id = "lizenzfeld";
+
     var knopf = document.createElement("button");
     knopf.textContent = "Freischalten";
     knopf.id = "lizenzknopf";
     var hinweis = document.createElement("div");
     hinweis.className = "hinweis";
     hinweis.id = "lizenzhinweis";
+    var fuss = document.createElement("p");
+    fuss.className = "fuss";
+    fuss.textContent =
+      "Der Schluessel gehoert zu genau einem Konto und steht dort unter "
+      + "„Konto“. Ohne Schluessel geht es online ueber die Anmeldung.";
 
     karte.appendChild(titel);
     karte.appendChild(text);
+    karte.appendChild(kontofeld);
     karte.appendChild(feld);
     karte.appendChild(knopf);
     karte.appendChild(hinweis);
+    karte.appendChild(fuss);
     document.body.innerHTML = "";
     document.body.appendChild(karte);
-    feld.focus();
+    (vorgabe && vorgabe.konto ? feld : kontofeld).focus();
+    if (vorgabe && vorgabe.konto) kontofeld.value = vorgabe.konto;
 
     function pruefe() {
       hinweis.textContent = "";
       knopf.disabled = true;
       knopf.textContent = "Pruefe ...";
       setTimeout(function () {
+        var konto = kontofeld.value;
         var lizenz = feld.value;
-        var schluessel = lizenz ? blockschluessel(lizenz) : null;
-        var programm = schluessel ? entschluessele(schluessel) : null;
+        var treffer = konto && lizenz ? blockschluessel(konto, lizenz) : null;
+        var programm = treffer ? entschluessele(treffer.schluessel) : null;
+        knopf.disabled = false;
+        knopf.textContent = "Freischalten";
         if (!programm) {
-          knopf.disabled = false;
-          knopf.textContent = "Freischalten";
-          hinweis.textContent = "Dieser Schluessel passt nicht.";
+          hinweis.textContent = "E-Mail und Schluessel passen nicht zusammen.";
           feld.select();
           return;
         }
-        if (!merke(lizenz)) {
+        if (abgelaufen(treffer.bis)) {
+          hinweis.textContent =
+            "Das Abo ist am " + treffer.bis + " abgelaufen. Bitte online anmelden.";
+          return;
+        }
+        if (!merke(konto, lizenz)) {
           hinweis.textContent =
             "Hinweis: Dieses Geraet kann den Schluessel nicht speichern.";
         }
@@ -258,8 +307,10 @@
     }
 
     knopf.addEventListener("click", pruefe);
-    feld.addEventListener("keydown", function (ereignis) {
-      if (ereignis.key === "Enter") pruefe();
+    [kontofeld, feld].forEach(function (eingabe) {
+      eingabe.addEventListener("keydown", function (ereignis) {
+        if (ereignis.key === "Enter") pruefe();
+      });
     });
   }
 
@@ -302,28 +353,51 @@
       });
   }
 
+  function ausDerAdresse() {
+    var adresse = location.hash + location.search;
+    var schluessel = adresse.match(/lizenz=([^&]+)/);
+    var konto = adresse.match(/konto=([^&]+)/);
+    if (!schluessel) return null;
+    return {
+      schluessel: decodeURIComponent(schluessel[1]),
+      konto: konto ? decodeURIComponent(konto[1]) : "",
+    };
+  }
+
   function los() {
-    var ausAdresse = (location.hash + location.search).match(/lizenz=([^&]+)/);
-    var lizenz = ausAdresse ? decodeURIComponent(ausAdresse[1]) : gemerkt();
-    if (lizenz === "neu") {
+    var adresse = ausDerAdresse();
+    var zugang = adresse || gemerkt();
+    if (zugang && zugang.schluessel === "neu") {
       vergiss();
       abfrage("");
       return;
     }
-    if (lizenz) {
+    if (zugang && zugang.schluessel && zugang.konto) {
       // Das Ableiten dauert einen Augenblick - erst die Meldung zeigen.
       warte("Einen Moment ...");
       setTimeout(function () {
-        var schluessel = blockschluessel(lizenz);
-        var programm = schluessel ? entschluessele(schluessel) : null;
+        var treffer = blockschluessel(zugang.konto, zugang.schluessel);
+        var programm = treffer ? entschluessele(treffer.schluessel) : null;
+        if (programm && abgelaufen(treffer.bis)) {
+          abfrage(
+            "Das Abo ist am " + treffer.bis + " abgelaufen. Bitte online "
+              + "anmelden und verlaengern.",
+            zugang
+          );
+          return;
+        }
         if (programm) {
-          merke(lizenz);
+          merke(zugang.konto, zugang.schluessel);
           starte(programm);
           return;
         }
         vergiss();
-        abfrage("Der gespeicherte Lizenzschluessel gilt nicht mehr.");
+        abfrage("Der gespeicherte Offline-Schluessel gilt nicht mehr.", zugang);
       }, 30);
+      return;
+    }
+    if (zugang && zugang.schluessel) {
+      abfrage("Zu diesem Schluessel fehlt die E-Mail des Kontos.", zugang);
       return;
     }
     // Eine Adresse wie "/freischalten" fuehrt von einer geoeffneten Datei aus

@@ -23,12 +23,13 @@ import hashlib
 import hmac
 import html
 import json
+import os
 import re
 import secrets
 import sys
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -39,7 +40,9 @@ WURZEL = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(WURZEL))
 
 from werkzeuge import lizenzen  # noqa: E402
-from werkzeuge.packen import normiere  # noqa: E402
+from werkzeuge import post as postfach  # noqa: E402
+from werkzeuge.packen import huelle, kennung as paarkennung  # noqa: E402
+from werkzeuge.packen import neuer_lizenzschluessel  # noqa: E402
 
 SEITE = WURZEL / "web" / "kinderturnen.html"
 COOKIE = "kitu_sitzung"
@@ -48,6 +51,10 @@ SITZUNGSDAUER = 30 * 24 * 3600
 FEHLVERSUCHE = 10
 SPERRZEIT = 15 * 60
 MINDESTKENNWORT = 8
+CODEDAUER = postfach.CODE_MINUTEN * 60  # Gueltigkeit der Mailcodes
+CODEVERSUCHE = 5                        # danach hilft nur ein neuer Code
+TESTTAGE = 30                           # Probeabo bei der Registrierung
+UNBESTAETIGT_TAGE = 7                   # so lange wartet ein Konto auf den Code
 
 
 def jetzt() -> float:
@@ -58,6 +65,19 @@ def zeitstempel() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+def heute() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+def in_tagen(tage: int, ab: str = "") -> str:
+    """Datum in ``tage`` Tagen - gerechnet ab heute oder ab ``ab``."""
+    start = datetime.now(timezone.utc)
+    if ab:
+        gesetzt = datetime.strptime(ab, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        start = max(start, gesetzt)
+    return (start + timedelta(days=tage)).strftime("%Y-%m-%d")
+
+
 # ---------------------------------------------------------------------------
 # Datenhaltung
 # ---------------------------------------------------------------------------
@@ -66,10 +86,15 @@ def zeitstempel() -> str:
 class Anwendung:
     """Konten, Sitzungen und Schluessel - alles in einfachen JSON-Dateien."""
 
-    def __init__(self, verzeichnis: Path, https: bool = False) -> None:
+    def __init__(self, verzeichnis: Path, https: bool = False,
+                 postausgang=None, adresse: str = "") -> None:
         self.verzeichnis = Path(verzeichnis)
         self.verzeichnis.mkdir(parents=True, exist_ok=True)
         self.https = https
+        self.adresse = adresse
+        self.postausgang = postausgang or postfach.Dateipost(
+            self.verzeichnis / "postfach"
+        )
         self.schloss = threading.Lock()
         self.konten_datei = self.verzeichnis / "konten.json"
         self.sitzungen_datei = self.verzeichnis / "sitzungen.json"
@@ -130,7 +155,22 @@ class Anwendung:
                 return eintrag
         return None
 
+    def raeume_konten_auf(self) -> int:
+        """Nie bestaetigte Konten nach einer Woche wieder freigeben."""
+        grenze = in_tagen(-UNBESTAETIGT_TAGE)
+        alt = [
+            k for k in self.konten
+            if not k.get("bestaetigt") and k.get("angelegt", "")[:10] < grenze
+        ]
+        for konto in alt:
+            self.konten.remove(konto)
+            self.notiere("konto-verfallen", konto["kennung"])
+        if alt:
+            self.sichere_konten()
+        return len(alt)
+
     def lege_an(self, kennung: str, name: str, kennwort: str) -> dict:
+        self.raeume_konten_auf()
         salz = secrets.token_hex(16)
         eintrag = {
             "kennung": self._kennung(kennung),
@@ -141,6 +181,9 @@ class Anwendung:
             "rolle": "verwalter" if not self.konten else "nutzer",
             "angelegt": zeitstempel(),
             "gesperrt": False,
+            "bestaetigt": False,
+            "code": None,
+            "abo": {"seit": heute(), "bis": in_tagen(TESTTAGE), "art": "probe"},
             "offline": None,
         }
         self.konten.append(eintrag)
@@ -206,14 +249,91 @@ class Anwendung:
     def blockschluessel(self) -> str:
         return self.lizenzen["blockschluessel"]
 
-    def freier_schluessel(self):
-        belegt = {normiere(k["offline"]) for k in self.konten if k.get("offline")}
-        for eintrag in self.lizenzen.get("vorrat", []):
-            if eintrag.get("gesperrt"):
-                continue
-            if normiere(eintrag["schluessel"]) not in belegt:
-                return eintrag["schluessel"]
-        return None
+    def gib_offline(self, konto: dict) -> str:
+        """Neuer Offline-Schluessel fuer genau dieses Konto."""
+        konto["offline"] = neuer_lizenzschluessel()
+        self.sichere_konten()
+        return konto["offline"]
+
+    def huelle_fuer(self, konto: dict) -> dict:
+        """Der Eintrag, der in die persoenliche Kopie der Datei kommt."""
+        schluessel = konto.get("offline")
+        if not schluessel:
+            return {}
+        return {
+            "k": paarkennung(konto["kennung"], schluessel),
+            "h": huelle(
+                bytes.fromhex(self.blockschluessel()), konto["kennung"], schluessel
+            ),
+            "bis": konto.get("abo", {}).get("bis", ""),
+        }
+
+    def persoenliche_seite(self, konto: dict) -> bytes:
+        """Die Datei mit der Huelle dieses Kontos - sonst unveraendert."""
+        text = SEITE.read_text(encoding="utf-8")
+        eintrag = self.huelle_fuer(konto)
+        if not eintrag:
+            return text.encode("utf-8")
+        neu = "var HUELLEN = " + json.dumps([eintrag], separators=(",", ":")) + ";"
+        return re.sub(r"var HUELLEN = \[\];", neu, text, count=1).encode("utf-8")
+
+    # -- Abo ---------------------------------------------------------------
+    @staticmethod
+    def abo_gueltig(konto: dict) -> bool:
+        return konto.get("abo", {}).get("bis", "") >= heute()
+
+    def verlaengere(self, konto: dict, tage: int) -> str:
+        abo = konto.setdefault("abo", {"seit": heute(), "art": "probe"})
+        abo["bis"] = in_tagen(tage, abo.get("bis", ""))
+        abo["art"] = "abo"
+        self.sichere_konten()
+        return abo["bis"]
+
+    def beende_abo(self, konto: dict) -> None:
+        abo = konto.setdefault("abo", {"seit": heute(), "art": "probe"})
+        abo["bis"] = in_tagen(-1)
+        self.sichere_konten()
+
+    # -- Codes fuer Mail ---------------------------------------------------
+    def _codehash(self, art: str, code: str) -> str:
+        return hmac.new(
+            self.geheim, (art + ":" + code).encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+
+    def neuer_code(self, konto: dict, art: str) -> str:
+        code = "".join(secrets.choice("0123456789") for _ in range(6))
+        konto["code"] = {
+            "art": art,
+            "hash": self._codehash(art, code),
+            "bis": jetzt() + CODEDAUER,
+            "versuche": 0,
+        }
+        self.sichere_konten()
+        return code
+
+    def code_stimmt(self, konto: dict, art: str, code: str) -> bool:
+        eintrag = konto.get("code") or {}
+        if eintrag.get("art") != art or eintrag.get("bis", 0) < jetzt():
+            return False
+        if eintrag.get("versuche", 0) >= CODEVERSUCHE:
+            return False
+        code = "".join(z for z in (code or "") if z.isdigit())
+        if hmac.compare_digest(eintrag.get("hash", ""), self._codehash(art, code)):
+            konto["code"] = None
+            self.sichere_konten()
+            return True
+        eintrag["versuche"] = eintrag.get("versuche", 0) + 1
+        self.sichere_konten()
+        return False
+
+    def sende_code(self, konto: dict, art: str) -> None:
+        code = self.neuer_code(konto, art)
+        bauer = (
+            postfach.text_bestaetigung if art == "bestaetigung" else postfach.text_kennwort
+        )
+        betreff, text = bauer(konto.get("name", ""), code, self.adresse)
+        self.postausgang.sende(konto["kennung"], betreff, text)
+        self.notiere("mail:" + art, konto["kennung"])
 
 
 # ---------------------------------------------------------------------------
@@ -312,6 +432,16 @@ class Behandler(BaseHTTPRequestHandler):
             return None
         return konto
 
+    def darf_planen(self, konto):
+        """Leer, wenn alles passt - sonst der Grund als Wort."""
+        if not konto:
+            return "anmeldung"
+        if not konto.get("bestaetigt"):
+            return "bestaetigung"
+        if not self.app.abo_gueltig(konto):
+            return "abo"
+        return ""
+
     def keks(self, marke: str) -> list:
         """Kopfzeile fuer das Sitzungs-Cookie - leer, wenn nichts zu setzen ist."""
         if not marke:
@@ -378,6 +508,9 @@ class Behandler(BaseHTTPRequestHandler):
             "/verwaltung": self.zeige_verwaltung,
             "/freischalten": self.freischalten,
             "/kinderturnen.html": self.gib_datei,
+            "/bestaetigen": self.zeige_bestaetigung,
+            "/kennwort-vergessen": self.zeige_kennwort_vergessen,
+            "/kennwort-neu": self.zeige_kennwort_neu,
         }
         behandeln = wege.get(pfad.path)
         if not behandeln:
@@ -391,8 +524,16 @@ class Behandler(BaseHTTPRequestHandler):
         self.do_GET()
 
     def zeige_programm(self, abfrage=None):
-        if not self.angemeldet():
+        konto = self.angemeldet()
+        grund = self.darf_planen(konto)
+        if grund == "anmeldung":
             self.weiter_zu("/anmelden")
+            return
+        if grund == "bestaetigung":
+            self.weiter_zu("/bestaetigen")
+            return
+        if grund == "abo":
+            self.antworte(seite("Abo abgelaufen", self._abo_hinweis(konto), konto))
             return
         if not SEITE.exists():
             self.antworte(seite("Fehlt", "<div class=karte><h1>Programm fehlt</h1>"
@@ -413,7 +554,8 @@ class Behandler(BaseHTTPRequestHandler):
             + feld("kennung", "E-Mail", "email")
             + feld("kennwort", "Kennwort", "password")
             + '<button id="knopf-anmelden">Anmelden</button></form>'
-            + '<p class=klein>Noch kein Konto? <a href="/registrieren">Hier registrieren</a>.</p>'
+            + '<p class=klein>Noch kein Konto? <a href="/registrieren">Hier registrieren</a>.'
+            + ' Kennwort weg? <a href="/kennwort-vergessen">Neues anfordern</a>.</p>'
             + "</div>"
         )
         self.antworte(seite("Anmelden", inhalt), kopf=self.keks(neu))
@@ -446,17 +588,28 @@ class Behandler(BaseHTTPRequestHandler):
         marke = self.app.marke(self.sitzungsmarke())
         if konto.get("offline"):
             offline = (
-                "<p>Mit diesem Schluessel laeuft der Stundenplaner auch ohne "
-                "Verbindung - Datei speichern, oeffnen, Schluessel eingeben:</p>"
+                "<p>Dieser Schluessel gehoert zu <strong>genau diesem Konto</strong>: "
+                "Datei herunterladen, oeffnen, E-Mail und Schluessel eingeben - "
+                "danach laeuft der Stundenplaner ohne Verbindung.</p>"
                 f'<p class=schluessel>{html.escape(konto["offline"])}</p>'
                 '<p><a href="/kinderturnen.html">Datei herunterladen</a> - '
-                'einmal speichern, danach genuegt ein Doppelklick.</p>'
+                "einmal speichern, danach genuegt ein Doppelklick. Ohne die "
+                "E-Mail des Kontos ist der Schluessel wertlos.</p>"
             )
         else:
             offline = (
-                "<p class=klein>Fuer diesen Zugang ist kein Offline-Schluessel "
+                "<p class=klein>Fuer dieses Konto ist kein Offline-Schluessel "
                 "freigegeben. Solange laeuft das Programm nur ueber den Server.</p>"
             )
+        abo = konto.get("abo", {})
+        laeuft = self.app.abo_gueltig(konto)
+        abotext = (
+            f"<p>{'Laeuft' if laeuft else 'Abgelaufen'} - "
+            f"{'bis' if laeuft else 'seit'} {html.escape(abo.get('bis', '-'))}"
+            f" ({html.escape(abo.get('art', 'probe'))}).</p>"
+            + ("" if laeuft else "<p class=klein>Zum Weiterplanen bitte beim "
+                                 "Verwalter verlaengern lassen.</p>")
+        )
         inhalt = (
             (f'<p class=gut>{html.escape(meldung)}</p>' if meldung else "")
             + (f'<p class=fehler>{html.escape(fehler)}</p>' if fehler else "")
@@ -467,6 +620,7 @@ class Behandler(BaseHTTPRequestHandler):
             + '<form method=post action="/abmelden">'
             + f'<input type=hidden name=marke value="{marke}">'
             + '<button class=leise id="knopf-abmelden">Abmelden</button></form></div>'
+            + f"<div class=karte><h2>Abo</h2>{abotext}</div>"
             + f"<div class=karte><h2>Offline arbeiten</h2>{offline}</div>"
             + "<div class=karte><h2>Kennwort aendern</h2>"
             + '<form method=post action="/konto">'
@@ -511,41 +665,66 @@ class Behandler(BaseHTTPRequestHandler):
                 taten += knopf("offline_nehmen", kennung, "Offline entziehen")
             else:
                 taten += knopf("offline_geben", kennung, "Offline freigeben")
+            taten += knopf("abo_monat", kennung, "+1 Monat")
+            taten += knopf("abo_jahr", kennung, "+1 Jahr")
+            if self.app.abo_gueltig(eintrag):
+                taten += knopf("abo_stop", kennung, "Abo beenden")
             if eintrag["rolle"] != "verwalter":
                 taten += knopf("verwalter", kennung, "Zum Verwalter")
+            zustand = "gesperrt" if eintrag.get("gesperrt") else eintrag["rolle"]
+            if not eintrag.get("bestaetigt"):
+                zustand += " (unbestaetigt)"
+            abo = eintrag.get("abo", {})
+            abospalte = "{} {}".format(
+                "bis" if self.app.abo_gueltig(eintrag) else "abgelaufen",
+                html.escape(abo.get("bis", "-")),
+            )
             zeilen.append(
                 "<tr><td>{}<br><span class=klein>{}</span></td><td>{}</td>"
-                "<td class=klein>{}</td><td>{}</td></tr>".format(
+                "<td class=klein>{}</td><td class=klein>{}</td><td>{}</td></tr>".format(
                     html.escape(eintrag["name"] or "-"),
                     html.escape(kennung),
-                    "gesperrt" if eintrag.get("gesperrt") else eintrag["rolle"],
+                    zustand,
+                    abospalte,
                     html.escape(eintrag.get("offline") or "-"),
                     taten,
                 )
             )
-        frei = len(
-            [
-                e
-                for e in self.app.lizenzen.get("vorrat", [])
-                if not e.get("gesperrt")
-            ]
-        ) - len([k for k in self.app.konten if k.get("offline")])
+        laufend = len([k for k in self.app.konten if self.app.abo_gueltig(k)])
         inhalt = (
             (f'<p class=gut>{html.escape(meldung)}</p>' if meldung else "")
             + "<div class=karte><h1>Verwaltung</h1>"
-            + f"<p class=klein>{len(self.app.konten)} Konten, "
-            + f"{max(0, frei)} Offline-Schluessel noch frei.</p>"
-            + "<table><tr><th>Konto</th><th>Zustand</th><th>Offline</th><th></th></tr>"
+            + f"<p class=klein>{len(self.app.konten)} Konten, davon {laufend} mit "
+            + "laufendem Abo. Jeder Offline-Schluessel gehoert zu genau einem "
+            + "Konto und gilt bis zum Ende des Abos.</p>"
+            + "<table><tr><th>Konto</th><th>Zustand</th><th>Abo</th>"
+            + "<th>Offline</th><th></th></tr>"
             + "".join(zeilen)
             + "</table></div>"
         )
         self.antworte(seite("Verwaltung", inhalt, konto))
 
+    def _abo_hinweis(self, konto) -> str:
+        bis = konto.get("abo", {}).get("bis", "-")
+        return (
+            "<div class=karte><h1>Das Abo ist abgelaufen</h1>"
+            f"<p>Der Zugang lief bis zum {html.escape(bis)}. Zum Weiterplanen "
+            "bitte das Abo verlaengern lassen - der Verwalter schaltet es "
+            'wieder frei.</p><p class=klein><a href="/konto">Zum Konto</a></p></div>'
+        )
+
     def gib_datei(self, abfrage=None):
-        """Die Datei zum Mitnehmen - laeuft danach mit dem Offline-Schluessel."""
+        """Die persoenliche Datei zum Mitnehmen - mit der eigenen Huelle."""
         konto = self.angemeldet()
-        if not konto:
+        grund = self.darf_planen(konto)
+        if grund == "anmeldung":
             self.weiter_zu("/anmelden?weiter=/kinderturnen.html")
+            return
+        if grund == "bestaetigung":
+            self.weiter_zu("/bestaetigen")
+            return
+        if grund == "abo":
+            self.antworte(seite("Abo abgelaufen", self._abo_hinweis(konto), konto))
             return
         if not SEITE.exists():
             self.antworte(seite("Fehlt", "<div class=karte><h1>Programm fehlt</h1></div>",
@@ -553,16 +732,90 @@ class Behandler(BaseHTTPRequestHandler):
             return
         self.app.notiere("datei-geladen", konto["kennung"])
         self.antworte(
-            SEITE.read_bytes(),
+            self.app.persoenliche_seite(konto),
             kopf=[("Content-Disposition", 'attachment; filename="kinderturnen.html"')],
+        )
+
+    def _codeformular(self, titel: str, ziel: str, text: str, felder: str,
+                      fehler: str = "", meldung: str = "") -> None:
+        marke, keks = self.gib_marke()
+        inhalt = (
+            (f'<p class=gut>{html.escape(meldung)}</p>' if meldung else "")
+            + (f'<p class=fehler>{html.escape(fehler)}</p>' if fehler else "")
+            + f"<div class=karte><h1>{html.escape(titel)}</h1>"
+            + f"<p class=klein>{text}</p>"
+            + f'<form method=post action="{ziel}">'
+            + f'<input type=hidden name=marke value="{self.app.marke(marke)}">'
+            + felder
+            + "</form></div>"
+        )
+        self.antworte(seite(titel, inhalt), kopf=self.keks(keks))
+
+    def zeige_bestaetigung(self, abfrage=None, fehler: str = "", meldung: str = ""):
+        """Code aus der Mail eingeben - erst danach geht es ins Programm."""
+        konto = self.angemeldet()
+        if konto and konto.get("bestaetigt"):
+            self.weiter_zu("/")
+            return
+        wohin = konto["kennung"] if konto else ""
+        marke, keks = self.gib_marke()
+        inhalt = (
+            (f'<p class=gut>{html.escape(meldung)}</p>' if meldung else "")
+            + (f'<p class=fehler>{html.escape(fehler)}</p>' if fehler else "")
+            + "<div class=karte><h1>Konto bestaetigen</h1>"
+            + "<p class=klein>Wir haben einen sechsstelligen Code an "
+            + (f"<strong>{html.escape(wohin)}</strong>" if wohin else "deine E-Mail")
+            + f" geschickt. Er gilt {postfach.CODE_MINUTEN} Minuten.</p>"
+            + '<form method=post action="/bestaetigen">'
+            + f'<input type=hidden name=marke value="{self.app.marke(marke)}">'
+            + ("" if wohin else feld("kennung", "E-Mail", "email"))
+            + feld("code", "Code aus der Mail", "text")
+            + '<button id="knopf-bestaetigen">Bestaetigen</button></form>'
+            + '<form method=post action="/code-neu" style="margin-top:10px">'
+            + f'<input type=hidden name=marke value="{self.app.marke(marke)}">'
+            + ("" if wohin else '<input type=hidden name=kennung value="">')
+            + '<button class=leise id="knopf-code-neu">Code erneut senden</button>'
+            + "</form></div>"
+        )
+        self.antworte(seite("Konto bestaetigen", inhalt), kopf=self.keks(keks))
+
+    def zeige_kennwort_vergessen(self, abfrage=None, fehler: str = "", meldung: str = ""):
+        self._codeformular(
+            "Kennwort vergessen",
+            "/kennwort-vergessen",
+            "Gib deine E-Mail an - wenn es dazu ein Konto gibt, ist gleich ein "
+            "Code unterwegs.",
+            feld("kennung", "E-Mail", "email")
+            + '<button id="knopf-code">Code anfordern</button>',
+            fehler,
+            meldung,
+        )
+
+    def zeige_kennwort_neu(self, abfrage=None, fehler: str = "", meldung: str = "",
+                           kennung: str = ""):
+        vorgabe = kennung or (abfrage or {}).get("kennung", [""])[0]
+        self._codeformular(
+            "Neues Kennwort",
+            "/kennwort-neu",
+            "Code aus der Mail eingeben und das neue Kennwort zweimal.",
+            feld("kennung", "E-Mail", "email", vorgabe)
+            + feld("code", "Code aus der Mail", "text")
+            + feld("kennwort", f"Neues Kennwort (mindestens {MINDESTKENNWORT} Zeichen)",
+                   "password")
+            + feld("kennwort2", "Neues Kennwort wiederholen", "password")
+            + '<button id="knopf-kennwort-neu">Kennwort setzen</button>',
+            fehler,
+            meldung,
         )
 
     def freischalten(self, abfrage=None):
         konto = self.angemeldet()
-        if not konto:
-            self.app.notiere("freischalten-abgelehnt", self.client_address[0])
+        grund = self.darf_planen(konto)
+        if grund:
+            wer = konto["kennung"] if konto else self.client_address[0]
+            self.app.notiere("freischalten-abgelehnt", wer, grund)
             self.antworte(
-                json.dumps({"fehler": "nicht angemeldet"}).encode("utf-8"),
+                json.dumps({"fehler": grund}).encode("utf-8"),
                 art="application/json; charset=utf-8",
                 status=HTTPStatus.UNAUTHORIZED,
             )
@@ -593,6 +846,10 @@ class Behandler(BaseHTTPRequestHandler):
             "/abmelden": self.melde_ab,
             "/konto": self.aendere_kennwort,
             "/verwaltung": self.verwalte,
+            "/bestaetigen": self.bestaetige,
+            "/code-neu": self.code_erneut,
+            "/kennwort-vergessen": self.sende_kennwortcode,
+            "/kennwort-neu": self.setze_kennwort_neu,
         }
         behandeln = wege.get(pfad)
         if not behandeln:
@@ -623,6 +880,9 @@ class Behandler(BaseHTTPRequestHandler):
             return
         self.app.beende(self.sitzungsmarke())  # Marke wechseln
         self.app.notiere("anmeldung", kennung)
+        if not konto.get("bestaetigt"):
+            self.app.sende_code(konto, "bestaetigung")
+            ziel = "/bestaetigen"
         self.weiter_zu(ziel, self.app.neue_sitzung(konto["kennung"]))
 
     def registriere(self, daten):
@@ -649,8 +909,87 @@ class Behandler(BaseHTTPRequestHandler):
             )
             return
         konto = self.app.lege_an(kennung, name, kennwort)
+        self.app.sende_code(konto, "bestaetigung")
         self.app.beende(self.sitzungsmarke())
         self.app.notiere("registrierung", kennung, konto["rolle"])
+        # Angemeldet ist das Konto schon - ins Programm kommt es erst nach
+        # dem Code aus der Mail.
+        self.weiter_zu("/bestaetigen", self.app.neue_sitzung(konto["kennung"]))
+
+    def bestaetige(self, daten):
+        """Code aus der Bestaetigungsmail pruefen."""
+        konto = self.angemeldet() or self.app.konto(daten.get("kennung", ""))
+        if not konto:
+            self.zeige_bestaetigung(fehler="Zu dieser E-Mail gibt es kein Konto.")
+            return
+        if konto.get("bestaetigt"):
+            self.weiter_zu("/")
+            return
+        if self.app.zu_viele_versuche(self.merkmal(konto["kennung"])):
+            self.zeige_bestaetigung(fehler="Zu viele Versuche. Bitte spaeter erneut.")
+            return
+        if not self.app.code_stimmt(konto, "bestaetigung", daten.get("code", "")):
+            self.app.fehlversuch(self.merkmal(konto["kennung"]))
+            self.app.notiere("bestaetigung-falsch", konto["kennung"])
+            self.zeige_bestaetigung(
+                fehler="Dieser Code stimmt nicht oder ist abgelaufen."
+            )
+            return
+        konto["bestaetigt"] = True
+        self.app.sichere_konten()
+        self.app.notiere("bestaetigt", konto["kennung"])
+        self.app.beende(self.sitzungsmarke())
+        self.weiter_zu("/", self.app.neue_sitzung(konto["kennung"]))
+
+    def code_erneut(self, daten):
+        konto = self.angemeldet() or self.app.konto(daten.get("kennung", ""))
+        if konto and not konto.get("bestaetigt"):
+            self.app.sende_code(konto, "bestaetigung")
+        self.zeige_bestaetigung(meldung="Ein neuer Code ist unterwegs.")
+
+    def sende_kennwortcode(self, daten):
+        """Code fuer ein neues Kennwort - ohne zu verraten, wer ein Konto hat."""
+        kennung = (daten.get("kennung") or "").strip().lower()
+        konto = self.app.konto(kennung)
+        if konto and not konto.get("gesperrt"):
+            self.app.sende_code(konto, "kennwort")
+        else:
+            self.app.notiere("kennwortcode-ins-leere", kennung or "-")
+        self.zeige_kennwort_neu(
+            meldung="Wenn es zu dieser E-Mail ein Konto gibt, ist ein Code unterwegs.",
+            kennung=kennung,
+        )
+
+    def setze_kennwort_neu(self, daten):
+        kennung = (daten.get("kennung") or "").strip().lower()
+        konto = self.app.konto(kennung)
+        kennwort = daten.get("kennwort", "")
+        if len(kennwort) < MINDESTKENNWORT:
+            self.zeige_kennwort_neu(
+                fehler=f"Das Kennwort braucht mindestens {MINDESTKENNWORT} Zeichen.",
+                kennung=kennung,
+            )
+            return
+        if kennwort != daten.get("kennwort2", ""):
+            self.zeige_kennwort_neu(fehler="Die Kennwoerter stimmen nicht ueberein.",
+                                    kennung=kennung)
+            return
+        if self.app.zu_viele_versuche(self.merkmal(kennung)):
+            self.zeige_kennwort_neu(fehler="Zu viele Versuche. Bitte spaeter erneut.",
+                                    kennung=kennung)
+            return
+        if not konto or not self.app.code_stimmt(konto, "kennwort", daten.get("code", "")):
+            self.app.fehlversuch(self.merkmal(kennung))
+            self.app.notiere("kennwortcode-falsch", kennung or "-")
+            self.zeige_kennwort_neu(
+                fehler="Dieser Code stimmt nicht oder ist abgelaufen.", kennung=kennung
+            )
+            return
+        self.app.setze_kennwort(konto, kennwort)
+        konto["bestaetigt"] = True  # der Code kam ja an die Mailadresse
+        self.app.sichere_konten()
+        self.app.notiere("kennwort-neu", konto["kennung"])
+        self.app.beende(self.sitzungsmarke())
         self.weiter_zu("/", self.app.neue_sitzung(konto["kennung"]))
 
     def melde_ab(self, daten):
@@ -698,18 +1037,24 @@ class Behandler(BaseHTTPRequestHandler):
             ziel["gesperrt"] = False
             meldung = f"{ziel['kennung']} ist wieder frei."
         elif tat == "offline_geben":
-            schluessel = self.app.freier_schluessel()
-            if not schluessel:
-                self.zeige_verwaltung(
-                    meldung="Kein freier Offline-Schluessel mehr - Vorrat auffuellen "
-                    "und neu bauen."
-                )
-                return
-            ziel["offline"] = schluessel
-            meldung = f"{ziel['kennung']} kann jetzt offline arbeiten."
+            schluessel = self.app.gib_offline(ziel)
+            meldung = (
+                f"{ziel['kennung']} kann jetzt offline arbeiten: {schluessel} "
+                "(steht auch im Konto der Person)."
+            )
         elif tat == "offline_nehmen":
             ziel["offline"] = None
-            meldung = f"{ziel['kennung']} arbeitet wieder nur ueber den Server."
+            meldung = (
+                f"{ziel['kennung']} arbeitet wieder nur ueber den Server. "
+                "Eine schon heruntergeladene Datei laeuft bis zum Ende des Abos weiter."
+            )
+        elif tat == "abo_monat":
+            meldung = f"Abo von {ziel['kennung']} laeuft bis {self.app.verlaengere(ziel, 31)}."
+        elif tat == "abo_jahr":
+            meldung = f"Abo von {ziel['kennung']} laeuft bis {self.app.verlaengere(ziel, 365)}."
+        elif tat == "abo_stop":
+            self.app.beende_abo(ziel)
+            meldung = f"Abo von {ziel['kennung']} ist beendet."
         elif tat == "verwalter":
             ziel["rolle"] = "verwalter"
             meldung = f"{ziel['kennung']} ist jetzt Verwalter."
@@ -719,9 +1064,15 @@ class Behandler(BaseHTTPRequestHandler):
 
 
 def baue_server(port: int = 8000, verzeichnis: Path = None, https: bool = False,
-                host: str = "") -> ThreadingHTTPServer:
+                host: str = "", postausgang=None,
+                adresse: str = "") -> ThreadingHTTPServer:
     """Fertiger Server - die Tests starten ihn in einem eigenen Faden."""
-    anwendung = Anwendung(verzeichnis or (WURZEL / "server"), https=https)
+    anwendung = Anwendung(
+        verzeichnis or (WURZEL / "server"),
+        https=https,
+        postausgang=postausgang,
+        adresse=adresse,
+    )
     behandler = type("KiTuBehandler", (Behandler,), {"anwendung": anwendung})
     server = ThreadingHTTPServer((host, port), behandler)
     server.anwendung = anwendung
@@ -738,9 +1089,31 @@ def main() -> int:
                         help="Cookies als 'Secure' markieren (hinter nginx/Caddy)")
     parser.add_argument("--verwalter", metavar="E-MAIL",
                         help="dieses Konto zum Verwalter machen und beenden")
+    parser.add_argument("--adresse", default="",
+                        help="oeffentliche Adresse fuer die Verweise in den Mails, "
+                             "z. B. https://kitu.mein-verein.de")
+    parser.add_argument("--smtp", metavar="WIRT[:PORT]",
+                        help="Mailserver; ohne Angabe landen die Mails als "
+                             "Textdateien in <daten>/postfach/")
+    parser.add_argument("--smtp-nutzer", default="")
+    parser.add_argument("--absender", default=postfach.ABSENDER)
     args = parser.parse_args()
 
-    server = baue_server(args.port, Path(args.daten), args.https, args.host)
+    versand = None
+    if args.smtp:
+        wirt, _, port = args.smtp.partition(":")
+        versand = postfach.SMTPPost(
+            wirt,
+            int(port or 587),
+            args.smtp_nutzer,
+            os.environ.get("KITU_SMTP_KENNWORT", ""),
+            args.absender,
+        )
+        if args.smtp_nutzer and not os.environ.get("KITU_SMTP_KENNWORT"):
+            print("Hinweis: KITU_SMTP_KENNWORT ist nicht gesetzt.")
+
+    server = baue_server(args.port, Path(args.daten), args.https, args.host,
+                         versand, args.adresse)
     anwendung = server.anwendung
 
     if args.verwalter:
@@ -758,6 +1131,9 @@ def main() -> int:
               "'python3 werkzeuge/baue_web.py' ausfuehren.")
     print(f"Ki Tu laeuft auf http://{args.host or 'localhost'}:{args.port}/")
     print(f"Konten: {anwendung.konten_datei}")
+    if not args.smtp:
+        print(f"Mails: {anwendung.verzeichnis / 'postfach'} (kein Mailserver "
+              "angegeben - Codes stehen dort als Textdatei)")
     if not anwendung.konten:
         print("Das erste angelegte Konto wird automatisch Verwalter.")
     try:

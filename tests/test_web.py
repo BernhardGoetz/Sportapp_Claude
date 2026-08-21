@@ -10,6 +10,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -18,11 +19,28 @@ SEITE = WURZEL / "web" / "kinderturnen.html"
 
 sys.path.insert(0, str(WURZEL))
 from werkzeuge import lizenzen  # noqa: E402
-from werkzeuge.packen import entschluessele, lizenzschluessel, ohne_kommentare  # noqa: E402
+from werkzeuge.packen import entschluessele, huelle, kennung  # noqa: E402
+from werkzeuge.packen import ohne_kommentare  # noqa: E402
 
 LIZENZEN = lizenzen.lade()
 SCHLUESSEL = bytes.fromhex(LIZENZEN["blockschluessel"])
-OFFLINE = LIZENZEN["vorrat"][0]["schluessel"]  # Offline-Schluessel fuer die Tests
+# Ein Konto-Schluessel-Paar fuer die Tests. Die Huelle dazu setzt sonst der
+# Server in die persoenliche Kopie der Datei ein.
+TESTKONTO = "probe@beispiel.de"
+OFFLINE = "KITU-PROB-EEEE-TEST-2345"
+
+
+def persoenliche_seite(ziel: Path, konto: str = TESTKONTO, schluessel: str = OFFLINE) -> Path:
+    """Kopie der gebauten Datei mit der Huelle fuer dieses Konto."""
+    eintrag = {
+        "k": kennung(konto, schluessel),
+        "h": huelle(SCHLUESSEL, konto, schluessel),
+    }
+    text = SEITE.read_text(encoding="utf-8").replace(
+        "var HUELLEN = [];", "var HUELLEN = " + json.dumps([eintrag]) + ";", 1
+    )
+    ziel.write_text(text, encoding="utf-8")
+    return ziel
 
 
 def block_der_seite(inhalt: str):
@@ -173,29 +191,35 @@ class SchluesselTest(unittest.TestCase):
         self.assertIsNone(entschluessele(block, bytes(32)))
 
     def test_schreibweise_des_lizenzschluessels_ist_egal(self):
-        from werkzeuge.packen import kennung, normiere
+        from werkzeuge.packen import normiere
 
         for form in ("KITU-AAAA-BBBB", "kitu aaaa bbbb", "kituaaaabbbb"):
             self.assertEqual(normiere(form), "KITUAAAABBBB")
-            self.assertEqual(kennung(form), kennung("KITU-AAAA-BBBB"))
-
-    def test_huelle_gibt_den_blockschluessel_zurueck(self):
-        from werkzeuge.packen import huelle
-
-        lizenz = LIZENZEN["vorrat"][1]["schluessel"]
-        verdeckt = bytes.fromhex(huelle(SCHLUESSEL, lizenz))
-        zurueck = bytes(a ^ b for a, b in zip(verdeckt, lizenzschluessel(lizenz)))
-        self.assertEqual(zurueck, SCHLUESSEL)
-        self.assertEqual(verdeckt.hex(), LIZENZEN["vorrat"][1]["huelle"])
-
-    def test_jeder_vorratsschluessel_oeffnet_die_seite(self):
-        block = block_der_seite(SEITE.read_text(encoding="utf-8"))
-        for eintrag in LIZENZEN["vorrat"][:3]:
-            verdeckt = bytes.fromhex(eintrag["huelle"])
-            schluessel = bytes(
-                a ^ b for a, b in zip(verdeckt, lizenzschluessel(eintrag["schluessel"]))
+            self.assertEqual(
+                kennung(" Probe@Beispiel.DE ", form), kennung(TESTKONTO, "KITU-AAAA-BBBB")
             )
-            self.assertIsNotNone(entschluessele(block, schluessel), eintrag["schluessel"])
+
+    def test_huelle_gibt_den_blockschluessel_nur_mit_dem_konto_zurueck(self):
+        from werkzeuge.packen import oeffne_huelle
+
+        verdeckt = huelle(SCHLUESSEL, TESTKONTO, OFFLINE)
+        self.assertEqual(oeffne_huelle(verdeckt, TESTKONTO, OFFLINE), SCHLUESSEL)
+        # Anderes Konto, gleicher Schluessel: nichts zu holen.
+        self.assertNotEqual(oeffne_huelle(verdeckt, "wer.anders@beispiel.de", OFFLINE),
+                            SCHLUESSEL)
+
+    def test_persoenliche_seite_oeffnet_sich_nur_mit_ihrem_paar(self):
+        from werkzeuge.packen import oeffne_huelle
+
+        with tempfile.TemporaryDirectory() as ordner:
+            ziel = persoenliche_seite(Path(ordner) / "meine.html")
+            inhalt = ziel.read_text(encoding="utf-8")
+            block = block_der_seite(inhalt)
+            eintrag = json.loads(re.search(r"var HUELLEN = (\[.*?\]);", inhalt).group(1))[0]
+            richtig = oeffne_huelle(eintrag["h"], TESTKONTO, OFFLINE)
+            self.assertIsNotNone(entschluessele(block, richtig))
+            falsch = oeffne_huelle(eintrag["h"], "wer.anders@beispiel.de", OFFLINE)
+            self.assertIsNone(entschluessele(block, falsch))
 
 
 @unittest.skipUnless(PLAYWRIGHT_DA and CHROMIUM, "Playwright oder Chromium fehlt")
@@ -206,11 +230,16 @@ class WebOberflaecheTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls._pw = sync_playwright().start()
         cls.browser = cls._pw.chromium.launch(executable_path=CHROMIUM)
+        # Die persoenliche Kopie, wie sie der Server ausliefert.
+        cls._ordner = tempfile.TemporaryDirectory()
+        cls.datei = persoenliche_seite(Path(cls._ordner.name) / "kinderturnen.html")
+        cls.adresse = cls.datei.resolve().as_uri()
 
     @classmethod
     def tearDownClass(cls) -> None:
         cls.browser.close()
         cls._pw.stop()
+        cls._ordner.cleanup()
 
     def neue_seite(self, breite=1280, hoehe=860, lizenz=OFFLINE):
         """Leere Seite mit Fehlerwaechter - der Schluessel liegt schon bereit."""
@@ -224,7 +253,7 @@ class WebOberflaecheTest(unittest.TestCase):
         if lizenz:
             seite.add_init_script(
                 "try { localStorage.setItem('kitu.lizenz', %s); } catch (e) {}"
-                % json.dumps(lizenz)
+                % json.dumps(json.dumps({"konto": TESTKONTO, "schluessel": lizenz}))
             )
         return seite
 
@@ -232,14 +261,14 @@ class WebOberflaecheTest(unittest.TestCase):
         """Seite mit Offline-Schluessel oeffnen und auf das Programm warten."""
         seite = self.neue_seite(breite, hoehe)
         # Die Innereien reicht die Seite nur mit "?pruefung=1" heraus.
-        seite.goto(SEITE.resolve().as_uri() + ("?pruefung=1" if pruefung else ""))
+        seite.goto(self.adresse + ("?pruefung=1" if pruefung else ""))
         seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
         seite.wait_for_timeout(350)
         return seite
 
     def test_ohne_schluessel_bleibt_es_bei_der_abfrage(self):
         seite = self.neue_seite(lizenz=None)
-        seite.goto(SEITE.resolve().as_uri())
+        seite.goto(self.adresse)
         seite.wait_for_selector("#lizenzfeld", timeout=15000)
         self.assertFalse(seite.evaluate("() => !!document.getElementById('plan')"))
         # Nichts vom Programm ist im Dokument gelandet.
@@ -248,44 +277,91 @@ class WebOberflaecheTest(unittest.TestCase):
 
     def test_falscher_schluessel_wird_abgewiesen(self):
         seite = self.neue_seite(lizenz=None)
-        seite.goto(SEITE.resolve().as_uri())
+        seite.goto(self.adresse)
         seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        seite.fill("#kontofeld", TESTKONTO)
         seite.fill("#lizenzfeld", "KITU-XXXX-XXXX-XXXX-XXXX")
         seite.click("#lizenzknopf")
         seite.wait_for_function(
             "() => document.getElementById('lizenzhinweis').textContent.length > 0",
             timeout=20000,
         )
-        self.assertIn("passt nicht", seite.text_content("#lizenzhinweis"))
+        self.assertIn("passen nicht zusammen", seite.text_content("#lizenzhinweis"))
         self.assertFalse(seite.evaluate("() => !!document.getElementById('plan')"))
         seite.close()
 
     def test_richtiger_schluessel_schaltet_frei_und_wird_gemerkt(self):
         seite = self.neue_seite(lizenz=None)
-        seite.goto(SEITE.resolve().as_uri())
+        seite.goto(self.adresse)
         seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        seite.fill("#kontofeld", TESTKONTO)
         seite.fill("#lizenzfeld", OFFLINE)
         seite.click("#lizenzknopf")
         seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
-        self.assertEqual(
-            seite.evaluate("() => localStorage.getItem('kitu.lizenz')"), OFFLINE
+        gemerkt = json.loads(
+            seite.evaluate("() => localStorage.getItem('kitu.lizenz')")
         )
+        self.assertEqual(gemerkt, {"konto": TESTKONTO, "schluessel": OFFLINE})
         # Neu laden: kein Nachfragen mehr.
         seite.reload()
         seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
         self.assertEqual(self.fehler, [])
         seite.close()
 
+    def test_schluessel_ohne_das_eigene_konto_oeffnet_nichts(self):
+        """Der Schluessel gehoert zu genau einem Konto."""
+        seite = self.neue_seite(lizenz=None)
+        seite.goto(self.adresse)
+        seite.wait_for_selector("#lizenzfeld", timeout=15000)
+        seite.fill("#kontofeld", "wer.anders@beispiel.de")
+        seite.fill("#lizenzfeld", OFFLINE)
+        seite.click("#lizenzknopf")
+        seite.wait_for_function(
+            "() => document.getElementById('lizenzhinweis').textContent.length > 0",
+            timeout=20000,
+        )
+        self.assertIn("passen nicht zusammen", seite.text_content("#lizenzhinweis"))
+        self.assertFalse(seite.evaluate("() => !!document.getElementById('plan')"))
+        seite.close()
+
+    def test_abgelaufenes_abo_haelt_die_datei_zu(self):
+        """Die Huelle traegt das Ende des Abos - danach ist Schluss."""
+        with tempfile.TemporaryDirectory() as ordner:
+            ziel = Path(ordner) / "abgelaufen.html"
+            persoenliche_seite(ziel)
+            inhalt = ziel.read_text(encoding="utf-8")
+            eintrag = json.loads(re.search(r"var HUELLEN = (\[.*?\]);", inhalt).group(1))
+            eintrag[0]["bis"] = "2020-01-01"
+            ziel.write_text(
+                re.sub(r"var HUELLEN = \[.*?\];",
+                       "var HUELLEN = " + json.dumps(eintrag) + ";", inhalt, count=1),
+                encoding="utf-8",
+            )
+            seite = self.neue_seite(lizenz=None)
+            seite.goto(ziel.resolve().as_uri())
+            seite.wait_for_selector("#lizenzfeld", timeout=15000)
+            seite.fill("#kontofeld", TESTKONTO)
+            seite.fill("#lizenzfeld", OFFLINE)
+            seite.click("#lizenzknopf")
+            seite.wait_for_function(
+                "() => document.getElementById('lizenzhinweis').textContent.length > 0",
+                timeout=20000,
+            )
+            self.assertIn("2020-01-01", seite.text_content("#lizenzhinweis"))
+            self.assertIn("abgelaufen", seite.text_content("#lizenzhinweis"))
+            self.assertFalse(seite.evaluate("() => !!document.getElementById('plan')"))
+            seite.close()
+
     def test_lizenz_neu_vergisst_den_schluessel(self):
         seite = self.oeffne()
-        seite.goto(SEITE.resolve().as_uri() + "?lizenz=neu")
+        seite.goto(self.adresse + "?lizenz=neu")
         seite.wait_for_selector("#lizenzfeld", timeout=15000)
         self.assertIsNone(seite.evaluate("() => localStorage.getItem('kitu.lizenz')"))
         seite.close()
 
     def test_schluessel_darf_auch_in_der_adresse_stehen(self):
         seite = self.neue_seite(lizenz=None)
-        seite.goto(SEITE.resolve().as_uri() + "#lizenz=" + OFFLINE)
+        seite.goto(self.adresse + "#konto=" + TESTKONTO + "&lizenz=" + OFFLINE)
         seite.wait_for_function("() => !!document.getElementById('plan')", timeout=20000)
         seite.close()
 
