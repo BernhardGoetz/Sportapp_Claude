@@ -211,6 +211,10 @@ class ServerTest(unittest.TestCase):
         self.registriere(self.browser, "chef@beispiel.de")
         nutzer = Browser(self.browser.wurzel)
         self.registriere(nutzer, "helfer@beispiel.de")
+        self.browser.sende(
+            "/verwaltung", {"tat": "abo_jahr", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
 
         _, text, _ = self.browser.sende(
             "/verwaltung", {"tat": "offline_geben", "konto": "helfer@beispiel.de"},
@@ -391,40 +395,103 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(nachher, vorher, "es wurde doch eine Mail verschickt")
 
     # -- Abo ----------------------------------------------------------------
-    def test_neues_konto_hat_ein_probeabo(self):
+    def test_neues_konto_ist_dauerhaft_kostenlos(self):
         self.registriere(self.browser)
         abo = self.anwendung.konto("turnen@beispiel.de")["abo"]
-        self.assertEqual(abo["art"], "probe")
-        self.assertEqual(abo["bis"], server.in_tagen(server.TESTTAGE))
+        self.assertEqual(abo["art"], "frei")
+        self.assertEqual(abo["bis"], "", "der freie Zugang hat kein Ablaufdatum")
         _, text, _ = self.browser.hole("/konto")
-        self.assertIn(abo["bis"], text)
+        self.assertIn("dauerhaft", text)
+        self.assertEqual(self.browser.hole("/freischalten")[0], 200)
 
-    def test_abgelaufenes_abo_sperrt_das_programm(self):
+    def test_freier_zugang_laeuft_nie_ab(self):
+        """Auch nach Jahren kommt ein kostenloses Konto noch hinein."""
         self.registriere(self.browser)
         konto = self.anwendung.konto("turnen@beispiel.de")
-        self.anwendung.beende_abo(konto)
+        konto["angelegt"] = server.in_tagen(-2000)
+        konto["abo"]["seit"] = server.in_tagen(-2000)
+        self.anwendung.sichere_konten()
+        self.assertEqual(self.browser.hole("/freischalten")[0], 200)
+        self.assertFalse(self.anwendung.abo_laeuft(konto))
+        self.assertFalse(self.anwendung.abo_gelaufen(konto))
 
-        status, koerper, _ = self.browser.hole("/freischalten")
-        self.assertEqual(status, 401)
-        self.assertEqual(json.loads(koerper)["fehler"], "abo")
-        _, text, _ = self.browser.hole("/")
-        self.assertIn("Abo ist abgelaufen", text)
-
-    def test_verwalter_verlaengert_das_abo(self):
+    def test_abo_laeuft_ab_und_der_freie_zugang_bleibt(self):
         self.registriere(self.browser, "chef@beispiel.de")
         nutzer = Browser(self.browser.wurzel)
         self.registriere(nutzer, "helfer@beispiel.de")
         konto = self.anwendung.konto("helfer@beispiel.de")
-        self.anwendung.beende_abo(konto)
-        self.assertEqual(nutzer.hole("/freischalten")[0], 401)
+
+        self.browser.sende(
+            "/verwaltung", {"tat": "abo_monat", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertEqual(konto["abo"]["bis"], server.in_tagen(31))
+        self.assertEqual(konto["abo"]["art"], "Monatsabo")
+
+        # Zeit vorspulen: das Abo ist um.
+        konto["abo"]["bis"] = server.in_tagen(-1)
+        self.assertFalse(self.anwendung.abo_laeuft(konto))
+        self.assertTrue(self.anwendung.abo_gelaufen(konto))
+        # Der Zugang bleibt trotzdem offen.
+        self.assertEqual(nutzer.hole("/freischalten")[0], 200)
+        _, text, _ = nutzer.hole("/konto")
+        self.assertIn("wieder", text)
+        self.assertIn("kostenlos", text)
+
+    def test_verwalter_waehlt_die_laufzeit(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        konto = self.anwendung.konto("helfer@beispiel.de")
 
         _, text, _ = self.browser.sende(
             "/verwaltung", {"tat": "abo_jahr", "konto": "helfer@beispiel.de"},
             marke_von="/verwaltung",
         )
-        self.assertIn("laeuft bis", text)
+        self.assertIn("Jahresabo", text)
         self.assertEqual(konto["abo"]["bis"], server.in_tagen(365))
+        # Verlaengern haengt hinten an, nicht ab heute.
+        self.browser.sende(
+            "/verwaltung", {"tat": "abo_monat", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertEqual(konto["abo"]["bis"], server.in_tagen(31, server.in_tagen(365)))
+
+    def test_abo_beenden_laesst_das_konto_kostenlos_weiterplanen(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        self.browser.sende(
+            "/verwaltung", {"tat": "abo_jahr", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.browser.sende(
+            "/verwaltung", {"tat": "offline_geben", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        konto = self.anwendung.konto("helfer@beispiel.de")
+        self.assertTrue(konto["offline"])
+
+        _, text, _ = self.browser.sende(
+            "/verwaltung", {"tat": "abo_stop", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertIn("kostenlos weiter", text)
+        self.assertEqual(konto["abo"]["art"], "frei")
+        self.assertEqual(konto["abo"]["bis"], "")
+        self.assertIsNone(konto["offline"], "ohne Abo kein Offline-Schluessel")
         self.assertEqual(nutzer.hole("/freischalten")[0], 200)
+
+    def test_offline_gibt_es_nur_mit_abo(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        _, text, _ = self.browser.sende(
+            "/verwaltung", {"tat": "offline_geben", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertIn("kein laufendes Abo", text)
+        self.assertIsNone(self.anwendung.konto("helfer@beispiel.de")["offline"])
 
     # -- Offline-Schluessel je Konto ---------------------------------------
     def test_schluessel_passt_nur_auf_sein_konto(self):
@@ -433,10 +500,11 @@ class ServerTest(unittest.TestCase):
         self.registriere(self.browser, "chef@beispiel.de")
         nutzer = Browser(self.browser.wurzel)
         self.registriere(nutzer, "helfer@beispiel.de")
-        self.browser.sende(
-            "/verwaltung", {"tat": "offline_geben", "konto": "helfer@beispiel.de"},
-            marke_von="/verwaltung",
-        )
+        for tat in ("abo_jahr", "offline_geben"):
+            self.browser.sende(
+                "/verwaltung", {"tat": tat, "konto": "helfer@beispiel.de"},
+                marke_von="/verwaltung",
+            )
         konto = self.anwendung.konto("helfer@beispiel.de")
         schluessel = konto["offline"]
 
@@ -567,10 +635,11 @@ class EndeZuEndeTest(ServerTest):
         """Herunterladen, oeffnen, E-Mail und Schluessel eingeben - fertig."""
         self.registriere(self.browser, "chef@beispiel.de")
         konto = self.anwendung.konto("chef@beispiel.de")
-        self.browser.sende(
-            "/verwaltung", {"tat": "offline_geben", "konto": "chef@beispiel.de"},
-            marke_von="/verwaltung",
-        )
+        for tat in ("abo_jahr", "offline_geben"):
+            self.browser.sende(
+                "/verwaltung", {"tat": tat, "konto": "chef@beispiel.de"},
+                marke_von="/verwaltung",
+            )
         schluessel = konto["offline"]
         datei = Path(self.ordner.name) / "meine.html"
         datei.write_bytes(self.anwendung.persoenliche_seite(konto))

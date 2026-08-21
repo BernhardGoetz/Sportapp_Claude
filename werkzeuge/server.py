@@ -53,8 +53,8 @@ SPERRZEIT = 15 * 60
 MINDESTKENNWORT = 8
 CODEDAUER = postfach.CODE_MINUTEN * 60  # Gueltigkeit der Mailcodes
 CODEVERSUCHE = 5                        # danach hilft nur ein neuer Code
-TESTTAGE = 30                           # Probeabo bei der Registrierung
 UNBESTAETIGT_TAGE = 7                   # so lange wartet ein Konto auf den Code
+ABOZEITEN = {"abo_monat": (31, "Monatsabo"), "abo_jahr": (365, "Jahresabo")}
 
 
 def jetzt() -> float:
@@ -183,7 +183,8 @@ class Anwendung:
             "gesperrt": False,
             "bestaetigt": False,
             "code": None,
-            "abo": {"seit": heute(), "bis": in_tagen(TESTTAGE), "art": "probe"},
+            # Kostenlos und dauerhaft - ein Abo kommt nur auf Wunsch dazu.
+            "abo": {"seit": heute(), "bis": "", "art": "frei"},
             "offline": None,
         }
         self.konten.append(eintrag)
@@ -278,20 +279,32 @@ class Anwendung:
         return re.sub(r"var HUELLEN = \[\];", neu, text, count=1).encode("utf-8")
 
     # -- Abo ---------------------------------------------------------------
+    # Der kostenlose Zugang gilt dauerhaft. Nur ein gebuchtes Abo hat ein
+    # Ende - je nach gewaehlter Laufzeit. Laeuft es ab, faellt das Konto auf
+    # den kostenlosen Zugang zurueck; verschlossen wird nichts.
     @staticmethod
-    def abo_gueltig(konto: dict) -> bool:
-        return konto.get("abo", {}).get("bis", "") >= heute()
+    def abo_laeuft(konto: dict) -> bool:
+        abo = konto.get("abo", {})
+        return bool(abo.get("bis")) and abo["bis"] >= heute()
 
-    def verlaengere(self, konto: dict, tage: int) -> str:
-        abo = konto.setdefault("abo", {"seit": heute(), "art": "probe"})
+    @staticmethod
+    def abo_gelaufen(konto: dict) -> bool:
+        """Ein gebuchtes Abo, dessen Zeit um ist."""
+        abo = konto.get("abo", {})
+        return bool(abo.get("bis")) and abo["bis"] < heute()
+
+    def verlaengere(self, konto: dict, tage: int, art: str = "Abo") -> str:
+        abo = konto.setdefault("abo", {"seit": heute()})
         abo["bis"] = in_tagen(tage, abo.get("bis", ""))
-        abo["art"] = "abo"
+        abo["art"] = art
+        abo.setdefault("seit", heute())
         self.sichere_konten()
         return abo["bis"]
 
     def beende_abo(self, konto: dict) -> None:
-        abo = konto.setdefault("abo", {"seit": heute(), "art": "probe"})
-        abo["bis"] = in_tagen(-1)
+        """Zurueck auf den kostenlosen Zugang - der bleibt dauerhaft offen."""
+        konto["abo"] = {"seit": heute(), "bis": "", "art": "frei"}
+        konto["offline"] = None  # offline gibt es nur mit laufendem Abo
         self.sichere_konten()
 
     # -- Codes fuer Mail ---------------------------------------------------
@@ -438,8 +451,6 @@ class Behandler(BaseHTTPRequestHandler):
             return "anmeldung"
         if not konto.get("bestaetigt"):
             return "bestaetigung"
-        if not self.app.abo_gueltig(konto):
-            return "abo"
         return ""
 
     def keks(self, marke: str) -> list:
@@ -532,9 +543,6 @@ class Behandler(BaseHTTPRequestHandler):
         if grund == "bestaetigung":
             self.weiter_zu("/bestaetigen")
             return
-        if grund == "abo":
-            self.antworte(seite("Abo abgelaufen", self._abo_hinweis(konto), konto))
-            return
         if not SEITE.exists():
             self.antworte(seite("Fehlt", "<div class=karte><h1>Programm fehlt</h1>"
                                 "<p>Bitte <code>python3 werkzeuge/baue_web.py</code> "
@@ -602,14 +610,26 @@ class Behandler(BaseHTTPRequestHandler):
                 "freigegeben. Solange laeuft das Programm nur ueber den Server.</p>"
             )
         abo = konto.get("abo", {})
-        laeuft = self.app.abo_gueltig(konto)
-        abotext = (
-            f"<p>{'Laeuft' if laeuft else 'Abgelaufen'} - "
-            f"{'bis' if laeuft else 'seit'} {html.escape(abo.get('bis', '-'))}"
-            f" ({html.escape(abo.get('art', 'probe'))}).</p>"
-            + ("" if laeuft else "<p class=klein>Zum Weiterplanen bitte beim "
-                                 "Verwalter verlaengern lassen.</p>")
-        )
+        if self.app.abo_laeuft(konto):
+            abotext = (
+                f"<p><strong>{html.escape(abo.get('art', 'Abo'))}</strong> - "
+                f"laeuft bis {html.escape(abo['bis'])}.</p>"
+                "<p class=klein>Danach geht es kostenlos weiter; nur der "
+                "Offline-Schluessel braucht ein laufendes Abo.</p>"
+            )
+        elif self.app.abo_gelaufen(konto):
+            abotext = (
+                f"<p>Das Abo lief bis {html.escape(abo['bis'])} - seitdem ist "
+                "dieses Konto wieder <strong>kostenlos</strong> unterwegs.</p>"
+                "<p class=klein>Planen geht damit dauerhaft weiter. Fuer den "
+                "Offline-Betrieb bitte beim Verwalter ein Abo anfragen.</p>"
+            )
+        else:
+            abotext = (
+                "<p><strong>Kostenlos</strong> - dauerhaft, ohne Ablaufdatum.</p>"
+                "<p class=klein>Planen, Stundenbild als PDF, alles dabei. Ein Abo "
+                "braucht nur, wer die Datei offline mitnehmen will.</p>"
+            )
         inhalt = (
             (f'<p class=gut>{html.escape(meldung)}</p>' if meldung else "")
             + (f'<p class=fehler>{html.escape(fehler)}</p>' if fehler else "")
@@ -667,7 +687,7 @@ class Behandler(BaseHTTPRequestHandler):
                 taten += knopf("offline_geben", kennung, "Offline freigeben")
             taten += knopf("abo_monat", kennung, "+1 Monat")
             taten += knopf("abo_jahr", kennung, "+1 Jahr")
-            if self.app.abo_gueltig(eintrag):
+            if self.app.abo_laeuft(eintrag):
                 taten += knopf("abo_stop", kennung, "Abo beenden")
             if eintrag["rolle"] != "verwalter":
                 taten += knopf("verwalter", kennung, "Zum Verwalter")
@@ -675,10 +695,14 @@ class Behandler(BaseHTTPRequestHandler):
             if not eintrag.get("bestaetigt"):
                 zustand += " (unbestaetigt)"
             abo = eintrag.get("abo", {})
-            abospalte = "{} {}".format(
-                "bis" if self.app.abo_gueltig(eintrag) else "abgelaufen",
-                html.escape(abo.get("bis", "-")),
-            )
+            if self.app.abo_laeuft(eintrag):
+                abospalte = "{} bis {}".format(
+                    html.escape(abo.get("art", "Abo")), html.escape(abo["bis"])
+                )
+            elif self.app.abo_gelaufen(eintrag):
+                abospalte = "kostenlos (Abo lief bis {})".format(html.escape(abo["bis"]))
+            else:
+                abospalte = "kostenlos"
             zeilen.append(
                 "<tr><td>{}<br><span class=klein>{}</span></td><td>{}</td>"
                 "<td class=klein>{}</td><td class=klein>{}</td><td>{}</td></tr>".format(
@@ -690,28 +714,21 @@ class Behandler(BaseHTTPRequestHandler):
                     taten,
                 )
             )
-        laufend = len([k for k in self.app.konten if self.app.abo_gueltig(k)])
+        laufend = len([k for k in self.app.konten if self.app.abo_laeuft(k)])
         inhalt = (
             (f'<p class=gut>{html.escape(meldung)}</p>' if meldung else "")
             + "<div class=karte><h1>Verwaltung</h1>"
             + f"<p class=klein>{len(self.app.konten)} Konten, davon {laufend} mit "
-            + "laufendem Abo. Jeder Offline-Schluessel gehoert zu genau einem "
-            + "Konto und gilt bis zum Ende des Abos.</p>"
+            + "laufendem Abo. Planen geht fuer alle dauerhaft und kostenlos; "
+            + "das Abo bringt den Offline-Schluessel und laeuft nach der "
+            + "gewaehlten Zeit ab. Jeder Schluessel gehoert zu genau einem Konto "
+            + "und gilt bis zum Ende des Abos.</p>"
             + "<table><tr><th>Konto</th><th>Zustand</th><th>Abo</th>"
             + "<th>Offline</th><th></th></tr>"
             + "".join(zeilen)
             + "</table></div>"
         )
         self.antworte(seite("Verwaltung", inhalt, konto))
-
-    def _abo_hinweis(self, konto) -> str:
-        bis = konto.get("abo", {}).get("bis", "-")
-        return (
-            "<div class=karte><h1>Das Abo ist abgelaufen</h1>"
-            f"<p>Der Zugang lief bis zum {html.escape(bis)}. Zum Weiterplanen "
-            "bitte das Abo verlaengern lassen - der Verwalter schaltet es "
-            'wieder frei.</p><p class=klein><a href="/konto">Zum Konto</a></p></div>'
-        )
 
     def gib_datei(self, abfrage=None):
         """Die persoenliche Datei zum Mitnehmen - mit der eigenen Huelle."""
@@ -722,9 +739,6 @@ class Behandler(BaseHTTPRequestHandler):
             return
         if grund == "bestaetigung":
             self.weiter_zu("/bestaetigen")
-            return
-        if grund == "abo":
-            self.antworte(seite("Abo abgelaufen", self._abo_hinweis(konto), konto))
             return
         if not SEITE.exists():
             self.antworte(seite("Fehlt", "<div class=karte><h1>Programm fehlt</h1></div>",
@@ -1037,10 +1051,16 @@ class Behandler(BaseHTTPRequestHandler):
             ziel["gesperrt"] = False
             meldung = f"{ziel['kennung']} ist wieder frei."
         elif tat == "offline_geben":
+            if not self.app.abo_laeuft(ziel):
+                self.zeige_verwaltung(
+                    meldung=f"{ziel['kennung']} hat kein laufendes Abo - offline "
+                    "geht nur mit Abo. Erst verlaengern, dann freigeben."
+                )
+                return
             schluessel = self.app.gib_offline(ziel)
             meldung = (
                 f"{ziel['kennung']} kann jetzt offline arbeiten: {schluessel} "
-                "(steht auch im Konto der Person)."
+                f"(steht auch im Konto der Person, gilt bis {ziel['abo']['bis']})."
             )
         elif tat == "offline_nehmen":
             ziel["offline"] = None
@@ -1048,13 +1068,16 @@ class Behandler(BaseHTTPRequestHandler):
                 f"{ziel['kennung']} arbeitet wieder nur ueber den Server. "
                 "Eine schon heruntergeladene Datei laeuft bis zum Ende des Abos weiter."
             )
-        elif tat == "abo_monat":
-            meldung = f"Abo von {ziel['kennung']} laeuft bis {self.app.verlaengere(ziel, 31)}."
-        elif tat == "abo_jahr":
-            meldung = f"Abo von {ziel['kennung']} laeuft bis {self.app.verlaengere(ziel, 365)}."
+        elif tat in ABOZEITEN:
+            tage, art = ABOZEITEN[tat]
+            bis = self.app.verlaengere(ziel, tage, art)
+            meldung = f"{art} von {ziel['kennung']} laeuft bis {bis}."
         elif tat == "abo_stop":
             self.app.beende_abo(ziel)
-            meldung = f"Abo von {ziel['kennung']} ist beendet."
+            meldung = (
+                f"Abo von {ziel['kennung']} ist beendet - das Konto plant "
+                "kostenlos weiter, der Offline-Schluessel ist weg."
+            )
         elif tat == "verwalter":
             ziel["rolle"] = "verwalter"
             meldung = f"{ziel['kennung']} ist jetzt Verwalter."

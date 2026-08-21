@@ -15,8 +15,8 @@ Die Datei ist **verschluesselt**. Sie oeffnet sich auf zwei Wegen:
 
 | Weg | Was passiert |
 | --- | --- |
-| **Angemeldet** | Der eigene Server (`werkzeuge/server.py`) gibt den Schluessel an angemeldete Konten mit laufendem Abo heraus - Registrierung mit Mailbestaetigung, Anmeldung und Verwaltung inbegriffen. |
-| **Offline-Schluessel** | Ein vom Verwalter freigegebener Schluessel oeffnet dieselbe Datei ohne jede Verbindung - fuer Hallen ohne Empfang. Er passt auf **genau ein Konto** und gilt bis zum Ende des Abos. |
+| **Angemeldet** | Der eigene Server (`werkzeuge/server.py`) gibt den Schluessel an jedes bestaetigte Konto heraus - **kostenlos und dauerhaft**. Registrierung mit Mailbestaetigung, Anmeldung und Verwaltung inbegriffen. |
+| **Offline-Schluessel** | Die Zugabe im **Abo**: ein vom Verwalter freigegebener Schluessel oeffnet dieselbe Datei ohne jede Verbindung - fuer Hallen ohne Empfang. Er passt auf **genau ein Konto** und gilt bis zum Ende des Abos. |
 
 Reines JavaScript, keine Fremdbibliotheken - auch nicht fuer den PDF-Export.
 Das Python-Paket im Projekt liefert die Stammdaten, baut die Browser-Fassung
@@ -91,8 +91,8 @@ zur Datei heraus. Der Weg fuer eine neue Uebungsleiterin:
    Das **erste angelegte Konto wird Verwalter**.
 3. **Planen**: Nach der Anmeldung liefert `/` die Datei, sie holt sich den
    Schluessel ueber `/freischalten` und entschluesselt sich selbst.
-4. **Offline arbeiten**: Der Verwalter gibt unter `/verwaltung` einen
-   Offline-Schluessel frei. Er steht danach im Konto der Person
+4. **Offline arbeiten** (mit Abo): Der Verwalter gibt unter `/verwaltung`
+   einen Offline-Schluessel frei. Er steht danach im Konto der Person
    (`KITU-XXXX-XXXX-XXXX-XXXX`), dazu ein Verweis auf die **persoenliche
    Kopie** der Datei. Einmal gespeichert, laeuft sie ueberall ohne
    Verbindung - beim ersten Oeffnen fragt sie nach **E-Mail und Schluessel**
@@ -117,20 +117,25 @@ python3 werkzeuge/server.py --port 8000 \
     --adresse https://kitu.mein-verein.de    # Adresse fuer die Verweise in den Mails
 ```
 
-### Abo
+### Kostenlos und Abo
 
-Jedes Konto traegt ein Abo mit Ablaufdatum. Bei der Registrierung laeuft ein
-**Probeabo ueber 30 Tage**; danach entscheidet der Verwalter:
+**Der kostenlose Zugang laeuft nie ab.** Wer ein Konto anlegt und bestaetigt,
+plant damit dauerhaft: Ort und Gruppe waehlen, Stunde planen, Stundenbild als
+PDF - alles dabei, ohne Ablaufdatum und ohne Nachfragen.
 
-| Knopf | Wirkung |
+Ein **Abo** kommt nur dazu, wer die Datei **offline** mitnehmen will. Es laeuft
+nach der gewaehlten Zeit ab:
+
+| Knopf in der Verwaltung | Wirkung |
 | --- | --- |
-| **+1 Monat** / **+1 Jahr** | verlaengert ab dem bisherigen Ende (oder ab heute, wenn es schon abgelaufen ist) |
-| **Abo beenden** | setzt das Ende auf gestern |
+| **+1 Monat** | Monatsabo, 31 Tage - haengt an ein laufendes Abo hinten an |
+| **+1 Jahr** | Jahresabo, 365 Tage - ebenso |
+| **Abo beenden** | zurueck auf kostenlos; der Offline-Schluessel faellt weg |
 
-Ist das Abo abgelaufen, gibt `/freischalten` nichts mehr heraus und die Seite
-zeigt den Hinweis statt des Plans. Auch die persoenliche Offline-Kopie kennt
-ihr Enddatum und macht danach zu. Bezahlung ist bewusst nicht eingebaut - die
-Mechanik dafuer steht, angebunden wird sie, wenn ein Anbieter feststeht.
+Laeuft ein Abo aus, **bleibt das Konto offen** und plant kostenlos weiter -
+nur die Offline-Kopie macht zu, denn sie traegt das Enddatum des Abos in sich.
+Bezahlung ist bewusst nicht eingebaut: Die Mechanik steht, angebunden wird sie,
+wenn ein Anbieter feststeht.
 
 ### Mail
 
@@ -198,7 +203,8 @@ koennen. Die Bindung an ein Konto und das Ablaufdatum erhoehen die Huerde,
 sind aber kein Bann fuer alle Zeiten - eine einmal heruntergeladene
 persoenliche Kopie laeuft bis zum Ende ihres Abos weiter, auch wenn der
 Schluessel danach entzogen wird, und die Datumspruefung glaubt der Uhr des
-Geraets. Die fertig aufgebaute Seite ist in den Entwicklerwerkzeugen ausserdem
+Geraets. (Beim kostenlosen Zugang stellt sich die Frage nicht: Der laeuft
+ohnehin dauerhaft, nur eben ueber den Server.) Die fertig aufgebaute Seite ist in den Entwicklerwerkzeugen ausserdem
 als Elementbaum sichtbar. Der Serverbetrieb ist damit vor allem eine
 abschaltbare, protokollierte Nutzungsschranke. Wirklich beim Betreiber bliebe
 die Planungslogik nur, wenn sie auf dem Server liefe und der Browser nur das
@@ -365,7 +371,7 @@ sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeli
   hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-tests/            185 Tests (unittest)
+tests/            191 Tests (unittest)
 ```
 
 `web/quelle/app.js` traegt dieselbe Logik wie das Python-Paket in JavaScript.
@@ -402,9 +408,11 @@ Der Server hat eigene Tests: Registrierung, Bestaetigung per Mailcode
 (falscher, abgelaufener und verbrauchter Code, neuer Code auf Wunsch),
 Anmeldung, Sperre nach zehn Fehlversuchen, Kennwoerter und Codes nur als
 Hash, Kennwort-Zuruecksetzen ueber die Mail (einmalig, ohne zu verraten wer
-ein Konto hat), Probeabo und Verlaengerung, kein Zutritt zur Verwaltung ohne
+ein Konto hat), Abolaufzeiten und Verlaengerung, kein Zutritt zur Verwaltung ohne
 Rolle, Vergabe und Entzug der Offline-Schluessel, Formulare ohne gueltige
-Marke werden abgewiesen. Ein Test rechnet nach, dass die Huelle eines Kontos
+Marke werden abgewiesen. Eigene Tests halten fest, dass der kostenlose Zugang
+dauerhaft offen bleibt - auch nach Jahren und nach einem abgelaufenen Abo -
+und dass es einen Offline-Schluessel nur mit laufendem Abo gibt. Ein Test rechnet nach, dass die Huelle eines Kontos
 mit einer anderen Kennung nichts hergibt.
 
 Die Mailtexte pruefen `tests/test_post.py`: Anrede, gruppierter Code,
