@@ -1,0 +1,161 @@
+/* Gestaltung der Serverseiten (Anmeldung, Konto, Verwaltung, Wartung).
+   Der Planer selbst bringt sein eigenes Aussehen mit. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f3f5f8;
+  color: #17334d;
+}
+
+/* -- Kopf ---------------------------------------------------------------- */
+.hut {
+  background: #17568c;
+  color: #fff;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wege a {
+  color: #cfe2f5;
+  text-decoration: none;
+  margin-left: 14px;
+}
+
+.wege a:hover { text-decoration: underline; }
+.wer { opacity: .85; }
+
+/* -- Flaeche und Karten -------------------------------------------------- */
+.mitte {
+  max-width: 46rem;
+  margin: 28px auto;
+  padding: 0 1rem;
+}
+
+.karte {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 24px rgba(20, 50, 80, .09);
+}
+
+h1 { font-size: 1.5rem; color: #17568c; margin: 0 0 6px; }
+h2 { font-size: 1.15rem; color: #17568c; margin: 0 0 10px; }
+
+/* -- Formulare ----------------------------------------------------------- */
+label {
+  display: block;
+  margin: 12px 0 4px;
+  font-size: .95rem;
+  color: #4a5b6b;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 11px;
+  font-size: 1rem;
+  border: 1px solid #c3ced9;
+  border-radius: 9px;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 3px solid #7fb3e0;
+  outline-offset: 2px;
+}
+
+button {
+  margin-top: 16px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  border: 0;
+  border-radius: 9px;
+  background: #17568c;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover { background: #124873; }
+
+button.leise {
+  background: #e6ecf3;
+  color: #17334d;
+  margin-top: 0;
+  padding: 7px 12px;
+  font-size: .9rem;
+}
+
+button.leise:hover { background: #d7e0ea; }
+
+.nachschub { margin-top: 10px; }
+
+/* -- Tabellen ------------------------------------------------------------ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .95rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid #e6ecf3;
+  vertical-align: top;
+}
+
+.taten form { display: inline; }
+.taten button { margin: 0 4px 4px 0; }
+
+/* -- Meldungen ----------------------------------------------------------- */
+.fehler {
+  background: #fbe9e6;
+  color: #9c2f18;
+  padding: 11px 14px;
+  border-radius: 9px;
+  margin: 0 0 8px;
+}
+
+.gut {
+  background: #e8f3ea;
+  color: #1d6b32;
+  padding: 11px 14px;
+  border-radius: 9px;
+  margin: 0 0 8px;
+}
+
+.klein { font-size: .9rem; color: #5d6f80; }
+
+.schluessel {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 1.1rem;
+  letter-spacing: .06em;
+  background: #f3f5f8;
+  padding: 10px 12px;
+  border-radius: 9px;
+  display: inline-block;
+}
+
+pre {
+  overflow-x: auto;
+  background: #f3f5f8;
+  padding: 10px 12px;
+  border-radius: 9px;
+}
+
+/* -- Handy --------------------------------------------------------------- */
+@media (max-width: 30rem) {
+  .karte { padding: 18px; }
+  .mitte { margin: 16px auto; }
+  table { font-size: .88rem; }
+}

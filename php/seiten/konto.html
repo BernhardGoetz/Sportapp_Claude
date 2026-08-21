@@ -1,0 +1,40 @@
+{{{meldung}}}{{{fehler}}}
+<div class="karte">
+  <h1>Konto</h1>
+  <p>{{name}}<br><span class="klein">{{kennung}} - {{rolle}}</span></p>
+  <form method="post" action="abmelden.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <button class="leise" id="knopf-abmelden">Abmelden</button>
+  </form>
+</div>
+
+<div class="karte">
+  <h2>Abo</h2>
+  {{{abotext}}}
+  <!-- probe -->
+  <p class="klein">Zum Ausprobieren: {{probetage}} Tage Probeabo mit allem, was das Kaufabo kann - einmal im Jahr.</p>
+  <form method="post" action="probeabo.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <button id="knopf-probeabo">Probeabo starten ({{probetage}} Tage)</button>
+  </form>
+  <!-- /probe -->
+</div>
+
+<div class="karte">
+  <h2>Offline arbeiten</h2>
+  {{{offlinetext}}}
+</div>
+
+<div class="karte">
+  <h2>Kennwort aendern</h2>
+  <form method="post" action="konto.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <label for="alt">Bisheriges Kennwort</label>
+    <input id="alt" name="alt" type="password" required autocomplete="current-password">
+    <label for="neu">Neues Kennwort</label>
+    <input id="neu" name="neu" type="password" required autocomplete="new-password">
+    <label for="neu2">Neues Kennwort wiederholen</label>
+    <input id="neu2" name="neu2" type="password" required autocomplete="new-password">
+    <button id="knopf-kennwort">Aendern</button>
+  </form>
+</div>

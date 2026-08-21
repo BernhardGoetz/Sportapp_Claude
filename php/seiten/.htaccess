@@ -1,0 +1,8 @@
+# Hier steht die Logik - der Webserver hat damit nichts zu tun.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

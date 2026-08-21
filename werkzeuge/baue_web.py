@@ -134,7 +134,7 @@ def main() -> int:
     parser.add_argument(
         "--server",
         metavar="ADRESSE",
-        help='Adresse der Freischaltung (Vorgabe "/freischalten", "" = keine)',
+        help='Adresse der Freischaltung (Vorgabe "freischalten.php", "" = keine)',
     )
     args = parser.parse_args()
 

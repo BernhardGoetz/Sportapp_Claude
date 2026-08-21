@@ -1,0 +1,33 @@
+# Der Webserver liefert nur die Seiten aus - Logik, Vorlagen und Daten bleiben zu.
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(html|json|log|sqlite)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(html|json|log|sqlite)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# Einrichtung laeuft ueber die Kommandozeile, nicht ueber den Browser.
+<Files "einrichten.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "same-origin"
+</IfModule>

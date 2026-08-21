@@ -15,12 +15,18 @@ Die Datei ist **verschluesselt**. Sie oeffnet sich auf zwei Wegen:
 
 | Weg | Was passiert |
 | --- | --- |
-| **Angemeldet** | Der eigene Server (`werkzeuge/server.py`) gibt den Schluessel an jedes bestaetigte Konto heraus - **kostenlos und dauerhaft**. Registrierung mit Mailbestaetigung, Anmeldung und Verwaltung inbegriffen. |
+| **Angemeldet** | Der eigene Server (PHP, Verzeichnis `php/`) gibt den Schluessel an jedes bestaetigte Konto heraus - **kostenlos und dauerhaft**. Registrierung mit Mailbestaetigung, Anmeldung und Verwaltung inbegriffen. |
 | **Offline-Schluessel** | Die Zugabe im **Abo**: ein vom Verwalter freigegebener Schluessel oeffnet dieselbe Datei ohne jede Verbindung - fuer Hallen ohne Empfang. Er passt auf **genau ein Konto** und gilt bis zum Ende des Abos. |
 
-Reines JavaScript, keine Fremdbibliotheken - auch nicht fuer den PDF-Export.
-Das Python-Paket im Projekt liefert die Stammdaten, baut die Browser-Fassung
-und stellt den Server; ausgeliefert wird allein die eine HTML-Datei.
+**Serverbetrieb:** PHP traegt die Logik (`php/*.php` und `php/inc/`), das
+Markup steht als HTML in `php/seiten/`, die Gestaltung in
+`php/stil/server.css`, und im Browser arbeitet JavaScript. Gebraucht werden
+PHP 8 mit `pdo_mysql` und eine MySQL/MariaDB-Datenbank - beides bringt jeder
+uebliche Webspace mit.
+
+Im Browser laeuft reines JavaScript ohne Fremdbibliotheken - auch der
+PDF-Export. Das Python-Paket im Projekt liefert die Stammdaten und baut die
+verschluesselte Datei; auf den Server kommt es nicht.
 
 ## Was das Programm macht
 
@@ -80,18 +86,18 @@ gedreht. Stationen werden mit dem Finger oder der Maus verschoben (Fangraster
 
 ## Konten, Anmeldung und Offline-Schluessel
 
-Der Server (`werkzeuge/server.py`) haelt die Konten und gibt den Schluessel
+Der Server unter `php/` haelt die Konten und gibt den Schluessel
 zur Datei heraus. Der Weg fuer eine neue Uebungsleiterin:
 
-1. **Registrieren** unter `/registrieren` (Name, E-Mail, Kennwort).
+1. **Registrieren** unter `registrieren.php` (Name, E-Mail, Kennwort).
 2. **Bestaetigen**: Es geht sofort ein sechsstelliger Code per Mail hinaus;
-   erst wer ihn unter `/bestaetigen` eingibt, kommt ins Programm. Der Code
+   erst wer ihn unter `bestaetigen.php` eingibt, kommt ins Programm. Der Code
    gilt 30 Minuten, vertraegt fuenf Fehlversuche und laesst sich erneut
    anfordern. Nie bestaetigte Konten verfallen nach einer Woche von selbst.
    Das **erste angelegte Konto wird Verwalter**.
-3. **Planen**: Nach der Anmeldung liefert `/` die Datei, sie holt sich den
-   Schluessel ueber `/freischalten` und entschluesselt sich selbst.
-4. **Offline arbeiten** (mit Abo): Der Verwalter gibt unter `/verwaltung`
+3. **Planen**: Nach der Anmeldung liefert `index.php` die Datei, sie holt sich den
+   Schluessel ueber `freischalten.php` und entschluesselt sich selbst.
+4. **Offline arbeiten** (mit Abo): Der Verwalter gibt unter `verwaltung.php`
    einen Offline-Schluessel frei. Er steht danach im Konto der Person
    (`KITU-XXXX-XXXX-XXXX-XXXX`), dazu ein Verweis auf die **persoenliche
    Kopie** der Datei. Einmal gespeichert, laeuft sie ueberall ohne
@@ -103,8 +109,8 @@ wird aus Kontokennung *und* Offline-Schluessel abgeleitet und steckt nur in
 der persoenlichen Kopie. Ein weitergereichter Schluessel nuetzt ohne die
 zugehoerige E-Mail nichts - und in einer fremden Kopie der Datei ebenso wenig.
 
-**Kennwort vergessen** laeuft ueber denselben Mailweg: `/kennwort-vergessen`
-schickt einen Code, `/kennwort-neu` nimmt Code und neues Kennwort entgegen.
+**Kennwort vergessen** laeuft ueber denselben Mailweg: `kennwort-vergessen.php`
+schickt einen Code, `kennwort-neu.php` nimmt Code und neues Kennwort entgegen.
 Ob es zu einer Adresse ein Konto gibt, verraet die Seite dabei nicht.
 
 Der Verwalter kann Konten **sperren**, Offline-Schluessel **entziehen**, das
@@ -112,9 +118,8 @@ Der Verwalter kann Konten **sperren**, Offline-Schluessel **entziehen**, das
 Adresse loescht einen gemerkten Schluessel wieder vom Geraet.
 
 ```bash
-python3 werkzeuge/baue_web.py                # Datei bauen (verschluesselt)
-python3 werkzeuge/server.py --port 8000 \
-    --adresse https://kitu.mein-verein.de    # Adresse fuer die Verweise in den Mails
+python3 werkzeuge/baue_web.py     # Datei bauen (verschluesselt) - am Arbeitsplatz
+php php/einrichten.php            # Datenbank und Dienstkonten - auf dem Server
 ```
 
 ### Kostenlos und Abo
@@ -147,18 +152,20 @@ wenn ein Anbieter feststeht.
 
 ### Mail
 
-Ohne `--smtp` landet jede Mail als lesbare Textdatei in `<daten>/postfach/` -
-gut zum Ausprobieren und fuer die Tests. Mit Mailserver:
+Der Weg steht in `php/inc/konfig.php`:
 
-```bash
-export KITU_SMTP_KENNWORT="..."
-python3 werkzeuge/server.py --smtp mail.mein-verein.de:587 \
-    --smtp-nutzer kitu@mein-verein.de \
-    --absender "Ki Tu <kitu@mein-verein.de>" \
-    --adresse https://kitu.mein-verein.de
+```php
+'mail'     => 'mail',    // ueber die PHP-Funktion mail()
+'absender' => 'Ki Tu - Stundenplaner <kitu@mein-verein.de>',
+'adresse'  => 'https://kitu.mein-verein.de',   // fuer die Verweise in den Mails
 ```
 
-Die beiden Texte stehen in `werkzeuge/post.py` (`text_bestaetigung`,
+Mit `'mail' => 'datei'` landet jede Mail stattdessen als lesbare Textdatei in
+`php/daten/postfach/` - gut zum Ausprobieren und fuer die Tests. Wer einen
+eigenen Postausgang braucht, traegt ihn in der `php.ini` des Hosters ein
+(`sendmail_path`) oder ersetzt `mail_senden()` in `php/inc/post.php`.
+
+Die beiden Texte stehen in `php/inc/post.php` (`text_bestaetigung`,
 `text_kennwort`): Anrede mit Namen, der Code gut lesbar als `792 681`, die
 Gueltigkeit, der passende Verweis und je ein Satz fuer den Fall, dass die
 Mail unerwartet kam.
@@ -168,8 +175,8 @@ Mail unerwartet kam.
 | Rolle | Darf |
 | --- | --- |
 | `nutzer` | planen, eigenes Konto, Probeabo bestellen |
-| `wartung` | zusaetzlich `/wartung`: Zahlen zum Betrieb und die letzten Zugriffe - **nur lesen** |
-| `verwalter` | zusaetzlich `/verwaltung`: Konten sperren, Abos setzen, Offline-Schluessel vergeben, Rollen aendern |
+| `wartung` | zusaetzlich `wartung.php`: Zahlen zum Betrieb und die letzten Zugriffe - **nur lesen** |
+| `verwalter` | zusaetzlich `verwaltung.php`: Konten sperren, Abos setzen, Offline-Schluessel vergeben, Rollen aendern |
 
 Die Wartungsrolle ist bewusst zahnlos: Sie sieht, ob der Laden laeuft (Konten,
 laufende Abos, Probeabos, Offline-Schluessel, offene Sitzungen, Stand der
@@ -181,37 +188,88 @@ auf der Konsole und stehen sonst nirgends:
 ```bash
 KITU_VERWALTER=deine.adresse@beispiel.de \
 KITU_WARTUNG=wartung@beispiel.de \
-python3 werkzeuge/server.py --einrichten
+php php/einrichten.php
 ```
 
 Einzeln geht es auch:
 
 ```bash
-python3 werkzeuge/server.py --konto-anlegen wartung@beispiel.de \
-    --rolle wartung --name "Wartung"
+php php/einrichten.php wartung@beispiel.de wartung "Wartung"
 ```
 
+`einrichten.php` laeuft nur auf der Kommandozeile; ueber den Browser
+aufgerufen antwortet die Datei mit 403.
+
 Dienstkonten sind sofort bestaetigt (kein Mailcode noetig). Nach der ersten
-Anmeldung bitte unter `/konto` ein eigenes Kennwort setzen.
+Anmeldung bitte unter `konto.php` ein eigenes Kennwort setzen.
 
-### Server betreiben
+### Auf dem Webhoster einrichten
 
-* **Verschluesselte Verbindung:** Das Skript spricht einfaches HTTP. Fuer den
-  echten Betrieb gehoert nginx oder Caddy davor, der HTTPS beendet; dann
-  `--https` mitgeben, damit das Sitzungs-Cookie als `Secure` markiert wird.
-* **Sichern:** `server/konten.json` (Konten, Abo, Offline-Zuteilung),
-  `server/geheim.txt` und `web/lizenzen.json` gehoeren ins Backup.
-  `server/zugriff.log` protokolliert Registrierung, Bestaetigung, Anmeldung,
-  Mailversand, Freischaltung und jede Verwaltungshandlung.
-* **Kennwoerter** liegen als PBKDF2-HMAC-SHA256 mit 240000 Runden und eigenem
-  Salz, die Mailcodes als HMAC. Nach zehn Fehlversuchen in einer
-  Viertelstunde ist Ruhe. Jedes Formular traegt eine an die Sitzung gebundene
-  Marke gegen fremde Absender.
-* **Verwalter nachtragen:** `--verwalter mail@beispiel.de` macht ein
-  bestehendes Konto zum Verwalter.
-* **`Content-Security-Policy`:** Wird die Datei ueber einen eigenen Webserver
-  ausgeliefert, darf `script-src` nicht ohne `'unsafe-eval'` gesetzt sein -
-  der Lader startet das entschluesselte Programm ueber `new Function`.
+Gebraucht werden **PHP 8.0 oder neuer** mit `pdo_mysql` und eine
+**MySQL/MariaDB**-Datenbank - beides bringt jeder uebliche Webspace mit.
+
+1. **Dateien hochladen.** `php/` wird der **DocumentRoot** der Domain.
+   `web/kinderturnen.html` und `web/lizenzen.json` gehoeren **eine Ebene
+   darueber**, ausserhalb des DocumentRoot - so kommt niemand ohne Anmeldung
+   an die Datei und nie an den Blockschluessel.
+
+   ```
+   /kunden/meine-domain/
+     web/      kinderturnen.html, lizenzen.json     <- nicht erreichbar
+     php/      DocumentRoot                          <- hier zeigt die Domain hin
+   ```
+
+2. **Datenbank anlegen** (im Kundenmenue oder auf der Konsole):
+
+   ```sql
+   CREATE DATABASE kitu CHARACTER SET utf8mb4;
+   CREATE USER 'kitu'@'localhost' IDENTIFIED BY '...';
+   GRANT ALL ON kitu.* TO 'kitu'@'localhost';
+   ```
+
+3. **Konfiguration**: `php/inc/konfig.beispiel.php` nach
+   `php/inc/konfig.php` kopieren, Zugangsdaten, Adresse und einen frischen
+   Zufallswert fuer `geheim` eintragen
+   (`php -r "echo bin2hex(random_bytes(32));"`).
+
+4. **Einrichten**: `php php/einrichten.php` legt die Tabellen an und gibt die
+   beiden Dienstkonten samt Kennwoertern aus.
+
+5. **Rechte**: `php/daten/` muss fuer PHP beschreibbar sein (Sitzungen,
+   Postfach). `php/inc/`, `php/seiten/` und `php/daten/` bringen eine
+   `.htaccess` mit, die den Zugriff sperrt - auf nginx gehoert dieselbe Regel
+   in die Serverkonfiguration:
+
+   ```nginx
+   location ~ ^/(inc|seiten|daten)/ { deny all; }
+   location ~ ^/einrichten\.php$    { deny all; }
+   ```
+
+6. **HTTPS**: Zertifikat einrichten und in `konfig.php` `'https' => true`
+   setzen - dann wird das Sitzungs-Cookie als `Secure` markiert.
+
+Zum Ausprobieren ohne Webserver genuegt der eingebaute:
+
+```bash
+php -S localhost:8000 -t php
+```
+
+### Betrieb
+
+* **Sichern:** die Datenbank (Konten, Abos, Offline-Zuteilung),
+  `php/inc/konfig.php` und `web/lizenzen.json` gehoeren ins Backup. Ohne
+  `lizenzen.json` laesst sich keine ausgelieferte Datei mehr freischalten.
+* **Protokoll:** Die Tabelle `protokoll` haelt Registrierung, Bestaetigung,
+  Anmeldung, Mailversand, Freischaltung und jede Verwaltungshandlung fest;
+  die letzten Zeilen stehen auf `wartung.php`.
+* **Kennwoerter** liegen als `password_hash()` (Argon2id bzw. bcrypt), die
+  Mailcodes als HMAC mit dem Serverschluessel. Nach zehn Fehlversuchen in
+  einer Viertelstunde ist Ruhe. Jedes Formular traegt eine an die Sitzung
+  gebundene Marke gegen fremde Absender.
+* **Verwalter nachtragen:** `php php/einrichten.php mail@beispiel.de verwalter`.
+* **`Content-Security-Policy`:** Wird eine gesetzt, darf `script-src` nicht
+  ohne `'unsafe-eval'` auskommen - der Lader startet das entschluesselte
+  Programm ueber `new Function`.
 
 ## Der Quelltext bleibt zu
 
@@ -267,17 +325,20 @@ gelernten Stil.
 ```bash
 git clone <repo>
 cd Sportapp_Claude
-python3 werkzeuge/lizenzen.py --vorrat 50           # einmalig
-python3 werkzeuge/baue_web.py --oeffnen             # bauen und anschauen
-python3 werkzeuge/server.py --port 8000             # Konten und Freischaltung
+python3 werkzeuge/baue_web.py --oeffnen    # Datei bauen und anschauen
+cp php/inc/konfig.beispiel.php php/inc/konfig.php   # anpassen
+php php/einrichten.php                     # Tabellen und Dienstkonten
+php -S localhost:8000 -t php               # Serverbetrieb zum Ausprobieren
 ```
 
-Gearbeitet wird in `web/quelle/` (Oberflaeche) und `sportstunden/data/`
-(Katalog); `werkzeuge/baue_web.py` setzt daraus die auslieferbare Datei
-zusammen. Getestet mit Python 3.9+, keine Fremdbibliotheken.
+Gearbeitet wird an vier Stellen: `web/quelle/` (die Anwendung im Browser),
+`sportstunden/data/` (Katalog), `php/` (Serverbetrieb) und `werkzeuge/`
+(Bau). `werkzeuge/baue_web.py` setzt aus Quellen und Katalog die
+auslieferbare Datei zusammen. Python 3.9+ fuer den Bau, PHP 8+ fuer den
+Server, keine Fremdbibliotheken.
 
-Zum Ausprobieren ohne Server hilft `--server ""`: Dann fragt die Datei
-gleich nach einem Offline-Schluessel aus `web/lizenzen.json`.
+Zum Ausprobieren ohne Server hilft `python3 werkzeuge/baue_web.py --server ""`:
+Dann fragt die Datei gleich nach einem Offline-Schluessel.
 
 ## Gruppen und Koordinationsteil
 
@@ -386,19 +447,36 @@ und Bestand, Aufbau je Stundenteil und die Sicherheitshinweise.
 ## Projektstruktur
 
 ```
-web/
+php/              der Serverbetrieb - DocumentRoot des Webservers
+  index.php       liefert das Programm; ohne Anmeldung geht es zur Anmeldung
+  anmelden.php  abmelden.php  registrieren.php  bestaetigen.php  code-neu.php
+  kennwort-vergessen.php  kennwort-neu.php  konto.php  probeabo.php
+  verwaltung.php  wartung.php
+  freischalten.php    gibt den Blockschluessel heraus (nur angemeldet)
+  kinderturnen.php    die persoenliche Kopie zum Herunterladen
+  einrichten.php      Tabellen und Dienstkonten (nur Kommandozeile)
+  inc/            die Logik - vom Webserver gesperrt
+    start.php     Vorlauf: Konfiguration, Datenbank, Sitzung, Hilfen
+    db.php        PDO-Verbindung und Schema
+    konten.php    anlegen, finden, Kennwoerter, Rollen, Mailcodes
+    sitzung.php   Sitzung, CSRF-Marke, Sperre nach Fehlversuchen
+    abo.php       kostenlos, Monats-/Jahresabo, Probeabo
+    lizenz.php    Blockschluessel, Huelle je Konto, persoenliche Datei
+    post.php      Mailtexte und Versand
+    vorlage.php   fuellt die HTML-Vorlagen
+    konfig.beispiel.php   Vorlage fuer konfig.php (Zugangsdaten)
+  seiten/         reines Markup: rahmen.html und neun Seiten (gesperrt)
+  stil/server.css die Gestaltung der Serverseiten
+  daten/          Sitzungen und Postfach zur Laufzeit (gesperrt)
+web/              gehoert **ausserhalb** des DocumentRoot
   kinderturnen.html   das Programm: eine Datei, verschluesselt, zum Weitergeben
   quelle/             deren Quellen (vorlage.html, inhalt.html, stil.css,
                       app.js und lader.js - der sichtbare Teil)
   lizenzen.json       Blockschluessel und Serveradresse
-werkzeuge/
+werkzeuge/        laeuft am Arbeitsplatz, nicht auf dem Server
   baue_web.py     baut und verschluesselt web/kinderturnen.html
   packen.py       Kommentare entfernen, verschluesseln, Schluessel ableiten
   lizenzen.py     Blockschluessel und Serveradresse pflegen
-  server.py       Konten, Registrierung, Bestaetigung, Abo, Freischaltung
-  post.py         Mailtexte (Bestaetigung, Kennwort) und Versand
-server/           Laufzeitdaten des Servers (nicht im Projektstand)
-  konten.json, sitzungen.json, geheim.txt, zugriff.log, postfach/
 sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeliefert)
   data/           Geraete, Sicherheitsregeln, Gruppen, Uebungen, Beispielorte
   models.py       Datenmodelle (Ort, Geraeteplatz, Uebung, Stunde ...)
@@ -410,14 +488,15 @@ sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeli
   hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-tests/            207 Tests (unittest)
+tests/            153 Tests (unittest)
 ```
 
-`web/quelle/app.js` traegt dieselbe Logik wie das Python-Paket in JavaScript.
-Das Python-Paket bleibt als Quelle der Stammdaten und als geprueftes
-Gegenstueck bestehen: Bedarfsrechnung, Absicherung, Flaechenbudget und
-Platzierung lassen sich dort mit vollem Testumfang nachrechnen. Wer die
-Planungsregeln aendert, aendert sie an beiden Stellen.
+`web/quelle/app.js` traegt dieselbe Planungslogik wie das Python-Paket in
+JavaScript. Das Python-Paket bleibt als Quelle der Stammdaten und als
+geprueftes Gegenstueck bestehen: Bedarfsrechnung, Absicherung, Flaechenbudget
+und Platzierung lassen sich dort mit vollem Testumfang nachrechnen. Wer die
+Planungsregeln aendert, aendert sie an beiden Stellen. Auf den Server kommen
+nur `php/` und `web/` - Python laeuft dort nicht.
 
 ## Tests
 
@@ -443,30 +522,32 @@ Abfrage, ein falscher Schluessel wird abgewiesen, derselbe Schluessel mit
 einer fremden E-Mail ebenfalls, ein abgelaufenes Abo haelt die Datei zu, und
 ein richtiges Paar wird gemerkt.
 
-Der Server hat eigene Tests: Registrierung, Bestaetigung per Mailcode
-(falscher, abgelaufener und verbrauchter Code, neuer Code auf Wunsch),
-Anmeldung, Sperre nach zehn Fehlversuchen, Kennwoerter und Codes nur als
-Hash, Kennwort-Zuruecksetzen ueber die Mail (einmalig, ohne zu verraten wer
-ein Konto hat), Abolaufzeiten und Verlaengerung, kein Zutritt zur Verwaltung ohne
-Rolle, Vergabe und Entzug der Offline-Schluessel, Formulare ohne gueltige
-Marke werden abgewiesen. Eigene Tests halten fest, dass der kostenlose Zugang
-dauerhaft offen bleibt - auch nach Jahren und nach einem abgelaufenen Abo -
-und dass es einen Offline-Schluessel nur mit laufendem Abo gibt. Das Probeabo
-laeuft 14 Tage, bringt den Offline-Schluessel und laesst sich weder waehrend
-eines Abos noch ein zweites Mal im selben Jahr bestellen - erst ein Jahr
-spaeter wieder. Und die Wartungsrolle kommt auf ihre Seite, aber nicht in die
-Verwaltung. Ein Test rechnet nach, dass die Huelle eines Kontos
-mit einer anderen Kennung nichts hergibt.
+**Der PHP-Serverbetrieb** hat eigene Tests (`tests/test_php.py`): Sie starten
+den eingebauten PHP-Server auf einem freien Port mit eigener Konfiguration.
+Geprueft werden die Aufstellung selbst (kein PHP in den HTML-Vorlagen, kein
+Markup in den PHP-Dateien, `php -l` ueber alle Dateien, gesperrte
+Verzeichnisse), Registrierung und Bestaetigung per Mailcode (falscher,
+abgelaufener und verbrauchter Code, neuer Code auf Wunsch), Anmeldung, Sperre
+nach zehn Fehlversuchen, Kennwoerter und Codes nur als Hash,
+Kennwort-Zuruecksetzen ueber die Mail (einmalig, ohne zu verraten wer ein
+Konto hat), die Mailtexte selbst (Anrede, gruppierter Code, Gueltigkeit,
+Verweis, keine offenen Platzhalter), Abolaufzeiten, Probeabo (14 Tage, einmal
+im Jahr), Offline-Schluessel je Konto, Rollen und die Dienstkonten von der
+Kommandozeile.
 
-Die Mailtexte pruefen `tests/test_post.py`: Anrede, gruppierter Code,
-Gueltigkeit, der richtige Verweis, keine offenen Platzhalter - und dass sich
-die beiden Texte nicht verwechseln lassen.
+Ein Test rechnet nach, dass **PHP und Python dieselbe Huelle** erzeugen: Was
+`php/inc/lizenz.php` verdeckt, oeffnet `werkzeuge/packen.py` wieder - mit der
+richtigen Kontokennung, und mit einer fremden eben nicht.
 
-Drei Tests gehen den ganzen Weg im Browser: im leeren Chromium registrieren,
+Zwei Tests gehen den ganzen Weg im Browser: im leeren Chromium registrieren,
 Code aus dem Postfach eingeben, das Programm erscheint und plant eine Stunde;
-ein gesperrtes Konto fliegt wieder heraus; und die persoenliche Datei
-oeffnet sich per `file://` mit E-Mail und Schluessel. Damit ist auch belegt,
-dass das SHA-256 im Lader exakt zu Python passt.
+und die persoenliche Datei oeffnet sich per `file://` mit E-Mail und
+Schluessel. Damit ist auch belegt, dass das SHA-256 im Lader exakt zu PHP und
+Python passt.
+
+Die Tests laufen ueber PDO gegen SQLite, damit sie ohne Datenbankserver
+durchlaufen; mit `KITU_TEST_DSN` gehen dieselben Tests gegen eine echte
+MySQL/MariaDB (gegengeprueft mit MariaDB 10.11).
 
 Die Browsertests brauchen Playwright und werden sonst uebersprungen. Nach
 Aenderungen an `web/quelle/` bitte `python3 werkzeuge/baue_web.py` ausfuehren -

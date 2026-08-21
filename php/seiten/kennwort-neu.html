@@ -1,0 +1,17 @@
+{{{meldung}}}{{{fehler}}}
+<div class="karte">
+  <h1>Neues Kennwort</h1>
+  <p class="klein">Code aus der Mail eingeben und das neue Kennwort zweimal.</p>
+  <form method="post" action="kennwort-neu.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <label for="kennung">E-Mail</label>
+    <input id="kennung" name="kennung" type="email" value="{{kennung}}" required autocomplete="username">
+    <label for="code">Code aus der Mail</label>
+    <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required>
+    <label for="kennwort">Neues Kennwort (mindestens {{mindest}} Zeichen)</label>
+    <input id="kennwort" name="kennwort" type="password" required autocomplete="new-password">
+    <label for="kennwort2">Neues Kennwort wiederholen</label>
+    <input id="kennwort2" name="kennwort2" type="password" required autocomplete="new-password">
+    <button id="knopf-kennwort-neu">Kennwort setzen</button>
+  </form>
+</div>

@@ -1,0 +1,18 @@
+{{{fehler}}}
+<div class="karte">
+  <h1>Konto anlegen</h1>
+  <p class="klein">Mit dem Konto planst du Stunden im Browser - auf dem Handy wie am Rechner. Kostenlos und dauerhaft.</p>
+  <form method="post" action="registrieren.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" value="{{name}}" autocomplete="name">
+    <label for="kennung">E-Mail</label>
+    <input id="kennung" name="kennung" type="email" value="{{kennung}}" required autocomplete="username">
+    <label for="kennwort">Kennwort (mindestens {{mindest}} Zeichen)</label>
+    <input id="kennwort" name="kennwort" type="password" required autocomplete="new-password">
+    <label for="kennwort2">Kennwort wiederholen</label>
+    <input id="kennwort2" name="kennwort2" type="password" required autocomplete="new-password">
+    <button id="knopf-registrieren">Konto anlegen</button>
+  </form>
+  <p class="klein">Schon ein Konto? <a href="anmelden.php">Anmelden</a>.</p>
+</div>

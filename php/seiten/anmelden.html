@@ -1,0 +1,17 @@
+{{{meldung}}}{{{fehler}}}
+<div class="karte">
+  <h1>Anmelden</h1>
+  <form method="post" action="anmelden.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <input type="hidden" name="weiter" value="{{weiter}}">
+    <label for="kennung">E-Mail</label>
+    <input id="kennung" name="kennung" type="email" value="{{kennung}}" required autocomplete="username">
+    <label for="kennwort">Kennwort</label>
+    <input id="kennwort" name="kennwort" type="password" required autocomplete="current-password">
+    <button id="knopf-anmelden">Anmelden</button>
+  </form>
+  <p class="klein">
+    Noch kein Konto? <a href="registrieren.php">Hier registrieren</a>.
+    Kennwort weg? <a href="kennwort-vergessen.php">Neues anfordern</a>.
+  </p>
+</div>

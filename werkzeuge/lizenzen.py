@@ -11,7 +11,7 @@ persoenlichen Kopie der Datei; hier steht nur der Blockschluessel selbst.
 Aufruf::
 
     python3 werkzeuge/lizenzen.py                 # Zustand anzeigen
-    python3 werkzeuge/lizenzen.py --server /freischalten
+    python3 werkzeuge/lizenzen.py --server freischalten.php
     python3 werkzeuge/lizenzen.py --neuer-blockschluessel   # macht alles alte ungueltig
 
 ``web/lizenzen.json`` enthaelt den Blockschluessel im Klartext und darf nicht
@@ -31,7 +31,7 @@ sys.path.insert(0, str(WURZEL))
 from werkzeuge.packen import neuer_blockschluessel  # noqa: E402
 
 DATEI = WURZEL / "web" / "lizenzen.json"
-VORGABE_SERVER = "/freischalten"
+VORGABE_SERVER = "freischalten.php"
 
 
 def lade(datei: Path = DATEI) -> dict:
@@ -54,7 +54,7 @@ def sichere(daten: dict, datei: Path = DATEI) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--server", metavar="ADRESSE",
-                        help='Adresse der Freischaltung (z. B. "/freischalten", "" = keine)')
+                        help='Adresse der Freischaltung (z. B. "freischalten.php", "" = keine)')
     parser.add_argument("--neuer-blockschluessel", action="store_true",
                         help="neuen Blockschluessel wuerfeln - alle Offline-Schluessel "
                              "und die ausgelieferte Datei werden dadurch ungueltig")

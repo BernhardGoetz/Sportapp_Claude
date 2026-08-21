@@ -1,0 +1,17 @@
+{{{meldung}}}{{{fehler}}}
+<div class="karte">
+  <h1>Konto bestaetigen</h1>
+  <p class="klein">Wir haben einen sechsstelligen Code an {{{wohin}}} geschickt. Er gilt {{minuten}} Minuten.</p>
+  <form method="post" action="bestaetigen.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    {{{kennungsfeld}}}
+    <label for="code">Code aus der Mail</label>
+    <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required>
+    <button id="knopf-bestaetigen">Bestaetigen</button>
+  </form>
+  <form method="post" action="code-neu.php" class="nachschub">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <input type="hidden" name="kennung" value="{{kennung}}">
+    <button class="leise" id="knopf-code-neu">Code erneut senden</button>
+  </form>
+</div>

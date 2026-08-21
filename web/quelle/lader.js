@@ -332,7 +332,9 @@
       .then(function (antwort) {
         // Nicht angemeldet: zur Anmeldung, sofern wir vom Server kommen.
         if (antwort.status === 401 && location.protocol !== "file:") {
-          location.href = "/anmelden?weiter=" + encodeURIComponent(location.pathname);
+          location.href = "anmelden.php?weiter=" + encodeURIComponent(
+            location.pathname.replace(/^.*\//, "") || "index.php"
+          );
           throw new Error("nicht angemeldet");
         }
         return antwort.json();
@@ -400,9 +402,9 @@
       abfrage("Zu diesem Schluessel fehlt die E-Mail des Kontos.", zugang);
       return;
     }
-    // Eine Adresse wie "/freischalten" fuehrt von einer geoeffneten Datei aus
-    // ins Leere - dann gleich nach dem Offline-Schluessel fragen.
-    var ausDatei = location.protocol === "file:" && SERVER.charAt(0) === "/";
+    // Eine Adresse wie "freischalten.php" fuehrt von einer geoeffneten Datei
+    // aus ins Leere - dann gleich nach dem Offline-Schluessel fragen.
+    var ausDatei = location.protocol === "file:" && !/^https?:/i.test(SERVER);
     if (SERVER && !ausDatei) {
       vomServer();
       return;

@@ -6,5 +6,8 @@ dist/
 .venv/
 *.pdf
 
-# Laufzeitdaten des Servers (Konten, Sitzungen, Protokoll) - nie einchecken
+# Laufzeitdaten und Zugangsdaten des Servers - nie einchecken
 /server/
+/php/inc/konfig.php
+/php/daten/*
+!/php/daten/.htaccess

@@ -1,0 +1,12 @@
+{{{meldung}}}{{{fehler}}}
+<div class="karte">
+  <h1>Kennwort vergessen</h1>
+  <p class="klein">Gib deine E-Mail an - wenn es dazu ein Konto gibt, ist gleich ein Code unterwegs.</p>
+  <form method="post" action="kennwort-vergessen.php">
+    <input type="hidden" name="marke" value="{{marke}}">
+    <label for="kennung">E-Mail</label>
+    <input id="kennung" name="kennung" type="email" required autocomplete="username">
+    <button id="knopf-code">Code anfordern</button>
+  </form>
+  <p class="klein"><a href="anmelden.php">Zurueck zur Anmeldung</a></p>
+</div>
