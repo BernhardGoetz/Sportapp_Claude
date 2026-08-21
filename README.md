@@ -126,11 +126,19 @@ PDF - alles dabei, ohne Ablaufdatum und ohne Nachfragen.
 Ein **Abo** kommt nur dazu, wer die Datei **offline** mitnehmen will. Es laeuft
 nach der gewaehlten Zeit ab:
 
-| Knopf in der Verwaltung | Wirkung |
-| --- | --- |
-| **+1 Monat** | Monatsabo, 31 Tage - haengt an ein laufendes Abo hinten an |
-| **+1 Jahr** | Jahresabo, 365 Tage - ebenso |
-| **Abo beenden** | zurueck auf kostenlos; der Offline-Schluessel faellt weg |
+| Knopf | Wo | Wirkung |
+| --- | --- | --- |
+| **Probeabo starten (14 Tage)** | Konto | das Kaufabo zum Ausprobieren - **einmal je Konto und Jahr** |
+| **+1 Monat** | Verwaltung | Monatsabo, 31 Tage - haengt an ein laufendes Abo hinten an |
+| **+1 Jahr** | Verwaltung | Jahresabo, 365 Tage - ebenso |
+| **Probeabo geben** | Verwaltung | dasselbe Probeabo, vom Verwalter angestossen |
+| **Abo beenden** | Verwaltung | zurueck auf kostenlos; der Offline-Schluessel faellt weg |
+
+Das **Probeabo** bestellt sich jede und jeder selbst auf der eigenen
+Kontoseite: 14 Tage mit allem, was das Kaufabo kann - also auch der
+Offline-Schluessel. Danach merkt sich das Konto das Datum; ein neues Probeabo
+gibt es erst ein Jahr spaeter, und waehrend ein Abo laeuft gar nicht. Die
+Kontoseite nennt den naechstmoeglichen Termin.
 
 Laeuft ein Abo aus, **bleibt das Konto offen** und plant kostenlos weiter -
 nur die Offline-Kopie macht zu, denn sie traegt das Enddatum des Abos in sich.
@@ -154,6 +162,37 @@ Die beiden Texte stehen in `werkzeuge/post.py` (`text_bestaetigung`,
 `text_kennwort`): Anrede mit Namen, der Code gut lesbar als `792 681`, die
 Gueltigkeit, der passende Verweis und je ein Satz fuer den Fall, dass die
 Mail unerwartet kam.
+
+### Rollen und Dienstkonten
+
+| Rolle | Darf |
+| --- | --- |
+| `nutzer` | planen, eigenes Konto, Probeabo bestellen |
+| `wartung` | zusaetzlich `/wartung`: Zahlen zum Betrieb und die letzten Zugriffe - **nur lesen** |
+| `verwalter` | zusaetzlich `/verwaltung`: Konten sperren, Abos setzen, Offline-Schluessel vergeben, Rollen aendern |
+
+Die Wartungsrolle ist bewusst zahnlos: Sie sieht, ob der Laden laeuft (Konten,
+laufende Abos, Probeabos, Offline-Schluessel, offene Sitzungen, Stand der
+gebauten Datei, letzte Protokollzeilen), kann aber kein Konto anfassen.
+
+Zwei Dienstkonten legt ein Aufruf an - die Kennwoerter erscheinen **einmal**
+auf der Konsole und stehen sonst nirgends:
+
+```bash
+KITU_VERWALTER=deine.adresse@beispiel.de \
+KITU_WARTUNG=wartung@beispiel.de \
+python3 werkzeuge/server.py --einrichten
+```
+
+Einzeln geht es auch:
+
+```bash
+python3 werkzeuge/server.py --konto-anlegen wartung@beispiel.de \
+    --rolle wartung --name "Wartung"
+```
+
+Dienstkonten sind sofort bestaetigt (kein Mailcode noetig). Nach der ersten
+Anmeldung bitte unter `/konto` ein eigenes Kennwort setzen.
 
 ### Server betreiben
 
@@ -371,7 +410,7 @@ sportstunden/     Stammdaten und Vergleichsfassung in Python (wird nicht ausgeli
   hallenplan.py   Massstaeblicher Plan mit Geraetesymbolen
   pdf.py          Minimaler PDF-Generator (Text, Tabellen, Grafik)
   export.py       Layout des Stundenbilds und der Detailseiten
-tests/            191 Tests (unittest)
+tests/            207 Tests (unittest)
 ```
 
 `web/quelle/app.js` traegt dieselbe Logik wie das Python-Paket in JavaScript.
@@ -412,7 +451,11 @@ ein Konto hat), Abolaufzeiten und Verlaengerung, kein Zutritt zur Verwaltung ohn
 Rolle, Vergabe und Entzug der Offline-Schluessel, Formulare ohne gueltige
 Marke werden abgewiesen. Eigene Tests halten fest, dass der kostenlose Zugang
 dauerhaft offen bleibt - auch nach Jahren und nach einem abgelaufenen Abo -
-und dass es einen Offline-Schluessel nur mit laufendem Abo gibt. Ein Test rechnet nach, dass die Huelle eines Kontos
+und dass es einen Offline-Schluessel nur mit laufendem Abo gibt. Das Probeabo
+laeuft 14 Tage, bringt den Offline-Schluessel und laesst sich weder waehrend
+eines Abos noch ein zweites Mal im selben Jahr bestellen - erst ein Jahr
+spaeter wieder. Und die Wartungsrolle kommt auf ihre Seite, aber nicht in die
+Verwaltung. Ein Test rechnet nach, dass die Huelle eines Kontos
 mit einer anderen Kennung nichts hergibt.
 
 Die Mailtexte pruefen `tests/test_post.py`: Anrede, gruppierter Code,

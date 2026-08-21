@@ -526,6 +526,139 @@ class ServerTest(unittest.TestCase):
         inhalt = (WURZEL / "web" / "kinderturnen.html").read_text(encoding="utf-8")
         self.assertIn("var HUELLEN = [];", inhalt)
 
+    # -- Probeabo -----------------------------------------------------------
+    def test_probeabo_laeuft_vierzehn_tage(self):
+        self.registriere(self.browser)
+        konto = self.anwendung.konto("turnen@beispiel.de")
+        self.assertTrue(self.anwendung.probe_moeglich(konto))
+
+        _, text, _ = self.browser.sende("/probeabo", {}, marke_von="/konto")
+        self.assertIn("Probeabo laeuft bis", text)
+        self.assertEqual(konto["abo"]["art"], "Probeabo")
+        self.assertEqual(konto["abo"]["bis"], server.in_tagen(server.PROBETAGE))
+        self.assertEqual(konto["probe_zuletzt"], server.heute())
+        self.assertTrue(self.anwendung.abo_laeuft(konto))
+
+    def test_probeabo_gibt_es_nur_einmal_im_jahr(self):
+        self.registriere(self.browser)
+        konto = self.anwendung.konto("turnen@beispiel.de")
+        self.browser.sende("/probeabo", {}, marke_von="/konto")
+
+        # Noch waehrend das Probeabo laeuft: kein zweites.
+        _, text, _ = self.browser.sende("/probeabo", {}, marke_von="/konto")
+        self.assertIn("einmal im Jahr", text)
+
+        # Auch nach Ablauf des Probeabos bleibt es dabei.
+        konto["abo"]["bis"] = server.in_tagen(-1)
+        self.assertFalse(self.anwendung.probe_moeglich(konto))
+        _, text, _ = self.browser.sende("/probeabo", {}, marke_von="/konto")
+        self.assertIn("einmal im Jahr", text)
+        self.assertEqual(konto["abo"]["bis"], server.in_tagen(-1))
+
+        # Ein Jahr spaeter geht es wieder.
+        konto["probe_zuletzt"] = server.in_tagen(-server.PROBESPERRE - 1)
+        self.assertTrue(self.anwendung.probe_moeglich(konto))
+        _, text, _ = self.browser.sende("/probeabo", {}, marke_von="/konto")
+        self.assertIn("Probeabo laeuft bis", text)
+
+    def test_probeabo_naechster_termin_steht_im_konto(self):
+        self.registriere(self.browser)
+        konto = self.anwendung.konto("turnen@beispiel.de")
+        self.browser.sende("/probeabo", {}, marke_von="/konto")
+        konto["abo"]["bis"] = server.in_tagen(-1)
+        _, text, _ = self.browser.hole("/konto")
+        self.assertIn(self.anwendung.probe_wieder_ab(konto), text)
+
+    def test_probeabo_bringt_den_offline_schluessel(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        nutzer.sende("/probeabo", {}, marke_von="/konto")
+
+        _, text, _ = self.browser.sende(
+            "/verwaltung", {"tat": "offline_geben", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertIn("offline arbeiten", text)
+        konto = self.anwendung.konto("helfer@beispiel.de")
+        self.assertTrue(konto["offline"])
+        self.assertEqual(
+            self.anwendung.huelle_fuer(konto)["bis"], server.in_tagen(server.PROBETAGE)
+        )
+
+    def test_verwalter_kann_ein_probeabo_geben(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        _, text, _ = self.browser.sende(
+            "/verwaltung", {"tat": "probe", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertIn("Probeabo fuer helfer@beispiel.de", text)
+        _, text, _ = self.browser.sende(
+            "/verwaltung", {"tat": "probe", "konto": "helfer@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertIn("schon ein Probeabo", text)
+
+    # -- Rollen: Verwaltung und Wartung -------------------------------------
+    def test_wartung_darf_schauen_aber_nicht_anfassen(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        wart = Browser(self.browser.wurzel)
+        self.registriere(wart, "wartung@beispiel.de")
+        self.browser.sende(
+            "/verwaltung", {"tat": "wartung", "konto": "wartung@beispiel.de"},
+            marke_von="/verwaltung",
+        )
+        self.assertEqual(self.anwendung.konto("wartung@beispiel.de")["rolle"], "wartung")
+
+        status, text, _ = wart.hole("/wartung")
+        self.assertEqual(status, 200)
+        self.assertIn("Konten", text)
+        self.assertIn("laufende Abos", text)
+        # Aber die Verwaltung bleibt zu.
+        status, text, _ = wart.hole("/verwaltung")
+        self.assertEqual(status, 403)
+        status, text, _ = wart.sende(
+            "/verwaltung", {"tat": "verwalter", "konto": "wartung@beispiel.de"},
+            marke_von="/konto",
+        )
+        self.assertEqual(status, 403)
+        self.assertEqual(self.anwendung.konto("wartung@beispiel.de")["rolle"], "wartung")
+
+    def test_normale_nutzer_sehen_die_wartung_nicht(self):
+        self.registriere(self.browser, "chef@beispiel.de")
+        nutzer = Browser(self.browser.wurzel)
+        self.registriere(nutzer, "helfer@beispiel.de")
+        self.assertEqual(nutzer.hole("/wartung")[0], 403)
+        # Der Verwalter darf beides.
+        self.assertEqual(self.browser.hole("/wartung")[0], 200)
+        self.assertEqual(self.browser.hole("/verwaltung")[0], 200)
+
+    def test_dienstkonten_lassen_sich_anlegen(self):
+        konto, kennwort = self.anwendung.lege_dienstkonto_an(
+            "verwaltung@kitu.local", "Verwaltung", "verwalter"
+        )
+        self.assertEqual(konto["rolle"], "verwalter")
+        self.assertTrue(konto["bestaetigt"], "Dienstkonten brauchen keinen Mailcode")
+        self.assertGreaterEqual(len(kennwort), 20)
+        self.assertNotIn(kennwort, self.anwendung.konten_datei.read_text(encoding="utf-8"))
+
+        # Anmelden geht damit sofort.
+        _, _, adresse = self.browser.sende(
+            "/anmelden", {"kennung": "verwaltung@kitu.local", "kennwort": kennwort}
+        )
+        self.assertTrue(adresse.endswith("/"))
+        self.assertEqual(self.browser.hole("/verwaltung")[0], 200)
+
+        # Ein zweiter Aufruf legt nichts Neues an, sondern richtet nur die Rolle.
+        gleich, ohne = self.anwendung.lege_dienstkonto_an(
+            "verwaltung@kitu.local", "Verwaltung", "wartung"
+        )
+        self.assertIs(gleich, konto)
+        self.assertEqual(ohne, "")
+        self.assertEqual(konto["rolle"], "wartung")
+
     def test_kennwort_aendern(self):
         self.registriere(self.browser)
         _, text, _ = self.browser.sende(

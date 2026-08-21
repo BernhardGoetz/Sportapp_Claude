@@ -55,6 +55,9 @@ CODEDAUER = postfach.CODE_MINUTEN * 60  # Gueltigkeit der Mailcodes
 CODEVERSUCHE = 5                        # danach hilft nur ein neuer Code
 UNBESTAETIGT_TAGE = 7                   # so lange wartet ein Konto auf den Code
 ABOZEITEN = {"abo_monat": (31, "Monatsabo"), "abo_jahr": (365, "Jahresabo")}
+PROBETAGE = 14      # Probeabo: das Kaufabo zum Ausprobieren
+PROBESPERRE = 365   # danach erst im naechsten Jahr wieder
+ROLLEN = ("nutzer", "wartung", "verwalter")
 
 
 def jetzt() -> float:
@@ -185,6 +188,7 @@ class Anwendung:
             "code": None,
             # Kostenlos und dauerhaft - ein Abo kommt nur auf Wunsch dazu.
             "abo": {"seit": heute(), "bis": "", "art": "frei"},
+            "probe_zuletzt": "",  # wann zuletzt ein Probeabo lief
             "offline": None,
         }
         self.konten.append(eintrag)
@@ -301,6 +305,52 @@ class Anwendung:
         self.sichere_konten()
         return abo["bis"]
 
+    def lege_dienstkonto_an(self, kennung: str, name: str, rolle: str) -> tuple:
+        """Konto fuer Verwaltung oder Wartung - fertig bestaetigt.
+
+        Gibt (Konto, Kennwort) zurueck; das Kennwort steht nur hier einmal
+        im Klartext und wird sonst nirgends abgelegt.
+        """
+        vorhanden = self.konto(kennung)
+        if vorhanden:
+            vorhanden["rolle"] = rolle
+            vorhanden["bestaetigt"] = True
+            self.sichere_konten()
+            return vorhanden, ""
+        kennwort = "-".join(
+            "".join(secrets.choice("abcdefghijkmnpqrstuvwxyz23456789") for _ in range(5))
+            for _ in range(4)
+        )
+        konto = self.lege_an(kennung, name, kennwort)
+        konto["rolle"] = rolle
+        konto["bestaetigt"] = True
+        self.sichere_konten()
+        self.notiere("dienstkonto", kennung, rolle)
+        return konto, kennwort
+
+    def probe_moeglich(self, konto: dict) -> bool:
+        """Ein Probeabo je Konto und Jahr - und nur ohne laufendes Abo."""
+        if self.abo_laeuft(konto):
+            return False
+        zuletzt = konto.get("probe_zuletzt", "")
+        return not zuletzt or zuletzt <= in_tagen(-PROBESPERRE)
+
+    def probe_wieder_ab(self, konto: dict) -> str:
+        """Datum, ab dem das naechste Probeabo moeglich ist."""
+        zuletzt = konto.get("probe_zuletzt", "")
+        return in_tagen(PROBESPERRE, zuletzt) if zuletzt else heute()
+
+    def starte_probe(self, konto: dict) -> str:
+        konto["abo"] = {
+            "seit": heute(),
+            "bis": in_tagen(PROBETAGE),
+            "art": "Probeabo",
+        }
+        konto["probe_zuletzt"] = heute()
+        self.sichere_konten()
+        self.notiere("probeabo", konto["kennung"], konto["abo"]["bis"])
+        return konto["abo"]["bis"]
+
     def beende_abo(self, konto: dict) -> None:
         """Zurueck auf den kostenlosen Zugang - der bleibt dauerhaft offen."""
         konto["abo"] = {"seit": heute(), "bis": "", "art": "frei"}
@@ -387,7 +437,10 @@ def seite(titel: str, inhalt: str, konto=None) -> bytes:
         anmeldung = (
             f'<span>{html.escape(konto["name"] or konto["kennung"])}'
             f'<a href="/konto">Konto</a>'
-            + ('<a href="/verwaltung">Verwaltung</a>' if konto["rolle"] == "verwalter" else "")
+            + ('<a href="/verwaltung">Verwaltung</a>'
+               if konto["rolle"] == "verwalter" else "")
+            + ('<a href="/wartung">Wartung</a>'
+               if konto["rolle"] in ("verwalter", "wartung") else "")
             + '<a href="/">Planen</a></span>'
         )
     text = (
@@ -517,6 +570,7 @@ class Behandler(BaseHTTPRequestHandler):
             "/registrieren": self.zeige_registrierung,
             "/konto": self.zeige_konto,
             "/verwaltung": self.zeige_verwaltung,
+            "/wartung": self.zeige_wartung,
             "/freischalten": self.freischalten,
             "/kinderturnen.html": self.gib_datei,
             "/bestaetigen": self.zeige_bestaetigung,
@@ -630,6 +684,26 @@ class Behandler(BaseHTTPRequestHandler):
                 "<p class=klein>Planen, Stundenbild als PDF, alles dabei. Ein Abo "
                 "braucht nur, wer die Datei offline mitnehmen will.</p>"
             )
+        if self.app.probe_moeglich(konto):
+            abotext += (
+                f"<p class=klein>Zum Ausprobieren: {PROBETAGE} Tage Probeabo mit "
+                "allem, was das Kaufabo kann - einmal im Jahr.</p>"
+                '<form method=post action="/probeabo">'
+                + f'<input type=hidden name=marke value="{marke}">'
+                + f'<button id="knopf-probeabo">Probeabo starten '
+                + f"({PROBETAGE} Tage)</button></form>"
+            )
+        elif konto.get("probe_zuletzt"):
+            wieder = self.app.probe_wieder_ab(konto)
+            abotext += (
+                "<p class=klein>Das Probeabo lief zuletzt am "
+                f"{html.escape(konto['probe_zuletzt'])}"
+                + (
+                    f" - ein neues gibt es ab {html.escape(wieder)}.</p>"
+                    if not self.app.abo_laeuft(konto)
+                    else ".</p>"
+                )
+            )
         inhalt = (
             (f'<p class=gut>{html.escape(meldung)}</p>' if meldung else "")
             + (f'<p class=fehler>{html.escape(fehler)}</p>' if fehler else "")
@@ -689,8 +763,11 @@ class Behandler(BaseHTTPRequestHandler):
             taten += knopf("abo_jahr", kennung, "+1 Jahr")
             if self.app.abo_laeuft(eintrag):
                 taten += knopf("abo_stop", kennung, "Abo beenden")
+            taten += knopf("probe", kennung, "Probeabo geben")
             if eintrag["rolle"] != "verwalter":
                 taten += knopf("verwalter", kennung, "Zum Verwalter")
+            if eintrag["rolle"] == "nutzer":
+                taten += knopf("wartung", kennung, "Zur Wartung")
             zustand = "gesperrt" if eintrag.get("gesperrt") else eintrag["rolle"]
             if not eintrag.get("bestaetigt"):
                 zustand += " (unbestaetigt)"
@@ -703,6 +780,8 @@ class Behandler(BaseHTTPRequestHandler):
                 abospalte = "kostenlos (Abo lief bis {})".format(html.escape(abo["bis"]))
             else:
                 abospalte = "kostenlos"
+            if eintrag.get("probe_zuletzt"):
+                abospalte += "<br>Probe: " + html.escape(eintrag["probe_zuletzt"])
             zeilen.append(
                 "<tr><td>{}<br><span class=klein>{}</span></td><td>{}</td>"
                 "<td class=klein>{}</td><td class=klein>{}</td><td>{}</td></tr>".format(
@@ -822,6 +901,60 @@ class Behandler(BaseHTTPRequestHandler):
             meldung,
         )
 
+    def zeige_wartung(self, abfrage=None):
+        """Schaufenster fuer die Wartung: schauen ja, anfassen nein."""
+        konto = self.angemeldet()
+        if not konto:
+            self.weiter_zu("/anmelden?weiter=/wartung")
+            return
+        if konto["rolle"] not in ("verwalter", "wartung"):
+            self.antworte(seite("Kein Zutritt", "<div class=karte><h1>Kein Zutritt</h1>"
+                                "<p>Diese Seite ist fuer die Wartung.</p></div>", konto),
+                          status=HTTPStatus.FORBIDDEN)
+            return
+
+        konten = self.app.konten
+        zeilen = [
+            ("Konten", str(len(konten))),
+            ("davon bestaetigt", str(len([k for k in konten if k.get("bestaetigt")]))),
+            ("davon gesperrt", str(len([k for k in konten if k.get("gesperrt")]))),
+            ("laufende Abos", str(len([k for k in konten if self.app.abo_laeuft(k)]))),
+            ("davon Probeabos",
+             str(len([k for k in konten
+                      if self.app.abo_laeuft(k)
+                      and k.get("abo", {}).get("art") == "Probeabo"]))),
+            ("Offline-Schluessel", str(len([k for k in konten if k.get("offline")]))),
+            ("offene Sitzungen", str(len(self.app.sitzungen))),
+        ]
+        datei = "fehlt"
+        if SEITE.exists():
+            groesse = SEITE.stat().st_size // 1024
+            stand = datetime.fromtimestamp(
+                SEITE.stat().st_mtime, timezone.utc
+            ).strftime("%Y-%m-%d %H:%M UTC")
+            datei = f"{groesse} KB, gebaut am {stand}"
+        zeilen.append(("kinderturnen.html", datei))
+        zeilen.append(("Blockschluessel", self.app.blockschluessel()[:8] + "..."))
+        zeilen.append(("Postfach", str(self.app.verzeichnis / "postfach")))
+
+        letzte = ""
+        if self.app.protokoll_datei.exists():
+            with open(self.app.protokoll_datei, encoding="utf-8") as datei_offen:
+                letzte = "".join(datei_offen.readlines()[-15:])
+
+        inhalt = (
+            "<div class=karte><h1>Wartung</h1>"
+            + "<table>"
+            + "".join(
+                f"<tr><td>{html.escape(name)}</td><td>{html.escape(wert)}</td></tr>"
+                for name, wert in zeilen
+            )
+            + "</table></div>"
+            + "<div class=karte><h2>Letzte Zugriffe</h2>"
+            + f"<pre class=klein>{html.escape(letzte) or 'noch nichts'}</pre></div>"
+        )
+        self.antworte(seite("Wartung", inhalt, konto))
+
     def freischalten(self, abfrage=None):
         konto = self.angemeldet()
         grund = self.darf_planen(konto)
@@ -860,6 +993,7 @@ class Behandler(BaseHTTPRequestHandler):
             "/abmelden": self.melde_ab,
             "/konto": self.aendere_kennwort,
             "/verwaltung": self.verwalte,
+            "/probeabo": self.starte_probeabo,
             "/bestaetigen": self.bestaetige,
             "/code-neu": self.code_erneut,
             "/kennwort-vergessen": self.sende_kennwortcode,
@@ -1032,6 +1166,24 @@ class Behandler(BaseHTTPRequestHandler):
         self.app.notiere("kennwort-geaendert", konto["kennung"])
         self.zeige_konto(meldung="Das Kennwort ist geaendert.")
 
+    def starte_probeabo(self, daten):
+        """Der Nutzer bestellt sein Probeabo selbst - einmal im Jahr."""
+        konto = self.angemeldet()
+        if not konto:
+            self.weiter_zu("/anmelden?weiter=/konto")
+            return
+        if not self.app.probe_moeglich(konto):
+            self.zeige_konto(
+                fehler="Ein Probeabo gibt es einmal im Jahr - und nur, wenn "
+                "gerade kein Abo laeuft."
+            )
+            return
+        bis = self.app.starte_probe(konto)
+        self.zeige_konto(
+            meldung=f"Probeabo laeuft bis {bis}. Fuer den Offline-Betrieb bitte "
+            "beim Verwalter den Schluessel anfordern."
+        )
+
     def verwalte(self, daten):
         konto = self.angemeldet()
         if not konto or konto["rolle"] != "verwalter":
@@ -1078,9 +1230,20 @@ class Behandler(BaseHTTPRequestHandler):
                 f"Abo von {ziel['kennung']} ist beendet - das Konto plant "
                 "kostenlos weiter, der Offline-Schluessel ist weg."
             )
-        elif tat == "verwalter":
-            ziel["rolle"] = "verwalter"
-            meldung = f"{ziel['kennung']} ist jetzt Verwalter."
+        elif tat in ("verwalter", "wartung"):
+            ziel["rolle"] = tat
+            meldung = f"{ziel['kennung']} hat jetzt die Rolle {tat}."
+        elif tat == "probe":
+            if not self.app.probe_moeglich(ziel):
+                self.zeige_verwaltung(
+                    meldung=f"{ziel['kennung']} hatte im letzten Jahr schon ein "
+                    "Probeabo (oder hat gerade ein laufendes Abo)."
+                )
+                return
+            meldung = (
+                f"Probeabo fuer {ziel['kennung']} laeuft bis "
+                f"{self.app.starte_probe(ziel)}."
+            )
         self.app.sichere_konten()
         self.app.notiere("verwaltung:" + tat, konto["kennung"], ziel["kennung"])
         self.zeige_verwaltung(meldung=meldung)
@@ -1102,6 +1265,20 @@ def baue_server(port: int = 8000, verzeichnis: Path = None, https: bool = False,
     return server
 
 
+VERWALTUNGSKONTO = os.environ.get("KITU_VERWALTER", "verwaltung@kitu.local")
+WARTUNGSKONTO = os.environ.get("KITU_WARTUNG", "wartung@kitu.local")
+
+
+def zeige_zugang(konto: dict, kennwort: str) -> None:
+    """Zugangsdaten einmalig auf die Konsole - nirgends sonst hin."""
+    print(f"  {konto['rolle']:<10} {konto['kennung']}")
+    if kennwort:
+        print(f"  {'Kennwort':<10} {kennwort}")
+    else:
+        print(f"  {'Kennwort':<10} (unveraendert - Konto gab es schon)")
+    print()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8000)
@@ -1112,6 +1289,13 @@ def main() -> int:
                         help="Cookies als 'Secure' markieren (hinter nginx/Caddy)")
     parser.add_argument("--verwalter", metavar="E-MAIL",
                         help="dieses Konto zum Verwalter machen und beenden")
+    parser.add_argument("--konto-anlegen", metavar="E-MAIL",
+                        help="Konto anlegen (fertig bestaetigt) und beenden")
+    parser.add_argument("--rolle", default="nutzer", choices=list(ROLLEN),
+                        help="Rolle fuer --konto-anlegen (Vorgabe: nutzer)")
+    parser.add_argument("--name", default="", help="Name fuer --konto-anlegen")
+    parser.add_argument("--einrichten", action="store_true",
+                        help="Verwaltungs- und Wartungskonto anlegen und beenden")
     parser.add_argument("--adresse", default="",
                         help="oeffentliche Adresse fuer die Verweise in den Mails, "
                              "z. B. https://kitu.mein-verein.de")
@@ -1147,6 +1331,26 @@ def main() -> int:
         konto["rolle"] = "verwalter"
         anwendung.sichere_konten()
         print(f"{args.verwalter} ist jetzt Verwalter.")
+        return 0
+
+    if args.konto_anlegen:
+        konto, kennwort = anwendung.lege_dienstkonto_an(
+            args.konto_anlegen, args.name or args.konto_anlegen, args.rolle
+        )
+        zeige_zugang(konto, kennwort)
+        return 0
+
+    if args.einrichten:
+        print("Zwei Dienstkonten - Kennwoerter bitte gleich notieren, sie "
+              "stehen nirgends sonst:\n")
+        for kennung, name, rolle in (
+            (VERWALTUNGSKONTO, "Verwaltung", "verwalter"),
+            (WARTUNGSKONTO, "Wartung", "wartung"),
+        ):
+            konto, kennwort = anwendung.lege_dienstkonto_an(kennung, name, rolle)
+            zeige_zugang(konto, kennwort)
+        print("Nach der ersten Anmeldung bitte unter /konto ein eigenes "
+              "Kennwort setzen.")
         return 0
 
     if not SEITE.exists():
